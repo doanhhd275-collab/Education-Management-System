@@ -2,6 +2,7 @@
 Entry point của FastAPI application.
 Đăng ký tất cả routers và cấu hình middleware.
 """
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,6 +11,9 @@ from app.models import user  # noqa: F401
 
 # Import database engine và Base
 from app.core.database import engine, Base
+
+# Import seeder
+from app.core.seed import seed_database
 
 # Import tất cả routers
 from app.api.v1 import (
@@ -27,7 +31,19 @@ from app.api.v1 import (
     logs,
 )
 
-# ── Khởi tạo ứng dụng FastAPI (BẮT BUỘC PHẢI LÀM ĐẦU TIÊN) ───
+# ── Startup / Shutdown lifecycle ────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Chạy khi app khởi động: tạo bảng DB + seed dữ liệu mặc định."""
+    # Tạo tất cả bảng nếu chưa có
+    Base.metadata.create_all(bind=engine)
+    # Seed dữ liệu mặc định (idempotent — an toàn chạy nhiều lần)
+    seed_database()
+    yield
+    # (Cleanup nếu cần khi shutdown)
+
+
+# ── Khởi tạo ứng dụng FastAPI ────────────────────────────────
 app = FastAPI(
     title="Hệ Thống Quản Lý Đào Tạo (EMS)",
     description="""
@@ -43,6 +59,7 @@ app = FastAPI(
     docs_url="/docs",       # Swagger UI tại /docs
     redoc_url="/redoc",     # ReDoc tại /redoc
     redirect_slashes=False,   # Tắt redirect /users → /users/ (tránh mất Authorization header)
+    lifespan=lifespan,        # Đăng ký startup/shutdown lifecycle
 )
 
 # ── CORS Middleware (Gắn vào app ngay sau khi khởi tạo) ───────
@@ -55,8 +72,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Tạo bảng trong database (nếu chưa có) ────────────────────
-Base.metadata.create_all(bind=engine)
+# (create_all đã được gọi trong lifespan startup ở trên)
 
 # ── Đăng ký tất cả routers với prefix /api/v1 ────────────────
 API_PREFIX = "/api/v1"
