@@ -1,0 +1,86 @@
+# ══════════════════════════════════════════════════
+#  ROOT .gitignore — Education Management System
+# ══════════════════════════════════════════════════
+
+# ── Python virtualenv ──────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+backend/.venv/
+
+# ── Python bytecode & cache ────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# ── Python build / packaging ───────────────────────
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+MANIFEST
+
+# ── Alembic (nếu dùng) ────────────────────────────
+# alembic/versions/*.py   # uncomment nếu không muốn commit migrations
+
+# ── Environment / Secrets (KHÔNG BAO GIỜ commit) ──
+.env
+.env.*
+!.env.example          # chỉ commit file mẫu
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env.local
+frontend/.env.*.local
+
+# ── Node.js / Frontend ────────────────────────────
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json      # optional: uncomment nếu không muốn lock file
+
+# ── Vite build output ─────────────────────────────
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+
+# ── Docker ────────────────────────────────────────
+# docker-compose.override.yml
+
+# ── IDE / Editor ──────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# ── OS ────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ── Logs ──────────────────────────────────────────
+*.log
+logs/
+*.pid
+
+# ── Test / Coverage ───────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/

@@ -1,0 +1,372 @@
+// ============================================================
+// schema.prisma - Education Management System
+// Database: PostgreSQL | ORM: Prisma
+// Deploy: Vercel (Next.js App Router + React Server Components)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Vercel Postgres / Neon / Supabase: uncomment directUrl for connection pooling
+  // directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// SECTION 1: USER & AUTH
+// ============================================================
+
+/// Tài khoản người dùng hệ thống (sinh viên, giảng viên, admin)
+model User {
+  userId   String  @id @default(cuid()) @map("user_id") @db.VarChar(10)
+  email    String  @unique @db.VarChar(50)
+  password String  @db.VarChar(20)
+  contact  String? @db.VarChar(15)
+  birthDate DateTime? @map("birth_date")
+  name     String  @db.VarChar(30)
+
+  // Relations
+  roles           UserRole[]
+  student         Student?
+  teacher         Teacher?
+  reportLogs      ReportLog[]
+  systemLogs      SystemLog[]
+
+  @@map("users")
+}
+
+/// Vai trò trong hệ thống (STUDENT, TEACHER, ADMIN)
+model Role {
+  roleId   String @id @default(cuid()) @map("role_id") @db.VarChar(10)
+  roleName String @db.VarChar(30) @map("role_name")
+
+  // Relations
+  users UserRole[]
+
+  @@map("roles")
+}
+
+/// Bảng trung gian phân quyền User - Role (Many-to-Many)
+model UserRole {
+  userId String @map("user_id") @db.VarChar(10)
+  roleId String @map("role_id") @db.VarChar(10)
+
+  // Relations
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [roleId], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+// ============================================================
+// SECTION 2: STUDENT & TEACHER (User Profile Extensions)
+// ============================================================
+
+/// Hồ sơ sinh viên – mở rộng từ User (Table Inheritance pattern)
+model Student {
+  userId             String  @map("user_id") @db.VarChar(10)
+  programId          String  @map("program_id") @db.VarChar(10)
+  gpa                Float?  @db.DoublePrecision
+  warningLevel       Int?    @map("warning_level")
+  graduationCondition Boolean? @map("graduation_condition")
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  program     Curriculum  @relation(fields: [programId], references: [programId])
+  enrollments Enrollment[]
+  assignmentReports AssignmentReport[]
+  lessonReports     LessonReport[]
+
+  @@id([userId, programId])
+  @@index([programId])
+  @@map("students")
+}
+
+/// Hồ sơ giảng viên – mở rộng từ User
+model Teacher {
+  teacherId String @id @map("teacher_id") @db.VarChar(10)
+  userId    String @unique @map("user_id") @db.VarChar(10)
+
+  // Relations
+  user          User           @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  courseTeachers CourseTeacher[]
+  teacherClasses TeacherClass[]
+  documents      Document[]
+
+  @@map("teachers")
+}
+
+// ============================================================
+// SECTION 3: CURRICULUM & COURSE
+// ============================================================
+
+/// Chương trình đào tạo (VD: Công nghệ thông tin K2022)
+model Curriculum {
+  programId   String @id @map("program_id") @db.VarChar(10)
+  programName String @map("program_name") @db.VarChar(30)
+
+  // Relations
+  students         Student[]
+  curriculumCourses CurriculumCourse[]
+
+  @@map("curriculums")
+}
+
+/// Môn học
+model Course {
+  courseId   String @id @map("course_id") @db.VarChar(10)
+  courseName String @map("course_name") @db.VarChar(30)
+
+  // Relations
+  classes          Class[]
+  curriculumCourses CurriculumCourse[]
+  courseTeachers   CourseTeacher[]
+
+  /// Self-referencing: môn này là tiên quyết của các môn khác
+  prerequisites    CoursePrerequisite[] @relation("Course")
+  /// Self-referencing: các môn tiên quyết của môn này
+  requiredBy       CoursePrerequisite[] @relation("Prerequisite")
+
+  @@map("courses")
+}
+
+/// Bảng trung gian Curriculum - Course (Many-to-Many)
+model CurriculumCourse {
+  programId String @map("program_id") @db.VarChar(10)
+  courseId  String @map("course_id") @db.VarChar(10)
+
+  // Relations
+  curriculum Curriculum @relation(fields: [programId], references: [programId], onDelete: Cascade)
+  course     Course     @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+
+  @@id([programId, courseId])
+  @@index([courseId])
+  @@map("curriculum_courses")
+}
+
+/// Môn tiên quyết (self-referencing trên Course)
+model CoursePrerequisite {
+  courseId             String @map("course_id") @db.VarChar(10)
+  prerequisiteCourseId String @map("prerequisite_course_id") @db.VarChar(10)
+
+  // Relations
+  course       Course @relation("Course",       fields: [courseId],             references: [courseId], onDelete: Cascade)
+  prerequisite Course @relation("Prerequisite", fields: [prerequisiteCourseId], references: [courseId], onDelete: Cascade)
+
+  @@id([courseId, prerequisiteCourseId])
+  @@index([prerequisiteCourseId])
+  @@map("course_prerequisites")
+}
+
+// ============================================================
+// SECTION 4: CLASS
+// ============================================================
+
+/// Lớp học (một Course có thể mở nhiều Class theo từng học kỳ)
+model Class {
+  classId  String @map("class_id") @db.VarChar(10)
+  courseId String @map("course_id") @db.VarChar(10)
+  semester String @db.VarChar(10)
+  capacity Int?
+
+  // Relations
+  course        Course         @relation(fields: [courseId], references: [courseId])
+  enrollments   Enrollment[]
+  teacherClasses TeacherClass[]
+  assignments   Assignment[]
+  lessonReports LessonReport[]
+
+  @@id([courseId, classId])
+  @@index([semester])
+  @@map("classes")
+}
+
+/// Bảng trung gian Giảng viên - Môn học (Many-to-Many)
+model CourseTeacher {
+  courseId  String @map("course_id") @db.VarChar(10)
+  teacherId String @map("teacher_id") @db.VarChar(10)
+
+  // Relations
+  course  Course  @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+  teacher Teacher @relation(fields: [teacherId], references: [teacherId], onDelete: Cascade)
+
+  @@id([courseId, teacherId])
+  @@index([teacherId])
+  @@map("course_teachers")
+}
+
+/// Phân công giảng viên dạy lớp cụ thể theo học kỳ
+model TeacherClass {
+  teacherId String @map("teacher_id") @db.VarChar(10)
+  semester  String @db.VarChar(10)
+  classId   String @map("class_id") @db.VarChar(10)
+  courseId  String @map("course_id") @db.VarChar(10)
+
+  // Relations
+  teacher Teacher @relation(fields: [teacherId], references: [teacherId], onDelete: Cascade)
+  class   Class   @relation(fields: [courseId, classId], references: [courseId, classId])
+
+  @@id([teacherId, semester, classId])
+  @@index([courseId, classId])
+  @@map("teacher_classes")
+}
+
+// ============================================================
+// SECTION 5: ENROLLMENT (Sinh viên đăng ký lớp)
+// ============================================================
+
+/// Đăng ký học – trung gian Student - Class với điểm số
+/// Index tối ưu cho các truy vấn phổ biến:
+///   - Lấy danh sách lớp của 1 sinh viên
+///   - Lấy danh sách sinh viên trong 1 lớp
+///   - Lọc theo trạng thái, điểm số, học kỳ
+model Enrollment {
+  classId        String  @map("class_id") @db.VarChar(10)
+  courseId       String  @map("course_id") @db.VarChar(10)
+  studentId      String  @map("student_id") @db.VarChar(10)
+  studentProgram String  @map("student_program") @db.VarChar(10)
+  midTermScore   Float?  @map("mid_term_score") @db.DoublePrecision
+  finalTermScore Float?  @map("final_term_score") @db.DoublePrecision
+  grade          String? @db.Char(1)
+  status         String? @db.VarChar(10)
+
+  // Relations
+  class   Class   @relation(fields: [courseId, classId], references: [courseId, classId])
+  student Student @relation(fields: [studentId, studentProgram], references: [userId, programId])
+
+  @@id([classId, studentId])
+
+  // ── Index tối ưu truy vấn ────────────────────────────────
+  /// Tra cứu nhanh tất cả lớp một sinh viên đã đăng ký
+  @@index([studentId], name: "idx_enrollment_student")
+  /// Tra cứu nhanh tất cả sinh viên trong một lớp
+  @@index([courseId, classId], name: "idx_enrollment_class")
+  /// Lọc theo trạng thái (PASSED / FAILED / STUDYING)
+  @@index([status], name: "idx_enrollment_status")
+  /// Composite: sinh viên + trạng thái (dashboard cá nhân)
+  @@index([studentId, status], name: "idx_enrollment_student_status")
+  /// Composite: lớp + điểm cuối kỳ (xếp hạng trong lớp)
+  @@index([courseId, classId, finalTermScore], name: "idx_enrollment_class_score")
+
+  @@map("enrollments")
+}
+
+// ============================================================
+// SECTION 6: ASSIGNMENT & REPORTS
+// ============================================================
+
+/// Bài tập của một lớp học
+model Assignment {
+  assignmentId   String    @id @map("assignment_id") @db.VarChar(10)
+  assignmentName String    @map("assignment_name") @db.VarChar(50)
+  deadline       DateTime?
+  classId        String    @map("class_id") @db.VarChar(10)
+  courseId       String    @map("course_id") @db.VarChar(10)
+
+  // Relations
+  class   Class  @relation(fields: [courseId, classId], references: [courseId, classId])
+  reports AssignmentReport[]
+
+  @@index([courseId, classId])
+  @@map("assignments")
+}
+
+/// Bài nộp của sinh viên cho một Assignment
+model AssignmentReport {
+  assignmentId String    @map("assignment_id") @db.VarChar(10)
+  classId      String    @map("class_id") @db.VarChar(10)
+  submitDate   DateTime? @map("submit_date")
+  studentId    String    @map("student_id") @db.VarChar(10)
+  lessonId     String?   @map("lesson_id") @db.VarChar(10)
+  studentProgram String  @map("student_program") @db.VarChar(10)
+
+  // Relations
+  assignment Assignment @relation(fields: [assignmentId], references: [assignmentId], onDelete: Cascade)
+  student    Student    @relation(fields: [studentId, studentProgram], references: [userId, programId])
+
+  @@id([assignmentId, studentId])
+  @@index([studentId])
+  @@index([classId])
+  @@map("assignment_reports")
+}
+
+/// Báo cáo điểm danh từng buổi học
+model LessonReport {
+  classId              String   @map("class_id") @db.VarChar(10)
+  courseId             String   @map("course_id") @db.VarChar(10)
+  day                  DateTime
+  studentId            String   @map("student_id") @db.VarChar(10)
+  lessonId             String   @map("lesson_id") @db.VarChar(10)
+  absent               Boolean  @default(false)
+  submitAssignmentStatus Boolean @default(false) @map("submit_assignment_status")
+  studentProgram       String   @map("student_program") @db.VarChar(10)
+
+  // Relations
+  class   Class   @relation(fields: [courseId, classId], references: [courseId, classId])
+  student Student @relation(fields: [studentId, studentProgram], references: [userId, programId])
+
+  @@id([classId, day, studentId, lessonId])
+  @@index([studentId])
+  @@index([courseId, classId])
+  @@map("lesson_reports")
+}
+
+// ============================================================
+// SECTION 7: DOCUMENTS
+// ============================================================
+
+/// Tài liệu học tập do giảng viên upload
+model Document {
+  documentId   String    @id @map("document_id") @db.VarChar(10)
+  documentName String    @map("document_name") @db.VarChar(50)
+  deadline     DateTime?
+  teacherId    String    @map("teacher_id") @db.VarChar(10)
+
+  // Relations
+  teacher Teacher @relation(fields: [teacherId], references: [teacherId])
+
+  @@index([teacherId])
+  @@map("documents")
+}
+
+// ============================================================
+// SECTION 8: LOGGING
+// ============================================================
+
+/// Log hành động của người dùng (audit trail)
+model ReportLog {
+  logId    Int      @id @default(autoincrement()) @map("log_id")
+  userId   String   @map("user_id") @db.VarChar(10)
+  content  String?  @db.VarChar(1000)
+  timeLog  DateTime @default(now()) @map("time_log")
+
+  // Relations
+  user User @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
+  @@index([timeLog])
+  @@map("report_logs")
+}
+
+/// Log hệ thống (lỗi, cảnh báo kỹ thuật)
+model SystemLog {
+  logId   String   @id @default(cuid()) @map("log_id") @db.VarChar(10)
+  ip      String?  @db.VarChar(20)
+  action  String?  @db.VarChar(10)
+  userId  String?  @map("user_id") @db.VarChar(10)
+  content String?  @db.VarChar(1000)
+  timeLog DateTime @default(now()) @map("time_log")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
+  @@index([timeLog])
+  @@index([action])
+  @@map("system_logs")
+}
