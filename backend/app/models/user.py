@@ -221,7 +221,8 @@ class TeacherClass(Base):
     # relationships
     teacher    = relationship("Teacher", back_populates="teacher_classes")
     class_     = relationship("Class",   back_populates="teacher_classes")
-    assignments = relationship("Assignment", back_populates="teacher_class")
+    assignments = relationship("Assignment", back_populates="teacher_class",
+                               overlaps="assignments,class_")
 
 
 # ============================================================
@@ -304,9 +305,11 @@ class Assignment(Base):
 
     # relationships
     class_        = relationship("Class",        back_populates="assignments",
-                                  foreign_keys=[course_id, class_id])
+                                  foreign_keys=[course_id, class_id],
+                                  overlaps="assignments,teacher_class")
     teacher_class = relationship("TeacherClass", back_populates="assignments",
-                                  foreign_keys=[teacher_id, semester, class_id])
+                                  foreign_keys=[teacher_id, semester, class_id],
+                                  overlaps="assignments,class_")
     reports       = relationship("AssignmentReport", back_populates="assignment")
 
 
