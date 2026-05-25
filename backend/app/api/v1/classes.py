@@ -85,8 +85,9 @@ def teacher_timetable(
     current_user: User = Depends(get_current_user)
 ):
     """Trả về thời khóa biểu của giáo viên đang đăng nhập."""
+    # Dùng Teacher.user_id (không phải teacher_id) để match với current_user.user_id
     teacher = db.query(Teacher).filter(
-        Teacher.teacher_id == current_user.user_id
+        Teacher.user_id == current_user.user_id
     ).first()
     if not teacher:
         return []
@@ -113,6 +114,7 @@ def teacher_timetable(
             "day_of_week":  cls.day_of_week,
             "start_period": cls.start_period,
             "end_period":   cls.end_period,
+            "room":         getattr(cls, 'room', None),
         })
     return result
 
@@ -155,6 +157,7 @@ def student_timetable(
                 "day_of_week":  cls.day_of_week,
                 "start_period": cls.start_period,
                 "end_period":   cls.end_period,
+                "room":         getattr(cls, 'room', None),
             })
         return result
     except Exception as exc:

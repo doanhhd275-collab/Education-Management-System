@@ -59,6 +59,9 @@ def _run_migrations():
             conn.execute(__import__('sqlalchemy').text(
                 'ALTER TABLE classes ADD COLUMN IF NOT EXISTS "EndPeriod" INTEGER;'
             ))
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE classes ADD COLUMN IF NOT EXISTS "Room" VARCHAR(20);'
+            ))
             conn.commit()
         logger.info("✅ Migration hoàn tất.")
     except Exception as e:

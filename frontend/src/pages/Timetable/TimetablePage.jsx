@@ -148,6 +148,11 @@ function TimetableGrid({ classes }) {
                         {c.class_id}
                         {c.start_period !== c.end_period &&
                           ` · Tiết ${c.start_period}–${c.end_period}`}
+                        {c.room && (
+                          <span style={{ display: "block", marginTop: 2, color: "#6ee7b7" }}>
+                            🏫 {c.room}
+                          </span>
+                        )}
                       </div>
                     </div>
                   );
@@ -326,6 +331,7 @@ function ClassLegend({ classes }) {
                   {c.day_of_week && c.start_period
                     ? ` · ${DAY_LABELS_SHORT[c.day_of_week]} Tiết ${c.start_period}–${c.end_period}`
                     : " · Chưa có lịch"}
+                  {c.room && ` · Phòng ${c.room}`}
                 </div>
               </div>
             </div>
@@ -436,6 +442,7 @@ export default function TimetablePage() {
                         <th style={{ textAlign: "center" }}>Thứ</th>
                         <th style={{ textAlign: "center" }}>Tiết</th>
                         <th style={{ textAlign: "center" }}>Giờ học</th>
+                        <th style={{ textAlign: "center" }}>Phòng</th>
                         <th style={{ textAlign: "center" }}>Sĩ số</th>
                       </tr>
                     </thead>
@@ -477,6 +484,11 @@ export default function TimetablePage() {
                             </td>
                             <td style={{ textAlign: "center", fontSize: 12, color: "var(--text-secondary)" }}>
                               {startTime && endTime ? `${startTime} – ${endTime}` : "—"}
+                            </td>
+                            <td style={{ textAlign: "center", fontSize: 12 }}>
+                              {c.room
+                                ? <span className="badge" style={{ background: "rgba(16,185,129,0.15)", color: "#6ee7b7", border: "1px solid #10b981" }}>{c.room}</span>
+                                : <span style={{ color: "var(--text-muted)" }}>—</span>}
                             </td>
                             <td style={{ textAlign: "center" }}>
                               {c.capacity ?? "—"}

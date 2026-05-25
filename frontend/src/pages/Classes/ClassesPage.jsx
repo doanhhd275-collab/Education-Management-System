@@ -18,7 +18,7 @@ const periodLabel = (p) => p <= 6 ? `Tiết ${p} (sáng)` : `Tiết ${p} (chiề
 function CreateClassModal({ onClose, onCreated }) {
   const [form, setForm] = useState({
     course_id: "", class_id: "", semester: "", capacity: "",
-    day_of_week: "", start_period: "", end_period: "",
+    day_of_week: "", start_period: "", end_period: "", room: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -115,6 +115,11 @@ function CreateClassModal({ onClose, onCreated }) {
                 </div>
               </div>
             </div>
+            <div className="form-group">
+              <label className="form-label">🏫 Phòng học</label>
+              <input className="form-input" placeholder="VD: B1-301, D9-201"
+                value={form.room} onChange={(e) => setForm({...form, room: e.target.value})} />
+            </div>
           </form>
         </div>
         <div className="modal-footer">
@@ -134,6 +139,7 @@ function EditScheduleModal({ class_, onClose, onSaved }) {
     day_of_week:  class_.day_of_week  || "",
     start_period: class_.start_period || "",
     end_period:   class_.end_period   || "",
+    room:         class_.room         || "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -150,6 +156,7 @@ function EditScheduleModal({ class_, onClose, onSaved }) {
         day_of_week:  form.day_of_week  || null,
         start_period: form.start_period ? Number(form.start_period) : null,
         end_period:   form.end_period   ? Number(form.end_period)   : null,
+        room:         form.room         || null,
       });
       onSaved(); onClose();
     } catch (err) {
@@ -206,8 +213,13 @@ function EditScheduleModal({ class_, onClose, onSaved }) {
                 </select>
               </div>
             </div>
+            <div className="form-group">
+              <label className="form-label">🏫 Phòng học</label>
+              <input className="form-input" placeholder="VD: B1-301, D9-201" maxLength={20}
+                value={form.room} onChange={(e) => setForm({...form, room: e.target.value})} />
+            </div>
             <div className="alert" style={{ background: "rgba(99,102,241,0.08)", borderColor: "var(--accent)", fontSize: 12 }}>
-              💡 Lịch học sẽ hiển thị trong Thời khóa biểu của giáo viên và sinh viên.
+              💡 Lịch học và phòng sẽ hiển thị trong Thời khóa biểu của giáo viên và sinh viên.
             </div>
           </form>
         </div>
@@ -398,11 +410,12 @@ export default function ClassesPage() {
             <table className="table">
               <thead>
                 <tr>
-              <th>Mã lớp</th>
+                  <th>Mã lớp</th>
                   <th>Mã môn</th>
                   <th>Học kỳ</th>
                   <th style={{ textAlign: "center" }}>Sĩ số tối đa</th>
                   <th style={{ textAlign: "center" }}>Lịch học</th>
+                  <th style={{ textAlign: "center" }}>Phòng</th>
                   {isAdmin && <th style={{ textAlign: "center" }}>Hành động</th>}
                 </tr>
               </thead>
@@ -431,6 +444,12 @@ export default function ClassesPage() {
                       ) : (
                         <span style={{ color: "var(--text-muted)" }}>Chưa có lịch</span>
                       )}
+                    </td>
+                    {/* Cột phòng học */}
+                    <td style={{ textAlign: "center", fontSize: 12 }}>
+                      {c.room
+                        ? <span className="badge" style={{ background: "rgba(16,185,129,0.15)", color: "#6ee7b7", border: "1px solid #10b981" }}>{c.room}</span>
+                        : <span style={{ color: "var(--text-muted)" }}>—</span>}
                     </td>
                     {isAdmin && (
                       <td style={{ textAlign: "center" }}>

@@ -15,6 +15,7 @@ class ClassBase(BaseModel):
     day_of_week:  Optional[str] = Field(None, max_length=5, description="Thứ học: '2'-'7'")
     start_period: Optional[int] = Field(None, ge=1, le=12, description="Tiết bắt đầu (1-12)")
     end_period:   Optional[int] = Field(None, ge=1, le=12, description="Tiết kết thúc (1-12)")
+    room:         Optional[str] = Field(None, max_length=20, description="Phòng học (VD: B1-301)")
 
 
 class ClassCreate(ClassBase):
@@ -28,6 +29,7 @@ class ClassUpdate(BaseModel):
     day_of_week:  Optional[str] = Field(None, max_length=5)
     start_period: Optional[int] = Field(None, ge=1, le=12)
     end_period:   Optional[int] = Field(None, ge=1, le=12)
+    room:         Optional[str] = Field(None, max_length=20)
 
 
 class ClassResponse(ClassBase):
@@ -36,6 +38,7 @@ class ClassResponse(ClassBase):
     day_of_week:  Optional[str] = None
     start_period: Optional[int] = None
     end_period:   Optional[int] = None
+    room:         Optional[str] = None
 
     model_config = {"from_attributes": True}
 

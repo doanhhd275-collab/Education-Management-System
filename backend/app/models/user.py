@@ -176,6 +176,7 @@ class Class(Base):
     day_of_week  = Column("DayOfWeek",   String(5))            # "2".."7" (Thứ 2-7)
     start_period = Column("StartPeriod", Integer)              # 1-12
     end_period   = Column("EndPeriod",   Integer)              # 1-12
+    room         = Column("Room",        String(20))           # Phòng học (VD: B1-301)
 
     __table_args__ = (
         PrimaryKeyConstraint("CourseID", "ClassID"),
