@@ -85,9 +85,8 @@ def teacher_timetable(
     current_user: User = Depends(get_current_user)
 ):
     """Trả về thời khóa biểu của giáo viên đang đăng nhập."""
-    from app.models.user import TeacherClass, Teacher as TeacherModel, Course
-    teacher = db.query(TeacherModel).filter(
-        TeacherModel.teacher_id == current_user.user_id
+    teacher = db.query(Teacher).filter(
+        Teacher.teacher_id == current_user.user_id
     ).first()
     if not teacher:
         return []
@@ -125,38 +124,42 @@ def student_timetable(
     current_user: User = Depends(get_current_user)
 ):
     """Trả về thời khóa biểu của sinh viên đang đăng nhập."""
-    from app.models.user import Student as StudentModel, Enrollment, Course
-    student = db.query(StudentModel).filter(
-        StudentModel.student_id == current_user.user_id
-    ).first()
-    if not student:
-        return []
-
-    # Lấy danh sách đăng ký
-    enrollments_list = db.query(Enrollment).filter(
-        Enrollment.student_id == student.student_id
-    ).all()
-
-    result = []
-    for e in enrollments_list:
-        cls = db.query(Class).filter(
-            Class.course_id == e.course_id,
-            Class.class_id  == e.class_id
+    import logging, traceback as tb
+    logger = logging.getLogger(__name__)
+    try:
+        student = db.query(Student).filter(
+            Student.student_id == current_user.user_id
         ).first()
-        if not cls:
-            continue
-        course = db.query(Course).filter(Course.course_id == cls.course_id).first()
-        result.append({
-            "class_id":     cls.class_id,
-            "course_id":    cls.course_id,
-            "course_name":  course.course_name if course else cls.course_id,
-            "semester":     cls.semester,
-            "capacity":     cls.capacity,
-            "day_of_week":  cls.day_of_week,
-            "start_period": cls.start_period,
-            "end_period":   cls.end_period,
-        })
-    return result
+        if not student:
+            return []
+
+        enrollments_list = db.query(Enrollment).filter(
+            Enrollment.student_id == student.student_id
+        ).all()
+
+        result = []
+        for e in enrollments_list:
+            cls = db.query(Class).filter(
+                Class.course_id == e.course_id,
+                Class.class_id  == e.class_id
+            ).first()
+            if not cls:
+                continue
+            course = db.query(Course).filter(Course.course_id == cls.course_id).first()
+            result.append({
+                "class_id":     cls.class_id,
+                "course_id":    cls.course_id,
+                "course_name":  course.course_name if course else cls.course_id,
+                "semester":     cls.semester,
+                "capacity":     cls.capacity,
+                "day_of_week":  cls.day_of_week,
+                "start_period": cls.start_period,
+                "end_period":   cls.end_period,
+            })
+        return result
+    except Exception as exc:
+        logger.error("student_timetable error: %s\n%s", exc, tb.format_exc())
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 @router.get("/{course_id}/{class_id}", response_model=ClassResponse)
