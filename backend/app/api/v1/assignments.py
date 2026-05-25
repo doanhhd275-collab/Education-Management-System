@@ -117,20 +117,38 @@ def delete_assignment(
 
 # ── Bài nộp (AssignmentReport) ──────────────────────────────
 
-@router.get("/{assignment_id}/reports", response_model=list[AssignmentReportResponse])
+@router.get("/{assignment_id}/reports")
 def get_assignment_reports(
     assignment_id: str,
     db: Session = Depends(get_db),
     _=Depends(require_role("TEACHER", "ADMIN"))
 ):
-    """Xem tất cả bài nộp của một bài tập. TEACHER và ADMIN."""
+    """Xem tất cả bài nộp của một bài tập kèm thông tin sinh viên. TEACHER và ADMIN."""
+    from app.models.user import Student, User as UserModel
+    from sqlalchemy.orm import joinedload
     if not db.query(Assignment).filter(Assignment.assignment_id == assignment_id).first():
         raise HTTPException(status_code=404, detail="Không tìm thấy bài tập")
 
-    reports = db.query(AssignmentReport).filter(
-        AssignmentReport.assignment_id == assignment_id
-    ).all()
-    return reports
+    reports = (
+        db.query(AssignmentReport)
+        .options(joinedload(AssignmentReport.student).joinedload(Student.user))
+        .filter(AssignmentReport.assignment_id == assignment_id)
+        .all()
+    )
+
+    result = []
+    for r in reports:
+        student_name = r.student.user.name if r.student and r.student.user else None
+        result.append({
+            "assignment_id": r.assignment_id,
+            "student_id":    r.student_id,
+            "student_name":  student_name,
+            "class_id":      r.class_id,
+            "lesson_id":     r.lesson_id,
+            "submit_date":   r.submit_date,
+            "link_url":      r.link_url,
+        })
+    return result
 
 
 @router.post("/{assignment_id}/submit", response_model=AssignmentReportResponse, status_code=201)
@@ -169,9 +187,18 @@ def submit_assignment(
         class_id=data.class_id,
         student_id=data.student_id,
         lesson_id=data.lesson_id,
+        link_url=data.link_url,
         submit_date=data.submit_date or datetime.now(timezone.utc)
     )
     db.add(report)
     db.commit()
     db.refresh(report)
-    return report
+    return {
+        "assignment_id": report.assignment_id,
+        "student_id":    report.student_id,
+        "student_name":  None,
+        "class_id":      report.class_id,
+        "lesson_id":     report.lesson_id,
+        "submit_date":   report.submit_date,
+        "link_url":      report.link_url,
+    }

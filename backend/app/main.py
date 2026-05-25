@@ -46,6 +46,9 @@ def _run_migrations():
             conn.execute(__import__('sqlalchemy').text(
                 'ALTER TABLE assignments ADD COLUMN IF NOT EXISTS "LinkURL" VARCHAR(500);'
             ))
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE assignment_reports ADD COLUMN IF NOT EXISTS "LinkURL" VARCHAR(500);'
+            ))
             conn.commit()
         logger.info("✅ Migration hoàn tất.")
     except Exception as e:

@@ -7,6 +7,86 @@ import { useState, useEffect } from "react";
 import { assignmentsApi } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 
+// Modal xem bài nộp của học sinh (Teacher/Admin)
+function ViewReportsModal({ assignment, onClose }) {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    assignmentsApi.getReports(assignment.assignment_id)
+      .then((r) => setReports(r.data))
+      .catch(() => setError("Không thể tải danh sách bài nộp"))
+      .finally(() => setLoading(false));
+  }, [assignment.assignment_id]);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 700 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">📋 Bài nộp — {assignment.assignment_name}</h2>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {loading ? (
+            <div style={{ textAlign: "center", padding: 24, color: "var(--text-muted)" }}>Đang tải...</div>
+          ) : reports.length === 0 ? (
+            <div style={{ textAlign: "center", padding: 24, color: "var(--text-muted)" }}>
+              <div style={{ fontSize: 36, marginBottom: 8 }}>📭</div>
+              Chưa có sinh viên nào nộp bài
+            </div>
+          ) : (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Sinh viên</th>
+                  <th>Họ tên</th>
+                  <th>Ngày nộp</th>
+                  <th>Link bài nộp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reports.map((r) => (
+                  <tr key={r.student_id}>
+                    <td><span className="badge badge-muted">{r.student_id}</span></td>
+                    <td style={{ fontWeight: 500 }}>{r.student_name || "—"}</td>
+                    <td style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+                      {r.submit_date
+                        ? new Date(r.submit_date).toLocaleString("vi-VN")
+                        : "—"}
+                    </td>
+                    <td>
+                      {r.link_url ? (
+                        <a
+                          href={r.link_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-secondary btn-sm"
+                        >
+                          🔗 Xem bài nộp
+                        </a>
+                      ) : (
+                        <span style={{ color: "var(--text-muted)", fontSize: 12 }}>Không có link</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <div style={{ marginTop: 12, fontSize: 13, color: "var(--text-muted)" }}>
+            Tổng: <strong>{reports.length}</strong> bài nộp
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Đóng</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Modal nộp bài có nhập link
 function SubmitModal({ assignment, studentId, onClose, onSubmitted }) {
   const [linkUrl, setLinkUrl] = useState("");
@@ -194,7 +274,8 @@ export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [submitTarget, setSubmitTarget] = useState(null); // assignment đang nộp
+  const [submitTarget, setSubmitTarget] = useState(null);       // assignment đang nộp
+  const [viewReportsTarget, setViewReportsTarget] = useState(null); // assignment đang xem bài nộp
   const [error, setError] = useState("");
 
   const loadAssignments = async () => {
@@ -287,6 +368,16 @@ export default function AssignmentsPage() {
                     📤 Nộp bài
                   </button>
                 )}
+
+                {/* Xem bài nộp (Teacher/Admin) */}
+                {(isTeacher || isAdmin) && (
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => setViewReportsTarget(a)}
+                  >
+                    📄 Xem bài nộp
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -303,6 +394,13 @@ export default function AssignmentsPage() {
           studentId={user.user_id}
           onClose={() => setSubmitTarget(null)}
           onSubmitted={() => { loadAssignments(); }}
+        />
+      )}
+
+      {viewReportsTarget && (
+        <ViewReportsModal
+          assignment={viewReportsTarget}
+          onClose={() => setViewReportsTarget(null)}
         />
       )}
     </div>

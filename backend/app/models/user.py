@@ -325,6 +325,7 @@ class AssignmentReport(Base):
     submit_date   = Column("SubmitDate",   DateTime)
     student_id    = Column("StudentID",    String(10), nullable=False)
     lesson_id     = Column("LessonID",     String(10))
+    link_url      = Column("LinkURL",      String(500))
 
     __table_args__ = (
         PrimaryKeyConstraint("AssignmentID", "StudentID"),

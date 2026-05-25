@@ -52,10 +52,13 @@ class AssignmentReportBase(BaseModel):
 
 class AssignmentReportCreate(AssignmentReportBase):
     submit_date: Optional[datetime] = None
+    link_url:    Optional[str]      = Field(None, max_length=500, description="Link bài nộp")
 
 
 class AssignmentReportResponse(AssignmentReportBase):
-    submit_date: Optional[datetime] = None
+    submit_date:  Optional[datetime] = None
+    link_url:     Optional[str]      = None
+    student_name: Optional[str]      = None  # join từ User
 
     model_config = {"from_attributes": True}
 
