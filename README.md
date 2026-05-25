@@ -1,387 +1,416 @@
-# 🎓 EMS — Education Management System
+# 🎓 Education Management System (EMS)
 
-> Hệ thống quản lý đào tạo toàn diện xây dựng trên **FastAPI · React · PostgreSQL**
+> **Hệ thống Quản lý Giáo dục** — Nền tảng toàn diện quản lý học tập, giảng dạy và đào tạo đại học.
 
----
-
-## 📑 Mục lục
-
-- [Tổng quan](#-tổng-quan)
-- [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
-- [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
-- [Cấu trúc thư mục](#-cấu-trúc-thư-mục)
-- [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
-- [Hướng dẫn cài đặt](#-hướng-dẫn-cài-đặt)
-- [Địa chỉ truy cập](#-địa-chỉ-truy-cập)
-- [Tài khoản mặc định](#-tài-khoản-mặc-định)
-- [Danh sách API](#-danh-sách-api)
-- [Các tính năng chính](#-các-tính-năng-chính)
-- [Xử lý sự cố](#-xử-lý-sự-cố)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose/)
 
 ---
 
-## 🌟 Tổng quan
+## 📋 Mục lục
 
-**EMS (Education Management System)** là một ứng dụng web quản lý đào tạo đầy đủ chức năng, hỗ trợ ba vai trò người dùng: **Quản trị viên**, **Giáo viên** và **Sinh viên**.
-
-Hệ thống bao gồm các nghiệp vụ cốt lõi:
-
-- 🏫 Quản lý chương trình đào tạo, môn học, lớp học
-- 👩‍🏫 Quản lý giáo viên và sinh viên
-- 📝 Đăng ký học, điểm danh, bài tập
-- 📄 Quản lý tài liệu học tập
-- 📊 Chấm điểm và thống kê
-- 🔒 Xác thực JWT, phân quyền theo vai trò (RBAC)
-- 🗂️ Nhật ký hệ thống (System Logs)
+- [Tổng quan](#tổng-quan)
+- [Tính năng](#tính-năng)
+- [Kiến trúc hệ thống](#kiến-trúc-hệ-thống)
+- [Cài đặt & Khởi động](#cài-đặt--khởi-động)
+- [Tài khoản mặc định](#tài-khoản-mặc-định)
+- [API Endpoints](#api-endpoints)
+- [Cấu trúc dự án](#cấu-trúc-dự-án)
+- [Deploy Production](#deploy-production)
 
 ---
 
-## 🛠️ Công nghệ sử dụng
+## Tổng quan
 
-### Backend
-| Thư viện | Phiên bản | Mục đích |
-|---|---|---|
-| FastAPI | 0.115.5 | Web framework ASGI |
-| Uvicorn | 0.32.1 | ASGI server |
-| SQLAlchemy | 2.0.36 | ORM |
-| Alembic | 1.14.0 | Database migration |
-| Pydantic | 2.10.3 | Data validation |
-| python-jose | 3.3.0 | JWT authentication |
-| passlib[bcrypt] | 1.7.4 | Password hashing |
-| psycopg2-binary | 2.9.10 | PostgreSQL driver |
+EMS là hệ thống quản lý giáo dục được xây dựng theo kiến trúc **REST API + SPA**, gồm:
 
-### Frontend
-| Thư viện | Phiên bản | Mục đích |
-|---|---|---|
-| React | 18.3.1 | UI framework |
-| Vite | 5.2.0 | Build tool |
-| React Router DOM | 6.23.1 | Client-side routing |
-| Axios | 1.6.8 | HTTP client |
-
-### Infrastructure
-| Công nghệ | Phiên bản | Mục đích |
-|---|---|---|
-| PostgreSQL | 15-alpine | Cơ sở dữ liệu chính |
-| Redis | 7-alpine | Cache |
-| Docker / Docker Compose | — | Container hóa |
+- **Backend**: FastAPI (Python) + SQLAlchemy + PostgreSQL
+- **Frontend**: React 18 + Vite + Vanilla CSS (dark mode premium)
+- **Auth**: JWT Bearer Token (access + refresh)
+- **DB**: PostgreSQL (local Docker / Render Cloud)
 
 ---
 
-## 🏗️ Kiến trúc hệ thống
+## Tính năng
+
+### 👥 Theo phân quyền
+
+#### 🛡️ Admin (Quản trị viên)
+| Tính năng | Mô tả |
+|---|---|
+| Quản lý người dùng | Tạo, sửa, xóa user; gán role |
+| Quản lý sinh viên | Xem danh sách, thông tin học vụ |
+| Quản lý giáo viên | Xem danh sách giáo viên |
+| Quản lý môn học | CRUD môn học |
+| Quản lý lớp học | Tạo lớp, gán giáo viên, đặt lịch học, phòng học |
+| Chương trình đào tạo | Quản lý chương trình, học phần |
+| Nhật ký hệ thống | Xem log hoạt động, báo cáo |
+
+#### 👨‍🏫 Giáo viên
+| Tính năng | Mô tả |
+|---|---|
+| Thời khóa biểu | Xem lịch dạy theo thứ/tiết/phòng (dạng lưới + danh sách) |
+| Lớp học | Xem danh sách lớp mình phụ trách |
+| Điểm danh | Tạo buổi học, điểm danh sinh viên |
+| Nhập điểm | Nhập điểm thành phần, giữa kỳ, cuối kỳ |
+| Bài tập | Tạo bài tập, xem bài nộp của sinh viên (link URL) |
+| Tài liệu | Upload/chia sẻ tài liệu học tập |
+
+#### 🎓 Sinh viên
+| Tính năng | Mô tả |
+|---|---|
+| Thời khóa biểu | Xem lịch học theo thứ/tiết/phòng |
+| Đăng ký học | Đăng ký / hủy đăng ký lớp học |
+| Điểm danh | Xem lịch sử điểm danh theo từng lớp |
+| Bài tập | Nộp bài tập qua link URL |
+| Tài liệu | Xem tài liệu môn học |
+| Xem điểm | Xem điểm các môn học |
+
+---
+
+## Kiến trúc hệ thống
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                      CLIENT BROWSER                     │
-│                React 18 + Vite (port 5173)              │
-└────────────────────────┬────────────────────────────────┘
-                         │ HTTP / REST API
-┌────────────────────────▼────────────────────────────────┐
-│                    BACKEND API                          │
-│            FastAPI + Uvicorn (port 8000)                │
-│  ┌─────────────┐  ┌──────────────┐  ┌───────────────┐  │
-│  │  API Router │  │   Services   │  │  Auth (JWT)   │  │
-│  │  (12 routes)│  │  (Business)  │  │  + RBAC       │  │
-│  └─────────────┘  └──────────────┘  └───────────────┘  │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │        SQLAlchemy ORM + Pydantic Schemas           │ │
-│  └────────────────────────────────────────────────────┘ │
-└────────────────────────┬────────────────────────────────┘
-                         │
-        ┌────────────────┴──────────────┐
-        │                               │
-┌───────▼────────┐             ┌────────▼───────┐
-│  PostgreSQL 15 │             │   Redis 7      │
-│  (port 5432)   │             │   (port 6379)  │
-└────────────────┘             └────────────────┘
+│                     FRONTEND (React)                     │
+│  Vite + React 18 + React Router + Context API           │
+│  Port: 5173 (dev) / 80 (prod via Nginx)                 │
+└─────────────────────┬───────────────────────────────────┘
+                      │ HTTP/REST (axios)
+┌─────────────────────▼───────────────────────────────────┐
+│                    BACKEND (FastAPI)                      │
+│  Python 3.12 + SQLAlchemy + JWT + Uvicorn               │
+│  Port: 8000                                              │
+│  /api/v1/*                                               │
+└─────────────────────┬───────────────────────────────────┘
+                      │ SQLAlchemy ORM
+┌─────────────────────▼───────────────────────────────────┐
+│                   DATABASE (PostgreSQL)                   │
+│  Port: 5432                                              │
+│  Docker: hust_ems_db                                     │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 📊 Mô hình dữ liệu chính
+
+```
+users ──┬── students (1:1)
+        ├── teachers (1:1)
+        └── user_roles ── roles
+
+courses ── classes ──┬── teacher_classes ── teachers
+                     ├── enrollments ── students
+                     ├── assignments ── assignment_reports
+                     ├── lesson_reports (điểm danh)
+                     └── grades
 ```
 
 ---
 
-## 📁 Cấu trúc thư mục
+## Cài đặt & Khởi động
 
-```
-Education-Management-System/
-├── backend/
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── v1/                   # API endpoints
-│   │   │       ├── auth.py           # Đăng nhập / token
-│   │   │       ├── users.py          # Quản lý người dùng
-│   │   │       ├── students.py       # Quản lý sinh viên
-│   │   │       ├── teachers.py       # Quản lý giáo viên
-│   │   │       ├── curriculum.py     # Chương trình đào tạo
-│   │   │       ├── courses.py        # Môn học
-│   │   │       ├── classes.py        # Lớp học
-│   │   │       ├── enrollments.py    # Đăng ký học
-│   │   │       ├── documents.py      # Tài liệu
-│   │   │       ├── assignments.py    # Bài tập
-│   │   │       ├── attendance.py     # Điểm danh
-│   │   │       └── logs.py           # Nhật ký hệ thống
-│   │   ├── core/                     # Config, DB, Security
-│   │   ├── models/                   # SQLAlchemy models
-│   │   ├── schemas/                  # Pydantic schemas
-│   │   ├── services/                 # Business logic
-│   │   └── main.py                   # App entry point
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── .env
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/                      # Axios API clients
-│   │   ├── components/               # Layout, ProtectedRoute
-│   │   ├── context/                  # AuthContext (React Context)
-│   │   ├── pages/
-│   │   │   ├── Login/
-│   │   │   ├── Dashboard/
-│   │   │   ├── Students/
-│   │   │   ├── Teachers/
-│   │   │   ├── Users/
-│   │   │   ├── Courses/
-│   │   │   ├── Classes/
-│   │   │   ├── Curriculum/
-│   │   │   ├── Enrollment/
-│   │   │   ├── Documents/
-│   │   │   ├── Assignments/
-│   │   │   ├── Attendance/
-│   │   │   ├── Grading/
-│   │   │   ├── Profile/
-│   │   │   └── Logs/
-│   │   ├── App.jsx
-│   │   └── index.css
-│   ├── package.json
-│   ├── vite.config.js
-│   └── Dockerfile
-│
-├── infrastructure/
-│   └── db/
-│       └── init.sql                  # SQL seed data
-├── scripts/
-│   └── seed_data.py                  # Script seed dữ liệu
-├── docker-compose.yml                # PostgreSQL + Redis
-├── start.sh                          # Script khởi động 1 lệnh
-└── README.md
-```
+### Yêu cầu
+- Docker & Docker Compose
+- Python 3.12+
+- Node.js 18+
 
----
-
-## 💻 Yêu cầu hệ thống
-
-| Công cụ | Phiên bản tối thiểu |
-|---|---|
-| Docker | 24.0+ |
-| Docker Compose | 2.0+ |
-| Python | 3.10+ |
-| Node.js | 18+ |
-| npm | 9+ |
-
----
-
-## 🚀 Hướng dẫn cài đặt
-
-### ⚡ Cách 1: Chạy tự động (khuyến nghị)
-
+### 1. Clone dự án
 ```bash
-chmod +x start.sh
-bash start.sh
+git clone https://github.com/doanhhd275-collab/Education-Management-System.git
+cd Education-Management-System
 ```
 
-Script sẽ tự động khởi động database, cài dependencies, seed dữ liệu và chạy cả backend lẫn frontend.
-
----
-
-### 🔧 Cách 2: Chạy thủ công từng bước
-
-#### Bước 1 — Khởi động Database (PostgreSQL + Redis)
-
+### 2. Khởi động Database (Docker)
 ```bash
-docker compose up -d
+docker-compose up -d
 ```
+> PostgreSQL chạy tại `localhost:5432`, DB: `hust_ems`, User: `ems_admin`, Pass: `ems_password123`
 
-Kiểm tra database đã sẵn sàng:
-
+### 3. Backend
 ```bash
-docker compose ps
-```
-
-#### Bước 2 — Thiết lập môi trường Python
-
-```bash
+# Tạo và kích hoạt virtual environment
 python3 -m venv venv
-source venv/bin/activate          # Linux / macOS
-# venv\Scripts\activate           # Windows
+source venv/bin/activate  # Linux/Mac
+# hoặc: venv\Scripts\activate  # Windows
 
+# Cài đặt dependencies
 pip install -r backend/requirements.txt
-```
 
-#### Bước 3 — Chạy Backend
+# Tạo file .env
+cp backend/.env.example backend/.env
+# Chỉnh sửa DATABASE_URL nếu cần
 
-```bash
+# Chạy server (tự động tạo bảng + migrate + seed dữ liệu)
 cd backend
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### Bước 4 — Seed dữ liệu mẫu *(chỉ chạy lần đầu)*
-
-```bash
-# Mở terminal mới
-source venv/bin/activate
-python scripts/seed_data.py
-```
-
-#### Bước 5 — Chạy Frontend
-
+### 4. Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
----
+### 5. Mở trình duyệt
+- **Frontend**: http://localhost:5173
+- **API Docs**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
 
-## 🌐 Địa chỉ truy cập
-
-| Service | URL |
-|---|---|
-| 🖥️ Frontend App | http://localhost:5173 |
-| ⚙️ Backend API | http://localhost:8000 |
-| 📘 Swagger UI (API Docs) | http://localhost:8000/docs |
-| 📗 ReDoc | http://localhost:8000/redoc |
-| 🗄️ Database | `postgresql://ems_admin:ems_password123@localhost:5432/hust_ems` |
-| 🔴 Redis | `redis://localhost:6379` |
+### 6. Script tự động (Linux)
+```bash
+chmod +x start.sh
+./start.sh
+```
 
 ---
 
-## 🔑 Tài khoản mặc định
+## Tài khoản mặc định
 
-| Email | Mật khẩu | Vai trò |
+> Mật khẩu mặc định: **`Admin@123`**
+
+| Role | Email | Ghi chú |
 |---|---|---|
-| `admin@ems.edu.vn` | `Admin@123` | 👑 Quản trị viên |
-| `teacher1@ems.edu.vn` | `Admin@123` | 👩‍🏫 Giáo viên |
-| `teacher2@ems.edu.vn` | `Admin@123` | 👩‍🏫 Giáo viên |
-| `student1@ems.edu.vn` | `Admin@123` | 🎓 Sinh viên |
-| `student2@ems.edu.vn` | `Admin@123` | 🎓 Sinh viên |
-
-> ⚠️ **Lưu ý**: Đổi mật khẩu mặc định trước khi triển khai lên môi trường production.
+| Admin | `admin@ems.edu.vn` | Toàn quyền hệ thống |
+| Giáo viên | `teacher1@ems.edu.vn` | Giảng viên mẫu |
+| Giáo viên | `teacher2@ems.edu.vn` | Giảng viên mẫu |
+| Sinh viên | `student1@ems.edu.vn` | Sinh viên mẫu (SV001) |
+| Sinh viên | `student2@ems.edu.vn` | Sinh viên mẫu |
 
 ---
 
-## 📋 Danh sách API
+## API Endpoints
 
-### Phân quyền theo vai trò
+Base URL: `http://localhost:8000/api/v1`
 
-| Ký hiệu | Vai trò |
-|---|---|
-| 🌐 `Public` | Không cần xác thực |
-| 👑 `ADMIN` | Chỉ quản trị viên |
-| 👩‍🏫 `TEACHER` | Giáo viên |
-| 🎓 `STUDENT` | Sinh viên |
-| ✅ `All` | Tất cả người dùng đã đăng nhập |
+### 🔐 Authentication
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `POST` | `/auth/login` | Đăng nhập, nhận JWT |
+| `POST` | `/auth/logout` | Đăng xuất |
+| `GET` | `/auth/me` | Thông tin user hiện tại |
 
-### Bảng API
+### 👥 Users
+| Method | Endpoint | Mô tả | Role |
+|---|---|---|---|
+| `GET` | `/users` | Danh sách users | ADMIN |
+| `POST` | `/users` | Tạo user mới | ADMIN |
+| `PUT` | `/users/{id}` | Cập nhật user | ADMIN |
+| `DELETE` | `/users/{id}` | Xóa user | ADMIN |
 
-| Module | Endpoint | Phương thức | Quyền | Mô tả |
-|---|---|---|---|---|
-| **Auth** | `/api/v1/auth/login` | POST | 🌐 Public | Đăng nhập, lấy JWT token |
-| **Auth** | `/api/v1/auth/me` | GET | ✅ All | Lấy thông tin người dùng hiện tại |
-| **Users** | `/api/v1/users` | GET / POST | 👑 ADMIN | Danh sách & tạo người dùng |
-| **Users** | `/api/v1/users/{id}` | GET / PUT / DELETE | 👑 ADMIN | Chi tiết, cập nhật, xóa |
-| **Students** | `/api/v1/students` | GET / POST | 👑 ADMIN, 👩‍🏫 TEACHER | Danh sách & tạo sinh viên |
-| **Students** | `/api/v1/students/{id}` | GET / PUT / DELETE | 👑 ADMIN | Chi tiết, cập nhật, xóa |
-| **Teachers** | `/api/v1/teachers` | GET / POST | 👑 ADMIN | Danh sách & tạo giáo viên |
-| **Teachers** | `/api/v1/teachers/{id}` | GET / PUT / DELETE | 👑 ADMIN | Chi tiết, cập nhật, xóa |
-| **Curriculum** | `/api/v1/curriculum` | GET / POST | ✅ All | Chương trình đào tạo |
-| **Courses** | `/api/v1/courses` | GET / POST | ✅ All | Môn học |
-| **Classes** | `/api/v1/classes` | GET / POST | ✅ All | Lớp học |
-| **Enrollments** | `/api/v1/enrollments` | GET / POST | ✅ All | Đăng ký học |
-| **Documents** | `/api/v1/documents` | GET / POST | ✅ All | Tài liệu học tập |
-| **Assignments** | `/api/v1/assignments` | GET / POST | ✅ All | Bài tập |
-| **Attendance** | `/api/v1/attendance` | GET / POST | ✅ All | Điểm danh |
-| **Logs** | `/api/v1/logs` | GET | 👑 ADMIN | Nhật ký hệ thống |
+### 🎓 Students
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `GET` | `/students` | Danh sách sinh viên |
+| `GET` | `/students/{id}` | Chi tiết sinh viên |
+| `PUT` | `/students/{id}` | Cập nhật thông tin |
 
-> 📘 Xem tài liệu API đầy đủ tại [Swagger UI](http://localhost:8000/docs)
+### 👨‍🏫 Teachers
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `GET` | `/teachers` | Danh sách giáo viên |
+| `GET` | `/teachers/me` | Thông tin GV đang đăng nhập |
+| `GET` | `/teachers/{id}/classes` | Lớp phụ trách |
+
+### 🏛️ Classes
+| Method | Endpoint | Mô tả | Role |
+|---|---|---|---|
+| `GET` | `/classes` | Danh sách lớp học | ALL |
+| `POST` | `/classes` | Tạo lớp học | ADMIN |
+| `GET` | `/classes/{course_id}/{class_id}` | Chi tiết lớp | ALL |
+| `PUT` | `/classes/{course_id}/{class_id}` | Cập nhật lớp (lịch, phòng) | ADMIN |
+| `DELETE` | `/classes/{course_id}/{class_id}` | Xóa lớp | ADMIN |
+| `POST` | `/classes/{course_id}/{class_id}/teachers` | Gán giáo viên | ADMIN |
+| `GET` | `/classes/timetable/teacher` | Thời khóa biểu GV | TEACHER |
+| `GET` | `/classes/timetable/student` | Thời khóa biểu SV | STUDENT |
+
+### 📝 Enrollments
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `GET` | `/enrollments` | Danh sách đăng ký |
+| `POST` | `/enrollments` | Đăng ký lớp học |
+| `DELETE` | `/enrollments/{id}` | Hủy đăng ký |
+
+### ✅ Attendance
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `GET` | `/attendance/class/{class_id}` | Lịch sử điểm danh |
+| `POST` | `/attendance` | Tạo buổi điểm danh |
+| `PUT` | `/attendance/{id}` | Cập nhật điểm danh |
+
+### 📊 Grading
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `GET` | `/grading/{course_id}/{class_id}` | Bảng điểm lớp |
+| `POST/PUT` | `/grading` | Nhập/cập nhật điểm |
+
+### 📚 Assignments
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| `GET` | `/assignments` | Danh sách bài tập |
+| `POST` | `/assignments` | Tạo bài tập |
+| `POST` | `/assignments/{id}/submit` | Nộp bài (link URL) |
+| `GET` | `/assignments/{id}/submissions` | Xem bài nộp |
 
 ---
 
-## ✨ Các tính năng chính
+## Cấu trúc dự án
 
-### 🔒 Bảo mật
-- Xác thực JWT (JSON Web Token)
-- Phân quyền theo vai trò (RBAC): Admin / Teacher / Student
-- Mật khẩu băm bằng bcrypt
-- Protected routes trên frontend
-
-### 🗄️ Dữ liệu
-- ORM với SQLAlchemy 2.0 (async-ready)
-- Migration database bằng Alembic
-- Seed dữ liệu mẫu tự động
-- PostgreSQL 15 với persistent volume
-
-### 🖥️ Giao diện
-- SPA (Single Page Application) với React 18
-- Routing phía client với React Router v6
-- Responsive layout
-- 15 trang quản lý khác nhau
-
-### ⚡ Hiệu năng
-- Redis cache layer
-- ASGI server với Uvicorn
-- Vite cho frontend build cực nhanh
+```
+Education-Management-System/
+├── backend/                    # FastAPI backend
+│   ├── app/
+│   │   ├── api/v1/             # Endpoints
+│   │   │   ├── auth.py         # Authentication
+│   │   │   ├── classes.py      # Lớp học + Thời khóa biểu
+│   │   │   ├── users.py        # Quản lý người dùng
+│   │   │   ├── students.py     # Sinh viên
+│   │   │   ├── teachers.py     # Giáo viên
+│   │   │   ├── courses.py      # Môn học
+│   │   │   ├── curriculum.py   # Chương trình đào tạo
+│   │   │   ├── enrollments.py  # Đăng ký học
+│   │   │   ├── attendance.py   # Điểm danh
+│   │   │   ├── assignments.py  # Bài tập
+│   │   │   ├── documents.py    # Tài liệu
+│   │   │   ├── logs.py         # Nhật ký hệ thống
+│   │   │   └── grading.py      # Điểm số (nếu có)
+│   │   ├── core/
+│   │   │   ├── database.py     # SQLAlchemy engine/session
+│   │   │   ├── dependencies.py # get_db, get_current_user, require_role
+│   │   │   ├── security.py     # JWT, bcrypt
+│   │   │   └── seed.py         # Seed dữ liệu mặc định
+│   │   ├── models/
+│   │   │   └── user.py         # Tất cả ORM models
+│   │   ├── schemas/            # Pydantic schemas
+│   │   └── main.py             # FastAPI app, lifespan, migrations
+│   ├── requirements.txt
+│   └── .env                    # DATABASE_URL, JWT_SECRET_KEY, etc.
+│
+├── frontend/                   # React frontend
+│   ├── src/
+│   │   ├── api/index.js        # Axios API client
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx # Auth state management
+│   │   ├── components/
+│   │   │   └── Layout/         # Sidebar, Layout, ProtectedRoute
+│   │   ├── pages/
+│   │   │   ├── Dashboard/      # Tổng quan
+│   │   │   ├── Classes/        # Quản lý lớp học (Admin)
+│   │   │   ├── Timetable/      # Thời khóa biểu (GV + SV)
+│   │   │   ├── Attendance/     # Điểm danh
+│   │   │   ├── Assignments/    # Bài tập
+│   │   │   ├── Grading/        # Điểm số
+│   │   │   ├── Enrollment/     # Đăng ký học
+│   │   │   └── ...             # Các trang khác
+│   │   ├── App.jsx             # Router configuration
+│   │   └── index.css           # Global styles (dark theme)
+│   └── package.json
+│
+├── infrastructure/
+│   ├── db/init.sql             # PostgreSQL init script
+│   └── nginx/default.conf      # Nginx reverse proxy config
+│
+├── scripts/
+│   ├── seed_data.py            # Seed dữ liệu mẫu
+│   └── gen_password.py         # Tạo hash password
+│
+├── docker-compose.yml          # PostgreSQL container
+└── start.sh                    # Script khởi động tự động
+```
 
 ---
 
-## 🔧 Xử lý sự cố
+## Deploy Production
 
-### ❌ Lỗi "Module not found" hoặc `ImportError`
+### Render.com
+
+**Backend (Web Service)**:
+- Build Command: `pip install -r backend/requirements.txt`
+- Start Command: `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- Environment Variables:
+  ```
+  DATABASE_URL=postgresql://...
+  JWT_SECRET_KEY=<your-secure-secret>
+  FRONTEND_URL=https://your-frontend.onrender.com
+  ENVIRONMENT=production
+  ```
+
+**Frontend (Static Site)**:
+- Build Command: `cd frontend && npm install && npm run build`
+- Publish Directory: `frontend/dist`
+- Environment Variables:
+  ```
+  VITE_API_BASE_URL=https://your-backend.onrender.com
+  ```
+
+### Docker Compose (Self-hosted)
+```bash
+# Production với Nginx
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+---
+
+## ⚙️ Biến môi trường Backend
+
+| Biến | Mô tả | Mặc định |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://ems_admin:ems_password123@localhost:5432/hust_ems` |
+| `JWT_SECRET_KEY` | Khóa bí mật JWT | `hust-ems-super-secret-key` |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Thời gian hết hạn token | `60` |
+| `FRONTEND_URL` | URL frontend (CORS) | `http://localhost:5173` |
+| `ENVIRONMENT` | Môi trường | `development` |
+
+---
+
+## 🔄 Quy trình tạo lớp học
+
+```
+1. Admin tạo Môn học  →  /courses
+2. Admin tạo Lớp học  →  /classes (gồm: mã lớp, học kỳ, phòng học, lịch học)
+3. Admin Gán GV       →  POST /classes/{course_id}/{class_id}/teachers
+4. Sinh viên Đăng ký  →  POST /enrollments
+5. GV điểm danh       →  POST /attendance
+6. GV nhập điểm       →  POST /grading
+```
+
+---
+
+## 🐛 Lỗi đã biết & Giải pháp
+
+| Vấn đề | Nguyên nhân | Giải pháp |
+|---|---|---|
+| Timetable 500 error | `Student.student_id` không tồn tại | Dùng `Student.user_id` |
+| Teacher timetable rỗng | Query dùng `teacher_id` thay vì `user_id` | Fix: `Teacher.user_id == current_user.user_id` |
+| Route 404 với static path | FastAPI match param route trước | Khai báo static routes trước `/{param}` |
+| JWT hết hạn | Token 60 phút | Frontend tự động redirect về login |
+
+---
+
+## 👨‍💻 Phát triển
 
 ```bash
-source venv/bin/activate
-pip install -r backend/requirements.txt
-```
+# Chạy backend với hot-reload
+uvicorn app.main:app --reload --port 8000
 
-### ❌ Lỗi kết nối Database
+# Chạy frontend với hot-reload
+npm run dev
 
-```bash
-# Khởi động lại container
-docker compose down && docker compose up -d
+# Xem API documentation
+open http://localhost:8000/docs
 
-# Kiểm tra log database
-docker logs hust_ems_db
-```
-
-### ❌ Lỗi CORS
-
-Kiểm tra file `backend/app/main.py`, đảm bảo `allow_origins` chứa:
-
-```python
-allow_origins=["http://localhost:5173"]
-```
-
-### ❌ Frontend không kết nối được API
-
-Kiểm tra file `frontend/src/api/` — đảm bảo `baseURL` trỏ đúng về `http://localhost:8000`.
-
-### ❌ Port đã được sử dụng
-
-```bash
-# Tìm process đang dùng port 8000
-lsof -i :8000
-kill -9 <PID>
-
-# Tìm process đang dùng port 5173
-lsof -i :5173
-kill -9 <PID>
+# Reset database
+docker-compose down -v && docker-compose up -d
 ```
 
 ---
 
-## 📄 Giấy phép
+## 📄 License
 
-Dự án được phát triển phục vụ mục đích học tập và nghiên cứu.
+MIT License — Free to use for educational purposes.
 
 ---
 
-<div align="center">
-  <strong>EMS — Education Management System</strong><br/>
-  FastAPI · React · PostgreSQL · Redis · Docker
-</div>
+*Được xây dựng cho dự án môn học tại Đại học Bách khoa Hà Nội (HUST)*
