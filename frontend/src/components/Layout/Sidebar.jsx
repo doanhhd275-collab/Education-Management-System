@@ -39,9 +39,9 @@ const ALL_NAV_ITEMS = [
       { path: "/curriculum",  icon: "📚", label: "Chương trình", roles: ["ADMIN"] },
       { path: "/courses",     icon: "📖", label: "Môn học",       roles: ["ADMIN"] },
       { path: "/classes",     icon: "🏛️", label: "Lớp học",      roles: ["ADMIN"] },
-      { path: "/enrollments", icon: "📝", label: "Đăng ký học",  roles: ["ADMIN"] },
     ],
   },
+
 
   // ── Teacher: Quản lý sinh viên ───────────────────────────────
   {

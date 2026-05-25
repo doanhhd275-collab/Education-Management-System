@@ -68,23 +68,23 @@ function App() {
               <ProtectedRoute roles={["ADMIN", "TEACHER"]}><GradingPage /></ProtectedRoute>
             } />
 
-            {/* ── Teacher + Student ── */}
+            {/* ── Teacher + Student + Admin ── */}
             <Route path="/classes" element={
-              <ProtectedRoute roles={["TEACHER", "STUDENT"]}><ClassesPage /></ProtectedRoute>
+              <ProtectedRoute roles={["ADMIN", "TEACHER", "STUDENT"]}><ClassesPage /></ProtectedRoute>
             } />
             <Route path="/documents" element={
-              <ProtectedRoute roles={["TEACHER", "STUDENT"]}><DocumentsPage /></ProtectedRoute>
+              <ProtectedRoute roles={["ADMIN", "TEACHER", "STUDENT"]}><DocumentsPage /></ProtectedRoute>
             } />
             <Route path="/assignments" element={
-              <ProtectedRoute roles={["TEACHER", "STUDENT"]}><AssignmentsPage /></ProtectedRoute>
+              <ProtectedRoute roles={["ADMIN", "TEACHER", "STUDENT"]}><AssignmentsPage /></ProtectedRoute>
             } />
             <Route path="/attendance" element={
-              <ProtectedRoute roles={["TEACHER", "STUDENT"]}><AttendancePage /></ProtectedRoute>
+              <ProtectedRoute roles={["ADMIN", "TEACHER", "STUDENT"]}><AttendancePage /></ProtectedRoute>
             } />
 
             {/* ── Student only ── */}
             <Route path="/enrollments" element={
-              <ProtectedRoute roles={["STUDENT"]}><EnrollmentsPage /></ProtectedRoute>
+              <ProtectedRoute roles={["STUDENT", "ADMIN"]}><EnrollmentsPage /></ProtectedRoute>
             } />
           </Route>
 
