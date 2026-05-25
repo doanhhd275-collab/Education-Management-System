@@ -10,7 +10,7 @@ Endpoints:
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_db, get_current_user, require_role
+from app.core.dependencies import get_db, get_current_user
 from app.models.user import Document, Teacher, User
 from app.schemas.assignment import DocumentCreate, DocumentUpdate, DocumentResponse
 
@@ -32,12 +32,9 @@ def list_documents(
 ):
     """Lấy danh sách tài liệu học tập."""
     query = db.query(Document)
-
     if teacher_id:
         query = query.filter(Document.teacher_id == teacher_id)
-
-    documents = query.offset((page - 1) * page_size).limit(page_size).all()
-    return documents
+    return query.offset((page - 1) * page_size).limit(page_size).all()
 
 
 @router.post("", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
@@ -48,23 +45,27 @@ def create_document(
 ):
     """
     Đăng tài liệu mới. TEACHER hoặc ADMIN.
-    Giáo viên chỉ được đăng với teacher_id của chính mình.
+    - Teacher: teacher_id tự động lấy từ tài khoản đang đăng nhập (không cần nhập).
+    - Admin: có thể chỉ định teacher_id tùy ý.
     """
     role_ids = [ur.role_id for ur in current_user.user_roles]
 
     # Kiểm tra quyền
-    if "TEACHER" not in role_names and "ADMIN" not in role_names:
+    if "TEACHER" not in role_ids and "ADMIN" not in role_ids:
         raise HTTPException(status_code=403, detail="Chỉ giáo viên hoặc admin mới được đăng tài liệu")
 
-    # Giáo viên chỉ đăng dưới tên mình
-    if "TEACHER" in role_ids and "ADMIN" not in role_names:
+    # Xác định teacher_id sẽ lưu
+    if "TEACHER" in role_ids and "ADMIN" not in role_ids:
+        # Giáo viên: luôn dùng teacher_id của bản thân, bỏ qua giá trị truyền vào
         teacher = _get_teacher_by_user(db, current_user.user_id)
-        if not teacher or teacher.teacher_id != data.teacher_id:
-            raise HTTPException(status_code=403, detail="Bạn chỉ được đăng tài liệu với TeacherID của bản thân")
-
-    # Kiểm tra teacher_id tồn tại
-    if not db.query(Teacher).filter(Teacher.teacher_id == data.teacher_id).first():
-        raise HTTPException(status_code=404, detail="Không tìm thấy giáo viên")
+        if not teacher:
+            raise HTTPException(status_code=400, detail="Tài khoản của bạn chưa được liên kết với hồ sơ giáo viên")
+        teacher_id = teacher.teacher_id
+    else:
+        # Admin: dùng teacher_id từ request (optional)
+        teacher_id = data.teacher_id
+        if teacher_id and not db.query(Teacher).filter(Teacher.teacher_id == teacher_id).first():
+            raise HTTPException(status_code=404, detail="Không tìm thấy giáo viên")
 
     # Kiểm tra document_id chưa tồn tại
     if db.query(Document).filter(Document.document_id == data.document_id).first():
@@ -74,7 +75,8 @@ def create_document(
         document_id=data.document_id,
         document_name=data.document_name,
         deadline=data.deadline,
-        teacher_id=data.teacher_id
+        teacher_id=teacher_id,
+        link_url=data.link_url,
     )
     db.add(doc)
     db.commit()
@@ -110,7 +112,7 @@ def update_document(
     role_ids = [ur.role_id for ur in current_user.user_roles]
 
     # Giáo viên chỉ sửa tài liệu của mình
-    if "TEACHER" in role_ids and "ADMIN" not in role_names:
+    if "TEACHER" in role_ids and "ADMIN" not in role_ids:
         teacher = _get_teacher_by_user(db, current_user.user_id)
         if not teacher or doc.teacher_id != teacher.teacher_id:
             raise HTTPException(status_code=403, detail="Bạn chỉ được sửa tài liệu của mình")
@@ -135,7 +137,7 @@ def delete_document(
         raise HTTPException(status_code=404, detail="Không tìm thấy tài liệu")
 
     role_ids = [ur.role_id for ur in current_user.user_roles]
-    if "TEACHER" in role_ids and "ADMIN" not in role_names:
+    if "TEACHER" in role_ids and "ADMIN" not in role_ids:
         teacher = _get_teacher_by_user(db, current_user.user_id)
         if not teacher or doc.teacher_id != teacher.teacher_id:
             raise HTTPException(status_code=403, detail="Bạn chỉ được xóa tài liệu của mình")

@@ -66,7 +66,11 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     # Tạm thời mở rào cho tất cả (*) để test Vercel dễ dàng
-    allow_origins=["*"], 
+    allow_origins=[
+        "http://localhost:5173", # Để dành cho bạn test local
+        "http://localhost:3000",
+        "https://education-management-system-gfuduudvz.vercel.app" # <--- TÊN MIỀN VERCEL CỦA BẠN (Tuyệt đối KHÔNG có dấu / ở cuối)
+    ], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

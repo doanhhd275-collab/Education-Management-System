@@ -288,6 +288,7 @@ class Assignment(Base):
     course_id       = Column("CourseID",       String(10), nullable=False)
     teacher_id      = Column("TeacherID",      String(10))           # link to TeacherClass
     semester        = Column("Semester",       String(10))           # link to TeacherClass
+    link_url        = Column("LinkURL",        String(500))          # Link đến bài tập
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -384,8 +385,9 @@ class Document(Base):
 
     document_id   = Column("DocumentID",   String(10), primary_key=True)
     document_name = Column("DocumentName", String(50), nullable=False)
-    deadline      = Column("Deadline",     DateTime)              # ERD: Deadline DATETIME
+    deadline      = Column("Deadline",     DateTime)
     teacher_id    = Column("TeacherID",    String(10), ForeignKey("teachers.TeacherID"))
+    link_url      = Column("LinkURL",      String(500))  # Link đến tài liệu
 
     # relationships
     teacher = relationship("Teacher", back_populates="documents")

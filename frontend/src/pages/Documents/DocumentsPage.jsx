@@ -1,24 +1,41 @@
 /**
  * Trang Tài liệu học tập
+ * - Teacher: đăng tài liệu (teacher_id tự động từ tài khoản)
+ * - Student/All: xem và mở link tài liệu
  */
 import { useState, useEffect } from "react";
 import { documentsApi } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 
-function CreateDocModal({ teacherId, onClose, onCreated }) {
-  const [form, setForm] = useState({ document_id: "", document_name: "", teacher_id: teacherId || "" });
+function CreateDocModal({ onClose, onCreated }) {
+  const [form, setForm] = useState({
+    document_id: "",
+    document_name: "",
+    link_url: "",
+    deadline: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
     try {
-      await documentsApi.create(form);
-      onCreated(); onClose();
+      // teacher_id được backend tự lấy từ JWT — không cần gửi
+      await documentsApi.create({
+        document_id: form.document_id,
+        document_name: form.document_name,
+        link_url: form.link_url || undefined,
+        deadline: form.deadline || undefined,
+      });
+      onCreated();
+      onClose();
     } catch (err) {
       setError(err.response?.data?.detail || "Tạo tài liệu thất bại");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,18 +50,43 @@ function CreateDocModal({ teacherId, onClose, onCreated }) {
           <form id="doc-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Mã tài liệu *</label>
-              <input className="form-input" placeholder="VD: DOC010" required
-                value={form.document_id} onChange={(e) => setForm({...form, document_id: e.target.value})} />
+              <input
+                className="form-input"
+                placeholder="VD: DOC010"
+                required
+                maxLength={10}
+                value={form.document_id}
+                onChange={(e) => setForm({ ...form, document_id: e.target.value })}
+              />
             </div>
             <div className="form-group">
               <label className="form-label">Tên tài liệu *</label>
-              <input className="form-input" placeholder="VD: Slide bài giảng Tuần 1" required
-                value={form.document_name} onChange={(e) => setForm({...form, document_name: e.target.value})} />
+              <input
+                className="form-input"
+                placeholder="VD: Slide bài giảng Tuần 1"
+                required
+                value={form.document_name}
+                onChange={(e) => setForm({ ...form, document_name: e.target.value })}
+              />
             </div>
             <div className="form-group">
-              <label className="form-label">Mã giáo viên *</label>
-              <input className="form-input" placeholder="VD: T001" required
-                value={form.teacher_id} onChange={(e) => setForm({...form, teacher_id: e.target.value})} />
+              <label className="form-label">Link tài liệu</label>
+              <input
+                className="form-input"
+                type="url"
+                placeholder="https://drive.google.com/..."
+                value={form.link_url}
+                onChange={(e) => setForm({ ...form, link_url: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Hạn (tuỳ chọn)</label>
+              <input
+                className="form-input"
+                type="datetime-local"
+                value={form.deadline}
+                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+              />
             </div>
           </form>
         </div>
@@ -60,7 +102,7 @@ function CreateDocModal({ teacherId, onClose, onCreated }) {
 }
 
 export default function DocumentsPage() {
-  const { isTeacher, isAdmin, user } = useAuth();
+  const { isTeacher, isAdmin } = useAuth();
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -72,8 +114,11 @@ export default function DocumentsPage() {
     try {
       const res = await documentsApi.list(null, 1, 100);
       setDocs(res.data);
-    } catch { setError("Không thể tải tài liệu"); }
-    finally { setLoading(false); }
+    } catch {
+      setError("Không thể tải tài liệu");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { loadDocs(); }, []);
@@ -83,7 +128,9 @@ export default function DocumentsPage() {
     try {
       await documentsApi.delete(docId);
       setDocs((prev) => prev.filter((d) => d.document_id !== docId));
-    } catch (err) { setError(err.response?.data?.detail || "Xóa thất bại"); }
+    } catch (err) {
+      setError(err.response?.data?.detail || "Xóa thất bại");
+    }
   };
 
   const filtered = docs.filter((d) =>
@@ -110,8 +157,12 @@ export default function DocumentsPage() {
       <div className="search-bar">
         <div className="search-input-wrapper">
           <span className="search-icon">🔍</span>
-          <input className="form-input" placeholder="Tìm tài liệu..."
-            value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input
+            className="form-input"
+            placeholder="Tìm tài liệu..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
 
@@ -127,16 +178,42 @@ export default function DocumentsPage() {
           {filtered.map((doc) => (
             <div key={doc.document_id} className="card" style={{ position: "relative" }}>
               <div style={{ fontSize: 32, marginBottom: 10 }}>📄</div>
-              <div style={{ fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
+              <div style={{ fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>
                 {doc.document_name}
               </div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 8 }}>
                 ID: <span className="badge badge-muted">{doc.document_id}</span>
-                {" · "}Giáo viên: <span className="badge badge-primary">{doc.teacher_id}</span>
+                {" · "}Giáo viên: <span className="badge badge-primary">{doc.teacher_id || "—"}</span>
               </div>
+              {doc.deadline && (
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 8 }}>
+                  📅 Hạn: {new Date(doc.deadline).toLocaleDateString("vi-VN")}
+                </div>
+              )}
+
+              {/* Link tài liệu */}
+              {doc.link_url ? (
+                <a
+                  href={doc.link_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary btn-sm"
+                  style={{ display: "inline-block", marginBottom: 8 }}
+                >
+                  🔗 Mở tài liệu
+                </a>
+              ) : (
+                <span style={{ fontSize: 12, color: "var(--text-muted)", display: "block", marginBottom: 8 }}>
+                  Chưa có link
+                </span>
+              )}
+
               {(isTeacher || isAdmin) && (
-                <button className="btn btn-danger btn-sm" style={{ marginTop: 12 }}
-                  onClick={() => handleDelete(doc.document_id)}>
+                <button
+                  className="btn btn-danger btn-sm"
+                  style={{ marginTop: 4 }}
+                  onClick={() => handleDelete(doc.document_id)}
+                >
                   🗑️ Xóa
                 </button>
               )}

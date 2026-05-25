@@ -59,7 +59,8 @@ def create_assignment(
         class_id=data.class_id,
         course_id=data.course_id,
         teacher_id=data.teacher_id,
-        semester=data.semester
+        semester=data.semester,
+        link_url=data.link_url,
     )
     db.add(assignment)
     db.commit()
@@ -146,7 +147,7 @@ def submit_assignment(
     role_ids = [ur.role_id for ur in current_user.user_roles]
 
     # Sinh viên chỉ nộp cho bản thân
-    if "STUDENT" in role_ids and "ADMIN" not in role_names:
+    if "STUDENT" in role_ids and "ADMIN" not in role_ids:
         if data.student_id != current_user.user_id:
             raise HTTPException(status_code=403, detail="Bạn chỉ được nộp bài cho bản thân")
 

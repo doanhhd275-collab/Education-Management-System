@@ -68,7 +68,7 @@ def mark_attendance(
 def get_attendance(
     class_id: str | None    = Query(None, description="Lọc theo lớp"),
     course_id: str | None   = Query(None, description="Lọc theo môn"),
-    student_id: str | None  = Query(None, description="Lọc theo sinh viên"),
+    student_id: str | None  = Query(None, description="Lọc theo sinh viên (chỉ TEACHER/ADMIN)"),
     from_date: datetime | None = Query(None, description="Từ ngày (ISO format)"),
     to_date: datetime | None   = Query(None, description="Đến ngày (ISO format)"),
     db: Session = Depends(get_db),
@@ -76,16 +76,20 @@ def get_attendance(
 ):
     """
     Xem lịch sử điểm danh.
-    - STUDENT: tự động lọc theo mình
-    - TEACHER/ADMIN: lọc tùy ý
+    - STUDENT: tự động lọc theo mình (chỉ xem của bản thân, không thể lọc người khác)
+    - TEACHER/ADMIN: lọc tùy ý theo student_id, class_id, course_id, ngày
     """
     query = db.query(LessonReport)
 
-    # Sinh viên chỉ xem của mình
+    # Lấy danh sách role của user hiện tại
     role_ids = [ur.role_id for ur in current_user.user_roles]
-    if "STUDENT" in role_ids and "ADMIN" not in role_names and "TEACHER" not in role_names:
+    is_student_only = "STUDENT" in role_ids and "ADMIN" not in role_ids and "TEACHER" not in role_ids
+
+    if is_student_only:
+        # Sinh viên chỉ xem được điểm danh của chính mình — bỏ qua student_id từ query param
         query = query.filter(LessonReport.student_id == current_user.user_id)
     else:
+        # TEACHER / ADMIN: lọc theo student_id nếu truyền vào
         if student_id:
             query = query.filter(LessonReport.student_id == student_id)
 
@@ -98,7 +102,7 @@ def get_attendance(
     if to_date:
         query = query.filter(LessonReport.day <= to_date)
 
-    return query.all()
+    return query.order_by(LessonReport.day.desc()).all()
 
 
 @router.put("/{class_id}/{day}/{student_id}/{lesson_id}", response_model=LessonReportResponse)
