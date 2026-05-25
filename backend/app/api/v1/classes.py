@@ -195,7 +195,9 @@ def update_class(
     if not class_:
         raise HTTPException(status_code=404, detail="Không tìm thấy lớp học")
 
-    for field, value in data.model_dump(exclude_none=True).items():
+    # Dùng exclude_unset=False để cho phép set null (xóa lịch)
+    update_data = data.model_dump()
+    for field, value in update_data.items():
         setattr(class_, field, value)
 
     db.commit()

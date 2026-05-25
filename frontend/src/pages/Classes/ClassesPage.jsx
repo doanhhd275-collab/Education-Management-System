@@ -128,7 +128,101 @@ function CreateClassModal({ onClose, onCreated }) {
   );
 }
 
-// ── Modal Gán giáo viên ───────────────────────────────────────
+// ── Modal Sửa lịch học ─────────────────────────────────────────
+function EditScheduleModal({ class_, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    day_of_week:  class_.day_of_week  || "",
+    start_period: class_.start_period || "",
+    end_period:   class_.end_period   || "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (form.start_period && form.end_period && Number(form.end_period) < Number(form.start_period)) {
+      setError("Tiết kết thúc phải ≥ tiết bắt đầu");
+      return;
+    }
+    setLoading(true); setError("");
+    try {
+      await classesApi.update(class_.course_id, class_.class_id, {
+        day_of_week:  form.day_of_week  || null,
+        start_period: form.start_period ? Number(form.start_period) : null,
+        end_period:   form.end_period   ? Number(form.end_period)   : null,
+      });
+      onSaved(); onClose();
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      setError(Array.isArray(detail)
+        ? detail.map((d) => d.msg || JSON.stringify(d)).join("; ")
+        : (typeof detail === "string" ? detail : "Cập nhật thất bại"));
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">📅 Sửa lịch học</h2>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          <p style={{ color: "var(--text-secondary)", marginBottom: 16, fontSize: 13 }}>
+            Lớp: <strong>{class_.class_id}</strong> · Môn: <strong>{class_.course_id}</strong>
+          </p>
+          <form id="edit-schedule-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">Thứ học</label>
+              <select className="form-select"
+                value={form.day_of_week}
+                onChange={(e) => setForm({...form, day_of_week: e.target.value})}>
+                <option value="">— Chưa xếp lịch —</option>
+                {Object.entries(DAY_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>{l}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="form-group">
+                <label className="form-label">Tiết bắt đầu</label>
+                <select className="form-select"
+                  value={form.start_period}
+                  onChange={(e) => setForm({...form, start_period: e.target.value, end_period: e.target.value || ""})}>
+                  <option value="">— Chưa xếp —</option>
+                  {PERIODS.map(p => <option key={p} value={p}>{periodLabel(p)}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Tiết kết thúc</label>
+                <select className="form-select"
+                  value={form.end_period}
+                  onChange={(e) => setForm({...form, end_period: e.target.value})}>
+                  <option value="">— Chưa xếp —</option>
+                  {PERIODS.filter(p => !form.start_period || p >= Number(form.start_period)).map(p => (
+                    <option key={p} value={p}>{periodLabel(p)}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="alert" style={{ background: "rgba(99,102,241,0.08)", borderColor: "var(--accent)", fontSize: 12 }}>
+              💡 Lịch học sẽ hiển thị trong Thời khóa biểu của giáo viên và sinh viên.
+            </div>
+          </form>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Hủy</button>
+          <button className="btn btn-primary" form="edit-schedule-form" type="submit" disabled={loading}>
+            {loading ? "Đang lưu..." : "💾 Lưu lịch học"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal Gán giáo viên ─────────────────────────────────────────
 function AssignTeacherModal({ class_, onClose, onAssigned }) {
   const [teachers, setTeachers] = useState([]);
   const [form, setForm] = useState({ teacher_id: "", semester: class_.semester || "" });
@@ -217,7 +311,8 @@ export default function ClassesPage() {
   const [search, setSearch] = useState("");
   const [semesterFilter, setSemesterFilter] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [assignTarget, setAssignTarget] = useState(null); // lớp đang gán giáo viên
+  const [assignTarget, setAssignTarget] = useState(null);      // lớp đang gán GV
+  const [scheduleTarget, setScheduleTarget] = useState(null);  // lớp đang sửa lịch
   const [error, setError] = useState("");
 
   const loadClasses = async () => {
@@ -303,10 +398,11 @@ export default function ClassesPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Mã lớp</th>
+              <th>Mã lớp</th>
                   <th>Mã môn</th>
                   <th>Học kỳ</th>
                   <th style={{ textAlign: "center" }}>Sĩ số tối đa</th>
+                  <th style={{ textAlign: "center" }}>Lịch học</th>
                   {isAdmin && <th style={{ textAlign: "center" }}>Hành động</th>}
                 </tr>
               </thead>
@@ -321,9 +417,31 @@ export default function ClassesPage() {
                         : <span style={{ color: "var(--text-muted)" }}>—</span>}
                     </td>
                     <td style={{ textAlign: "center" }}>{c.capacity ?? "—"}</td>
+                    {/* Cột lịch học */}
+                    <td style={{ textAlign: "center", fontSize: 12 }}>
+                      {c.day_of_week && c.start_period ? (
+                        <div>
+                          <span className="badge badge-info" style={{ marginBottom: 2 }}>
+                            {DAY_LABELS[c.day_of_week]}
+                          </span>
+                          <div style={{ color: "var(--text-muted)", marginTop: 2 }}>
+                            Tiết {c.start_period}{c.end_period !== c.start_period ? `–${c.end_period}` : ""}
+                          </div>
+                        </div>
+                      ) : (
+                        <span style={{ color: "var(--text-muted)" }}>Chưa có lịch</span>
+                      )}
+                    </td>
                     {isAdmin && (
                       <td style={{ textAlign: "center" }}>
-                        <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                        <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            title="Sửa lịch học"
+                            onClick={() => setScheduleTarget(c)}
+                          >
+                            📅 Lịch
+                          </button>
                           <button
                             className="btn btn-secondary btn-sm"
                             title="Gán giáo viên vào lớp này"
@@ -357,6 +475,14 @@ export default function ClassesPage() {
           class_={assignTarget}
           onClose={() => setAssignTarget(null)}
           onAssigned={loadClasses}
+        />
+      )}
+
+      {scheduleTarget && (
+        <EditScheduleModal
+          class_={scheduleTarget}
+          onClose={() => setScheduleTarget(null)}
+          onSaved={loadClasses}
         />
       )}
     </div>
