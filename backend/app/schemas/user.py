@@ -76,7 +76,7 @@ class UserRoleResponse(UserRoleCreate):
 # ============================================================
 
 class StudentBase(BaseModel):
-    program_id:           str            = Field(..., max_length=10)
+    program_id:           Optional[str]   = Field(None, max_length=10)
     cpa:                  Optional[float] = None
     gpa:                  Optional[float] = None
     warning_level:        Optional[int]   = None
