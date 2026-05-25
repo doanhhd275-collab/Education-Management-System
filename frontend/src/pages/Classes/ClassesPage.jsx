@@ -23,7 +23,12 @@ function CreateClassModal({ onClose, onCreated }) {
       await classesApi.create({ ...form, capacity: form.capacity ? Number(form.capacity) : undefined });
       onCreated(); onClose();
     } catch (err) {
-      setError(err.response?.data?.detail || "Tạo lớp thất bại");
+      const detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        setError(detail.map((d) => d.msg || JSON.stringify(d)).join("; "));
+      } else {
+        setError(typeof detail === "string" ? detail : "Tạo lớp thất bại");
+      }
     } finally { setLoading(false); }
   };
 
@@ -92,12 +97,23 @@ function AssignTeacherModal({ class_, onClose, onAssigned }) {
       await classesApi.assignTeacher(class_.course_id, class_.class_id, {
         teacher_id: form.teacher_id,
         semester: form.semester,
+        // Bắt buộc gửi kèm vì schema yêu cầu
+        class_id: class_.class_id,
+        course_id: class_.course_id,
       });
       onAssigned();
       onClose();
     } catch (err) {
-      setError(err.response?.data?.detail || "Gán giáo viên thất bại");
-    } finally { setLoading(false); }
+      const detail = err.response?.data?.detail;
+      // detail có thể là string hoặc array (FastAPI 422)
+      if (Array.isArray(detail)) {
+        setError(detail.map((d) => d.msg || JSON.stringify(d)).join("; "));
+      } else {
+        setError(typeof detail === "string" ? detail : "Gán giáo viên thất bại");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
