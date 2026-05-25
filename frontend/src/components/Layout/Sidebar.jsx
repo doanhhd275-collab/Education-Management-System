@@ -36,8 +36,10 @@ const ALL_NAV_ITEMS = [
   {
     section: "Chương trình đào tạo",
     items: [
-      { path: "/curriculum", icon: "📚", label: "Chương trình", roles: ["ADMIN"] },
-      { path: "/courses",    icon: "📖", label: "Môn học",       roles: ["ADMIN"] },
+      { path: "/curriculum",  icon: "📚", label: "Chương trình", roles: ["ADMIN"] },
+      { path: "/courses",     icon: "📖", label: "Môn học",       roles: ["ADMIN"] },
+      { path: "/classes",     icon: "🏛️", label: "Lớp học",      roles: ["ADMIN"] },
+      { path: "/enrollments", icon: "📝", label: "Đăng ký học",  roles: ["ADMIN"] },
     ],
   },
 
@@ -53,9 +55,9 @@ const ALL_NAV_ITEMS = [
   {
     section: "Quản lý lớp học",
     items: [
-      { path: "/classes",  icon: "🏛️", label: "Lớp học",    roles: ["TEACHER"] },
-      { path: "/grading",  icon: "✏️", label: "Nhập điểm",  roles: ["TEACHER"] },
-      { path: "/attendance",icon: "✅", label: "Điểm danh",  roles: ["TEACHER"] },
+      { path: "/classes",   icon: "🏛️", label: "Lớp học",   roles: ["TEACHER"] },
+      { path: "/grading",   icon: "✏️", label: "Nhập điểm", roles: ["TEACHER"] },
+      { path: "/attendance", icon: "✅", label: "Điểm danh", roles: ["TEACHER"] },
     ],
   },
 
@@ -86,6 +88,7 @@ const ALL_NAV_ITEMS = [
     ],
   },
 ];
+
 
 export default function Sidebar() {
   const { user, roles, logout } = useAuth();
