@@ -77,6 +77,88 @@ def create_class(
     return new_class
 
 
+# ── Thời khóa biểu (phải đầu trước các route /{course_id}/... để không bị che) ──
+
+@router.get("/timetable/teacher", tags=["Thời khóa biểu"])
+def teacher_timetable(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Trả về thời khóa biểu của giáo viên đang đăng nhập."""
+    from app.models.user import TeacherClass, Teacher as TeacherModel, Course
+    teacher = db.query(TeacherModel).filter(
+        TeacherModel.teacher_id == current_user.user_id
+    ).first()
+    if not teacher:
+        return []
+
+    # Join thủ công để tránh lỗi composite FK joinedload
+    tcs = db.query(TeacherClass).filter(
+        TeacherClass.teacher_id == teacher.teacher_id
+    ).all()
+
+    result = []
+    for tc in tcs:
+        cls = db.query(Class).filter(
+            Class.course_id == tc.course_id,
+            Class.class_id  == tc.class_id
+        ).first()
+        if not cls:
+            continue
+        course = db.query(Course).filter(Course.course_id == cls.course_id).first()
+        result.append({
+            "class_id":     cls.class_id,
+            "course_id":    cls.course_id,
+            "course_name":  course.course_name if course else cls.course_id,
+            "semester":     cls.semester or tc.semester,
+            "capacity":     cls.capacity,
+            "day_of_week":  cls.day_of_week,
+            "start_period": cls.start_period,
+            "end_period":   cls.end_period,
+        })
+    return result
+
+
+@router.get("/timetable/student", tags=["Thời khóa biểu"])
+def student_timetable(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Trả về thời khóa biểu của sinh viên đang đăng nhập."""
+    from app.models.user import Student as StudentModel, Enrollment, Course
+    student = db.query(StudentModel).filter(
+        StudentModel.student_id == current_user.user_id
+    ).first()
+    if not student:
+        return []
+
+    # Lấy danh sách đăng ký
+    enrollments_list = db.query(Enrollment).filter(
+        Enrollment.student_id == student.student_id
+    ).all()
+
+    result = []
+    for e in enrollments_list:
+        cls = db.query(Class).filter(
+            Class.course_id == e.course_id,
+            Class.class_id  == e.class_id
+        ).first()
+        if not cls:
+            continue
+        course = db.query(Course).filter(Course.course_id == cls.course_id).first()
+        result.append({
+            "class_id":     cls.class_id,
+            "course_id":    cls.course_id,
+            "course_name":  course.course_name if course else cls.course_id,
+            "semester":     cls.semester,
+            "capacity":     cls.capacity,
+            "day_of_week":  cls.day_of_week,
+            "start_period": cls.start_period,
+            "end_period":   cls.end_period,
+        })
+    return result
+
+
 @router.get("/{course_id}/{class_id}", response_model=ClassResponse)
 def get_class(
     course_id: str,
@@ -217,89 +299,3 @@ def get_class_students(
             "status":           e.status,
         })
     return result
-
-
-# ── Thời khóa biểu ─────────────────────────────────────────────
-
-@router.get("/timetable/teacher", tags=["Thời khóa biểu"])
-def teacher_timetable(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Trả về thời khóa biểu của giáo viên đang đăng nhập.
-    Bao gồm lớp + lịch học + tên môn.
-    """
-    from app.models.user import TeacherClass, Teacher as TeacherModel
-    # Tìm teacher_id từ user hiện tại
-    teacher = db.query(TeacherModel).filter(TeacherModel.teacher_id == current_user.user_id).first()
-    if not teacher:
-        return []  # Không phải giáo viên
-
-    tcs = (
-        db.query(TeacherClass)
-        .options(
-            joinedload(TeacherClass.class_).joinedload(Class.course)
-        )
-        .filter(TeacherClass.teacher_id == teacher.teacher_id)
-        .all()
-    )
-
-    result = []
-    for tc in tcs:
-        cls = tc.class_
-        if not cls:
-            continue
-        result.append({
-            "class_id":     cls.class_id,
-            "course_id":    cls.course_id,
-            "course_name":  cls.course.course_name if cls.course else cls.course_id,
-            "semester":     cls.semester or tc.semester,
-            "capacity":     cls.capacity,
-            "day_of_week":  cls.day_of_week,
-            "start_period": cls.start_period,
-            "end_period":   cls.end_period,
-        })
-    return result
-
-
-@router.get("/timetable/student", tags=["Thời khóa biểu"])
-def student_timetable(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Trả về thời khóa biểu của sinh viên đang đăng nhập.
-    Bao gồm lớp đã đăng ký + lịch học + tên môn.
-    """
-    from app.models.user import Student as StudentModel
-    student = db.query(StudentModel).filter(StudentModel.student_id == current_user.user_id).first()
-    if not student:
-        return []
-
-    enrollments_list = (
-        db.query(Enrollment)
-        .options(
-            joinedload(Enrollment.class_).joinedload(Class.course)
-        )
-        .filter(Enrollment.student_id == student.student_id)
-        .all()
-    )
-
-    result = []
-    for e in enrollments_list:
-        cls = e.class_
-        if not cls:
-            continue
-        result.append({
-            "class_id":     cls.class_id,
-            "course_id":    cls.course_id,
-            "course_name":  cls.course.course_name if cls.course else cls.course_id,
-            "semester":     cls.semester,
-            "capacity":     cls.capacity,
-            "day_of_week":  cls.day_of_week,
-            "start_period": cls.start_period,
-            "end_period":   cls.end_period,
-        })
-    return result
-
