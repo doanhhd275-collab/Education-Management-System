@@ -1,17 +1,21 @@
 /**
  * Trang Điểm danh (Attendance)
- * - STUDENT: xem lịch sử điểm danh của bản thân (read-only)
+ * - STUDENT: chọn lớp → xem lịch sử điểm danh của lớp đó (read-only)
  * - TEACHER/ADMIN: xem tất cả + điểm danh lớp học
  */
 import { useState, useEffect } from "react";
-import { attendanceApi, classesApi } from "../../api";
+import { attendanceApi, classesApi, enrollmentsApi } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 
 export default function AttendancePage() {
-  const { isTeacher, isAdmin, isStudent } = useAuth();
+  const { isTeacher, isAdmin, isStudent, user } = useAuth();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Student: lớp đã đăng ký + lớp đang chọn để xem điểm danh
+  const [myClasses, setMyClasses] = useState([]);
+  const [selectedStudentClass, setSelectedStudentClass] = useState("");
 
   // Filter cho TEACHER/ADMIN
   const [filterClass, setFilterClass] = useState("");
@@ -29,14 +33,31 @@ export default function AttendancePage() {
     setLoading(true);
     setError("");
     try {
-      // STUDENT: backend tự filter theo mình — không cần truyền student_id
-      // TEACHER/ADMIN: truyền filter nếu có
       const res = await attendanceApi.list(filters);
       setRecords(res.data);
     } catch {
       setError("Không thể tải lịch sử điểm danh");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Load lớp đã đăng ký của sinh viên
+  const loadMyClasses = async () => {
+    try {
+      const res = await enrollmentsApi.list({ student_id: user.user_id });
+      // Lấy danh sách lớp duy nhất
+      const unique = [];
+      const seen = new Set();
+      for (const e of res.data) {
+        if (!seen.has(e.class_id)) {
+          seen.add(e.class_id);
+          unique.push({ class_id: e.class_id, course_id: e.course_id });
+        }
+      }
+      setMyClasses(unique);
+    } catch {
+      // ignore
     }
   };
 
@@ -50,9 +71,25 @@ export default function AttendancePage() {
   };
 
   useEffect(() => {
-    loadRecords();
-    if (isTeacher || isAdmin) loadClassesForTeacher();
+    if (isStudent) {
+      loadMyClasses();
+      loadRecords(); // Load tất cả trước, user có thể lọc sau
+    } else {
+      loadRecords();
+      if (isTeacher || isAdmin) loadClassesForTeacher();
+    }
   }, [isStudent, isTeacher, isAdmin]);
+
+  // Student chọn lớp → lọc lại
+  const handleStudentClassChange = (e) => {
+    const cls = e.target.value;
+    setSelectedStudentClass(cls);
+    if (cls) {
+      loadRecords({ class_id: cls });
+    } else {
+      loadRecords();
+    }
+  };
 
   // TEACHER/ADMIN: lọc lại khi nhấn tìm kiếm
   const handleFilter = () => {
@@ -138,25 +175,55 @@ export default function AttendancePage() {
 
       {error && <div className="alert alert-error">⚠️ {error}</div>}
 
-      {/* Thống kê tổng quan cho sinh viên */}
-      {isStudent && !loading && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
-          {[
-            { label: "Tổng buổi học", value: totalSessions, color: "var(--accent)" },
-            { label: "Có mặt", value: presentCount, color: "var(--success)" },
-            { label: "Vắng mặt", value: absentCount, color: "#e74c3c" },
-            {
-              label: "Tỷ lệ chuyên cần",
-              value: `${attendanceRate}%`,
-              color: attendanceRate >= 80 ? "var(--success)" : "#e74c3c",
-            },
-          ].map((stat) => (
-            <div key={stat.label} className="card" style={{ textAlign: "center", padding: "16px 12px" }}>
-              <div style={{ fontSize: 28, fontWeight: 700, color: stat.color }}>{stat.value}</div>
-              <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>{stat.label}</div>
+      {/* Thống kê + bộ lọc lớp cho SINH VIÊN */}
+      {isStudent && (
+        <>
+          {!loading && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
+              {[
+                { label: "Tổng buổi học", value: totalSessions, color: "var(--accent)" },
+                { label: "Có mặt", value: presentCount, color: "var(--success)" },
+                { label: "Vắng mặt", value: absentCount, color: "#e74c3c" },
+                {
+                  label: "Tỷ lệ chuyên cần",
+                  value: `${attendanceRate}%`,
+                  color: attendanceRate >= 80 ? "var(--success)" : "#e74c3c",
+                },
+              ].map((stat) => (
+                <div key={stat.label} className="card" style={{ textAlign: "center", padding: "16px 12px" }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                  <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>{stat.label}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+
+          {/* Dropdown chọn lớp */}
+          <div className="card" style={{ marginBottom: 20, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+            <span style={{ fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" }}>🏛️ Lọc theo lớp:</span>
+            <select
+              className="form-select"
+              value={selectedStudentClass}
+              onChange={handleStudentClassChange}
+              style={{ flex: 1, maxWidth: 320 }}
+            >
+              <option value="">-- Tất cả lớp --</option>
+              {myClasses.map((c) => (
+                <option key={c.class_id} value={c.class_id}>
+                  {c.class_id} | Môn: {c.course_id}
+                </option>
+              ))}
+            </select>
+            {selectedStudentClass && (
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => { setSelectedStudentClass(""); loadRecords(); }}
+              >
+                ↺ Xem tất cả
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {/* Bộ lọc cho TEACHER/ADMIN */}
@@ -271,7 +338,9 @@ export default function AttendancePage() {
           <h3>Chưa có dữ liệu điểm danh</h3>
           {isStudent && (
             <p style={{ color: "var(--text-secondary)", marginTop: 8 }}>
-              Dữ liệu sẽ xuất hiện sau khi giáo viên điểm danh lớp của bạn.
+              {selectedStudentClass
+                ? `Lớp ${selectedStudentClass} chưa có buổi điểm danh nào.`
+                : "Chọn lớp ở trên để xem, hoặc giáo viên chưa điểm danh."}
             </p>
           )}
         </div>

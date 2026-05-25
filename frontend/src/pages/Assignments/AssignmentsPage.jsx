@@ -7,6 +7,74 @@ import { useState, useEffect } from "react";
 import { assignmentsApi } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 
+// Modal nộp bài có nhập link
+function SubmitModal({ assignment, studentId, onClose, onSubmitted }) {
+  const [linkUrl, setLinkUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      await assignmentsApi.submit(assignment.assignment_id, {
+        assignment_id: assignment.assignment_id,
+        student_id: studentId,
+        class_id: assignment.class_id || "",
+        link_url: linkUrl || undefined,
+      });
+      onSubmitted();
+      onClose();
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      setError(Array.isArray(detail)
+        ? detail.map((d) => d.msg || JSON.stringify(d)).join("; ")
+        : (typeof detail === "string" ? detail : "Nộp bài thất bại"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">📤 Nộp bài tập</h2>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          <p style={{ color: "var(--text-secondary)", marginBottom: 16, fontSize: 13 }}>
+            Bài tập: <strong>{assignment.assignment_name}</strong>
+          </p>
+          <form id="submit-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">Link bài nộp (tùy chọn)</label>
+              <input
+                className="form-input"
+                type="url"
+                placeholder="https://drive.google.com/... hoặc link bài làm của bạn"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+              />
+              <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6 }}>
+                💡 Nhập link Google Drive, GitHub, Classroom... để giáo viên dễ chấm bài
+              </p>
+            </div>
+          </form>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Hủy</button>
+          <button className="btn btn-success" form="submit-form" type="submit" disabled={loading}>
+            {loading ? "Đang nộp..." : "📤 Xác nhận nộp bài"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CreateAssignmentModal({ onClose, onCreated }) {
   const [form, setForm] = useState({
     assignment_id: "",
@@ -126,6 +194,7 @@ export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [submitTarget, setSubmitTarget] = useState(null); // assignment đang nộp
   const [error, setError] = useState("");
 
   const loadAssignments = async () => {
@@ -141,21 +210,6 @@ export default function AssignmentsPage() {
   };
 
   useEffect(() => { loadAssignments(); }, []);
-
-  const handleSubmit = async (assignmentId) => {
-    if (!window.confirm("Nộp bài tập này?")) return;
-    const assignment = assignments.find((a) => a.assignment_id === assignmentId);
-    try {
-      await assignmentsApi.submit(assignmentId, {
-        assignment_id: assignmentId,
-        student_id: user.user_id,
-        class_id: assignment?.class_id || "",
-      });
-      alert("Nộp bài thành công!");
-    } catch (err) {
-      alert(err.response?.data?.detail || "Nộp bài thất bại");
-    }
-  };
 
   const isOverdue = (deadline) => deadline && new Date(deadline) < new Date();
 
@@ -226,9 +280,9 @@ export default function AssignmentsPage() {
                 {isStudent && (
                   <button
                     className="btn btn-success btn-sm"
-                    onClick={() => handleSubmit(a.assignment_id)}
+                    onClick={() => setSubmitTarget(a)}
                     disabled={isOverdue(a.deadline)}
-                    title={isOverdue(a.deadline) ? "Đã quá hạn nộp bài" : ""}
+                    title={isOverdue(a.deadline) ? "Đã quá hạn nộp bài" : "Nộp bài"}
                   >
                     📤 Nộp bài
                   </button>
@@ -241,6 +295,15 @@ export default function AssignmentsPage() {
 
       {showCreate && (
         <CreateAssignmentModal onClose={() => setShowCreate(false)} onCreated={loadAssignments} />
+      )}
+
+      {submitTarget && (
+        <SubmitModal
+          assignment={submitTarget}
+          studentId={user.user_id}
+          onClose={() => setSubmitTarget(null)}
+          onSubmitted={() => { loadAssignments(); }}
+        />
       )}
     </div>
   );
