@@ -31,13 +31,36 @@ from app.api.v1 import (
     logs,
 )
 
+def _run_migrations():
+    """
+    Chạy các ALTER TABLE migration thủ công.
+    Dùng IF NOT EXISTS — an toàn để chạy lại nhiều lần khi deploy.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    try:
+        with engine.connect() as conn:
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE documents ADD COLUMN IF NOT EXISTS "LinkURL" VARCHAR(500);'
+            ))
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE assignments ADD COLUMN IF NOT EXISTS "LinkURL" VARCHAR(500);'
+            ))
+            conn.commit()
+        logger.info("✅ Migration hoàn tất.")
+    except Exception as e:
+        logger.warning("⚠️ Migration warning (có thể bỏ qua nếu đã tồn tại): %s", e)
+
+
 # ── Startup / Shutdown lifecycle ────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Chạy khi app khởi động: tạo bảng DB + seed dữ liệu mặc định."""
-    # Tạo tất cả bảng nếu chưa có
+    """Chạy khi app khởi động: tạo bảng DB + migration + seed dữ liệu mặc định."""
+    # 1. Tạo tất cả bảng nếu chưa có
     Base.metadata.create_all(bind=engine)
-    # Seed dữ liệu mặc định (idempotent — an toàn chạy nhiều lần)
+    # 2. Chạy migrations (thêm cột mới vào bảng đã tồn tại)
+    _run_migrations()
+    # 3. Seed dữ liệu mặc định (idempotent — an toàn chạy nhiều lần)
     seed_database()
     yield
     # (Cleanup nếu cần khi shutdown)
