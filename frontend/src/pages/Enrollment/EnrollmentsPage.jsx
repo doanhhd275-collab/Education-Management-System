@@ -5,20 +5,35 @@
  * - Teacher: nhập điểm
  */
 import { useState, useEffect } from "react";
-import { enrollmentsApi } from "../../api";
+import { enrollmentsApi, classesApi } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 
 // Modal đăng ký lớp mới
 function EnrollModal({ onClose, onEnrolled, studentId }) {
-  const [form, setForm] = useState({ class_id: "", course_id: "", student_id: studentId });
+  const [availableClasses, setAvailableClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fetchingClasses, setFetchingClasses] = useState(true);
+
+  useEffect(() => {
+    classesApi.list(null, null, 1, 100)
+      .then((r) => setAvailableClasses(r.data))
+      .catch(() => setError("Không thể tải danh sách lớp"))
+      .finally(() => setFetchingClasses(false));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedClass) { setError("Vui lòng chọn lớp học"); return; }
     setLoading(true);
+    setError("");
     try {
-      await enrollmentsApi.enroll(form);
+      await enrollmentsApi.enroll({
+        class_id: selectedClass.class_id,
+        course_id: selectedClass.course_id,
+        student_id: studentId,
+      });
       onEnrolled(); onClose();
     } catch (err) {
       setError(err.response?.data?.detail || "Đăng ký thất bại");
@@ -36,20 +51,41 @@ function EnrollModal({ onClose, onEnrolled, studentId }) {
           {error && <div className="alert alert-error">⚠️ {error}</div>}
           <form id="enroll-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">Mã môn học *</label>
-              <input className="form-input" placeholder="VD: IT3000" required
-                value={form.course_id} onChange={(e) => setForm({...form, course_id: e.target.value})} />
+              <label className="form-label">Chọn lớp học *</label>
+              {fetchingClasses ? (
+                <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Đang tải danh sách lớp...</div>
+              ) : availableClasses.length === 0 ? (
+                <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Chưa có lớp học nào. Liên hệ admin.</div>
+              ) : (
+                <select className="form-select" required
+                  onChange={(e) => {
+                    const cls = availableClasses.find(
+                      (c) => `${c.course_id}__${c.class_id}` === e.target.value
+                    );
+                    setSelectedClass(cls || null);
+                  }}>
+                  <option value="">-- Chọn lớp --</option>
+                  {availableClasses.map((c) => (
+                    <option key={`${c.course_id}-${c.class_id}`} value={`${c.course_id}__${c.class_id}`}>
+                      {c.class_id} | Môn: {c.course_id}
+                      {c.semester ? ` | HK: ${c.semester}` : ""}
+                      {c.capacity ? ` | Sĩ số: ${c.capacity}` : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
-            <div className="form-group">
-              <label className="form-label">Mã lớp *</label>
-              <input className="form-input" placeholder="VD: IT3000-01" required
-                value={form.class_id} onChange={(e) => setForm({...form, class_id: e.target.value})} />
-            </div>
+            {selectedClass && (
+              <div style={{ background: "rgba(99,102,241,0.08)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "var(--text-secondary)" }}>
+                ✅ Lớp: <strong>{selectedClass.class_id}</strong> · Môn: <strong>{selectedClass.course_id}</strong>
+                {selectedClass.semester && <> · Học kỳ: <strong>{selectedClass.semester}</strong></>}
+              </div>
+            )}
           </form>
         </div>
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Hủy</button>
-          <button className="btn btn-primary" form="enroll-form" type="submit" disabled={loading}>
+          <button className="btn btn-primary" form="enroll-form" type="submit" disabled={loading || fetchingClasses}>
             {loading ? "Đang đăng ký..." : "Đăng ký"}
           </button>
         </div>
