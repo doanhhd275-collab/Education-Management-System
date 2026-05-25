@@ -146,6 +146,10 @@ export const classesApi = {
 
   getStudents: (courseId, classId) =>
     apiClient.get(`/classes/${courseId}/${classId}/students`),
+
+  // Thời khóa biểu
+  getTeacherTimetable: () => apiClient.get("/classes/timetable/teacher"),
+  getStudentTimetable: () => apiClient.get("/classes/timetable/student"),
 };
 
 /**

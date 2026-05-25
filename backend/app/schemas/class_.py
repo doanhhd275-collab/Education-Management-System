@@ -10,8 +10,11 @@ from pydantic import BaseModel, Field
 # ============================================================
 
 class ClassBase(BaseModel):
-    semester: Optional[str] = Field(None, max_length=10)
-    capacity: Optional[int] = None
+    semester:     Optional[str] = Field(None, max_length=10)
+    capacity:     Optional[int] = None
+    day_of_week:  Optional[str] = Field(None, max_length=5, description="Thứ học: '2'-'7'")
+    start_period: Optional[int] = Field(None, ge=1, le=12, description="Tiết bắt đầu (1-12)")
+    end_period:   Optional[int] = Field(None, ge=1, le=12, description="Tiết kết thúc (1-12)")
 
 
 class ClassCreate(ClassBase):
@@ -20,13 +23,19 @@ class ClassCreate(ClassBase):
 
 
 class ClassUpdate(BaseModel):
-    semester: Optional[str] = Field(None, max_length=10)
-    capacity: Optional[int] = None
+    semester:     Optional[str] = Field(None, max_length=10)
+    capacity:     Optional[int] = None
+    day_of_week:  Optional[str] = Field(None, max_length=5)
+    start_period: Optional[int] = Field(None, ge=1, le=12)
+    end_period:   Optional[int] = Field(None, ge=1, le=12)
 
 
 class ClassResponse(ClassBase):
-    course_id: str
-    class_id:  str
+    course_id:    str
+    class_id:     str
+    day_of_week:  Optional[str] = None
+    start_period: Optional[int] = None
+    end_period:   Optional[int] = None
 
     model_config = {"from_attributes": True}
 

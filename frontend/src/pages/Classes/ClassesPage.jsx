@@ -9,9 +9,17 @@ import { useState, useEffect } from "react";
 import { classesApi, teachersApi } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 
+// Helpers
+const DAY_LABELS = { "2":"Thứ Hai","3":"Thứ Ba","4":"Thứ Tư","5":"Thứ Năm","6":"Thứ Sáu","7":"Thứ Bảy" };
+const PERIODS = Array.from({length:12},(_,i)=>i+1);
+const periodLabel = (p) => p <= 6 ? `Tiết ${p} (sáng)` : `Tiết ${p} (chiều)`;
+
 // ── Modal Tạo lớp ────────────────────────────────────────────
 function CreateClassModal({ onClose, onCreated }) {
-  const [form, setForm] = useState({ course_id: "", class_id: "", semester: "", capacity: "" });
+  const [form, setForm] = useState({
+    course_id: "", class_id: "", semester: "", capacity: "",
+    day_of_week: "", start_period: "", end_period: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +28,13 @@ function CreateClassModal({ onClose, onCreated }) {
     setLoading(true);
     setError("");
     try {
-      await classesApi.create({ ...form, capacity: form.capacity ? Number(form.capacity) : undefined });
+      await classesApi.create({
+        ...form,
+        capacity: form.capacity ? Number(form.capacity) : undefined,
+        start_period: form.start_period ? Number(form.start_period) : undefined,
+        end_period: form.end_period ? Number(form.end_period) : undefined,
+        day_of_week: form.day_of_week || undefined,
+      });
       onCreated(); onClose();
     } catch (err) {
       const detail = err.response?.data?.detail;
@@ -45,25 +59,61 @@ function CreateClassModal({ onClose, onCreated }) {
             💡 Môn học phải được tạo trước trong <strong>Môn học</strong>. Mã môn phải chính xác.
           </div>
           <form id="create-class-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label">Mã môn học *</label>
-              <input className="form-input" placeholder="VD: IT3000" required maxLength={10}
-                value={form.course_id} onChange={(e) => setForm({...form, course_id: e.target.value})} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="form-group">
+                <label className="form-label">Mã môn học *</label>
+                <input className="form-input" placeholder="VD: IT3000" required maxLength={10}
+                  value={form.course_id} onChange={(e) => setForm({...form, course_id: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Mã lớp *</label>
+                <input className="form-input" placeholder="VD: IT3000-01" required maxLength={10}
+                  value={form.class_id} onChange={(e) => setForm({...form, class_id: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Học kỳ</label>
+                <input className="form-input" placeholder="VD: 2024-1"
+                  value={form.semester} onChange={(e) => setForm({...form, semester: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Sĩ số tối đa</label>
+                <input className="form-input" type="number" placeholder="VD: 40" min={1}
+                  value={form.capacity} onChange={(e) => setForm({...form, capacity: e.target.value})} />
+              </div>
             </div>
-            <div className="form-group">
-              <label className="form-label">Mã lớp *</label>
-              <input className="form-input" placeholder="VD: IT3000-01" required maxLength={10}
-                value={form.class_id} onChange={(e) => setForm({...form, class_id: e.target.value})} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Học kỳ</label>
-              <input className="form-input" placeholder="VD: 2024-1"
-                value={form.semester} onChange={(e) => setForm({...form, semester: e.target.value})} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Sĩ số tối đa</label>
-              <input className="form-input" type="number" placeholder="VD: 40" min={1}
-                value={form.capacity} onChange={(e) => setForm({...form, capacity: e.target.value})} />
+
+            <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, marginTop: 4 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)", marginBottom: 10 }}>📅 Lịch học</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label">Thứ học</label>
+                  <select className="form-select"
+                    value={form.day_of_week} onChange={(e) => setForm({...form, day_of_week: e.target.value})}>
+                    <option value="">— Chọn thứ —</option>
+                    {Object.entries(DAY_LABELS).map(([v,l]) => (
+                      <option key={v} value={v}>{l}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Tiết bắt đầu</label>
+                  <select className="form-select"
+                    value={form.start_period} onChange={(e) => setForm({...form, start_period: e.target.value})}>
+                    <option value="">— Chọn tiết —</option>
+                    {PERIODS.map(p => <option key={p} value={p}>{periodLabel(p)}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Tiết kết thúc</label>
+                  <select className="form-select"
+                    value={form.end_period} onChange={(e) => setForm({...form, end_period: e.target.value})}>
+                    <option value="">— Chọn tiết —</option>
+                    {PERIODS.filter(p => !form.start_period || p >= Number(form.start_period)).map(p => (
+                      <option key={p} value={p}>{periodLabel(p)}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
           </form>
         </div>

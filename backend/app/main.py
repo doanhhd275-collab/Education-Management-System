@@ -49,6 +49,16 @@ def _run_migrations():
             conn.execute(__import__('sqlalchemy').text(
                 'ALTER TABLE assignment_reports ADD COLUMN IF NOT EXISTS "LinkURL" VARCHAR(500);'
             ))
+            # Lịch học lớp học
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE classes ADD COLUMN IF NOT EXISTS "DayOfWeek" VARCHAR(5);'
+            ))
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE classes ADD COLUMN IF NOT EXISTS "StartPeriod" INTEGER;'
+            ))
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE classes ADD COLUMN IF NOT EXISTS "EndPeriod" INTEGER;'
+            ))
             conn.commit()
         logger.info("✅ Migration hoàn tất.")
     except Exception as e:

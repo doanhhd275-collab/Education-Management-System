@@ -8,6 +8,7 @@ import Sidebar from "./Sidebar";
 const PAGE_TITLES = {
   "/dashboard":  "Tổng quan",
   "/profile":    "Hồ sơ cá nhân",
+  "/timetable":  "Thời khóa biểu",
   "/users":      "Quản lý người dùng",
   "/students":   "Quản lý sinh viên",
   "/teachers":   "Quản lý giáo viên",

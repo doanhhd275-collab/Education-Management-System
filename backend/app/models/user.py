@@ -169,10 +169,13 @@ class Class(Base):
     """
     __tablename__ = "classes"
 
-    course_id = Column("CourseID", String(10), ForeignKey("courses.CourseID"), nullable=False)
-    class_id  = Column("ClassID",  String(10), nullable=False)
-    semester  = Column("Semester", String(10))
-    capacity  = Column("Capacity", Integer)              # ERD: Capacity INT
+    course_id    = Column("CourseID",    String(10), ForeignKey("courses.CourseID"), nullable=False)
+    class_id     = Column("ClassID",     String(10), nullable=False)
+    semester     = Column("Semester",    String(10))
+    capacity     = Column("Capacity",    Integer)              # ERD: Capacity INT
+    day_of_week  = Column("DayOfWeek",   String(5))            # "2".."7" (Thứ 2-7)
+    start_period = Column("StartPeriod", Integer)              # 1-12
+    end_period   = Column("EndPeriod",   Integer)              # 1-12
 
     __table_args__ = (
         PrimaryKeyConstraint("CourseID", "ClassID"),

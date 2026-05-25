@@ -21,6 +21,7 @@ import AssignmentsPage from "./pages/Assignments/AssignmentsPage";
 import AttendancePage from "./pages/Attendance/AttendancePage";
 import LogsPage from "./pages/Logs/LogsPage";
 import ProfilePage from "./pages/Profile/ProfilePage";
+import TimetablePage from "./pages/Timetable/TimetablePage";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
             {/* Dashboard (All users) */}
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/timetable" element={<TimetablePage />} />
 
           {/* ── Admin only ── */}
             <Route path="/users" element={

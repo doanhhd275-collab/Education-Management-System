@@ -18,6 +18,7 @@ const ALL_NAV_ITEMS = [
     items: [
       { path: "/dashboard", icon: "📊", label: "Dashboard", roles: [] },
       { path: "/profile",   icon: "👤", label: "Hồ sơ",    roles: [] },
+      { path: "/timetable", icon: "🗓️", label: "Thời khóa biểu", roles: [] },
     ],
   },
 

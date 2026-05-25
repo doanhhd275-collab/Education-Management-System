@@ -66,7 +66,10 @@ def create_class(
         course_id=data.course_id,
         class_id=data.class_id,
         semester=data.semester,
-        capacity=data.capacity
+        capacity=data.capacity,
+        day_of_week=data.day_of_week,
+        start_period=data.start_period,
+        end_period=data.end_period,
     )
     db.add(new_class)
     db.commit()
@@ -214,3 +217,89 @@ def get_class_students(
             "status":           e.status,
         })
     return result
+
+
+# ── Thời khóa biểu ─────────────────────────────────────────────
+
+@router.get("/timetable/teacher", tags=["Thời khóa biểu"])
+def teacher_timetable(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Trả về thời khóa biểu của giáo viên đang đăng nhập.
+    Bao gồm lớp + lịch học + tên môn.
+    """
+    from app.models.user import TeacherClass, Teacher as TeacherModel
+    # Tìm teacher_id từ user hiện tại
+    teacher = db.query(TeacherModel).filter(TeacherModel.teacher_id == current_user.user_id).first()
+    if not teacher:
+        return []  # Không phải giáo viên
+
+    tcs = (
+        db.query(TeacherClass)
+        .options(
+            joinedload(TeacherClass.class_).joinedload(Class.course)
+        )
+        .filter(TeacherClass.teacher_id == teacher.teacher_id)
+        .all()
+    )
+
+    result = []
+    for tc in tcs:
+        cls = tc.class_
+        if not cls:
+            continue
+        result.append({
+            "class_id":     cls.class_id,
+            "course_id":    cls.course_id,
+            "course_name":  cls.course.course_name if cls.course else cls.course_id,
+            "semester":     cls.semester or tc.semester,
+            "capacity":     cls.capacity,
+            "day_of_week":  cls.day_of_week,
+            "start_period": cls.start_period,
+            "end_period":   cls.end_period,
+        })
+    return result
+
+
+@router.get("/timetable/student", tags=["Thời khóa biểu"])
+def student_timetable(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Trả về thời khóa biểu của sinh viên đang đăng nhập.
+    Bao gồm lớp đã đăng ký + lịch học + tên môn.
+    """
+    from app.models.user import Student as StudentModel
+    student = db.query(StudentModel).filter(StudentModel.student_id == current_user.user_id).first()
+    if not student:
+        return []
+
+    enrollments_list = (
+        db.query(Enrollment)
+        .options(
+            joinedload(Enrollment.class_).joinedload(Class.course)
+        )
+        .filter(Enrollment.student_id == student.student_id)
+        .all()
+    )
+
+    result = []
+    for e in enrollments_list:
+        cls = e.class_
+        if not cls:
+            continue
+        result.append({
+            "class_id":     cls.class_id,
+            "course_id":    cls.course_id,
+            "course_name":  cls.course.course_name if cls.course else cls.course_id,
+            "semester":     cls.semester,
+            "capacity":     cls.capacity,
+            "day_of_week":  cls.day_of_week,
+            "start_period": cls.start_period,
+            "end_period":   cls.end_period,
+        })
+    return result
+
