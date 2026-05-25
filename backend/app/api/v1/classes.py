@@ -91,7 +91,6 @@ def teacher_timetable(
     if not teacher:
         return []
 
-    # Join thủ công để tránh lỗi composite FK joinedload
     tcs = db.query(TeacherClass).filter(
         TeacherClass.teacher_id == teacher.teacher_id
     ).all()
@@ -127,14 +126,15 @@ def student_timetable(
     import logging, traceback as tb
     logger = logging.getLogger(__name__)
     try:
+        # Student.user_id — không phải student_id (tham chiếu đũng theo ORM model)
         student = db.query(Student).filter(
-            Student.student_id == current_user.user_id
+            Student.user_id == current_user.user_id
         ).first()
         if not student:
             return []
 
         enrollments_list = db.query(Enrollment).filter(
-            Enrollment.student_id == student.student_id
+            Enrollment.student_id == student.user_id
         ).all()
 
         result = []
