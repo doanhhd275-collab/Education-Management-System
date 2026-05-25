@@ -69,7 +69,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173", # Để dành cho bạn test local
         "http://localhost:3000",
-        "https://education-management-system-gfuduudvz.vercel.app" # <--- TÊN MIỀN VERCEL CỦA BẠN (Tuyệt đối KHÔNG có dấu / ở cuối)
+        "https://education-management-system-pi.vercel.app" # <--- TÊN MIỀN VERCEL CỦA BẠN (Tuyệt đối KHÔNG có dấu / ở cuối)
     ], 
     allow_credentials=True,
     allow_methods=["*"],
