@@ -201,37 +201,40 @@ Base URL: `http://localhost:8000/api/v1`
 | `DELETE` | `/users/{id}` | Xóa user | ADMIN |
 
 ### 🎓 Students
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| `GET` | `/students` | Danh sách sinh viên |
-| `GET` | `/students/{id}` | Chi tiết sinh viên |
-| `PUT` | `/students/{id}` | Cập nhật thông tin |
-
-### 👨‍🏫 Teachers
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| `GET` | `/teachers` | Danh sách giáo viên |
-| `GET` | `/teachers/me` | Thông tin GV đang đăng nhập |
-| `GET` | `/teachers/{id}/classes` | Lớp phụ trách |
-
-### 🏛️ Classes
 | Method | Endpoint | Mô tả | Role |
 |---|---|---|---|
-| `GET` | `/classes` | Danh sách lớp học | ALL |
-| `POST` | `/classes` | Tạo lớp học | ADMIN |
-| `GET` | `/classes/{course_id}/{class_id}` | Chi tiết lớp | ALL |
-| `PUT` | `/classes/{course_id}/{class_id}` | Cập nhật lớp (lịch, phòng) | ADMIN |
-| `DELETE` | `/classes/{course_id}/{class_id}` | Xóa lớp | ADMIN |
-| `POST` | `/classes/{course_id}/{class_id}/teachers` | Gán giáo viên | ADMIN |
-| `GET` | `/classes/timetable/teacher` | Thời khóa biểu GV | TEACHER |
-| `GET` | `/classes/timetable/student` | Thời khóa biểu SV | STUDENT |
+| `GET` | `/students` | Danh sách sinh viên | ADMIN, TEACHER |
+| `GET` | `/students/{id}` | Chi tiết sinh viên | ADMIN, TEACHER |
+| `PUT` | `/students/{id}` | Cập nhật thông tin | ADMIN |
+
+### 👨‍🏫 Teachers
+| Method | Endpoint | Mô tả | Role |
+|---|---|---|---|
+| `GET` | `/teachers` | Danh sách giáo viên | ADMIN |
+| `GET` | `/teachers/me` | Thông tin GV đang đăng nhập | TEACHER |
+| `GET` | `/teachers/{id}/classes` | Lớp phụ trách | ADMIN, TEACHER |
+
+### 🏗️ Classes
+| Method | Endpoint | Mô tả | Role |
+|---|---|---|---|
+| `GET` | `/classes` | Danh sách lớp học | ADMIN, TEACHER, STUDENT |
+| `POST` | `/classes` | Tạo lớp học | **ADMIN** |
+| `GET` | `/classes/{course_id}/{class_id}` | Chi tiết lớp | ADMIN, TEACHER, STUDENT |
+| `PUT` | `/classes/{course_id}/{class_id}` | Cập nhật lớp — lịch học, phòng học | **ADMIN** |
+| `DELETE` | `/classes/{course_id}/{class_id}` | Xóa lớp | **ADMIN** |
+| `POST` | `/classes/{course_id}/{class_id}/teachers` | Gán giáo viên vào lớp | **ADMIN** |
+| `GET` | `/classes/timetable/teacher` | Xem thời khóa biểu (chỉ đọc) | TEACHER |
+| `GET` | `/classes/timetable/student` | Xem thời khóa biểu (chỉ đọc) | STUDENT |
+
+> ⚠️ **Lưu ý**: Giáo viên **không có quyền** xếp lịch học, đặt phòng, hay tạo/xóa lớp. Tất cả thao tác ghi trên lớp học chỉ do **Admin** thực hiện.
+
 
 ### 📝 Enrollments
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| `GET` | `/enrollments` | Danh sách đăng ký |
-| `POST` | `/enrollments` | Đăng ký lớp học |
-| `DELETE` | `/enrollments/{id}` | Hủy đăng ký |
+| Method | Endpoint | Mô tả | Role |
+|---|---|---|---|
+| `GET` | `/enrollments` | Danh sách đăng ký | ADMIN, STUDENT |
+| `POST` | `/enrollments` | Đăng ký lớp học | STUDENT |
+| `DELETE` | `/enrollments/{id}` | Hủy đăng ký | STUDENT |
 
 ### ✅ Attendance
 | Method | Endpoint | Mô tả |
