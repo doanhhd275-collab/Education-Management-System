@@ -59,8 +59,16 @@ class AssignmentReportResponse(AssignmentReportBase):
     submit_date:  Optional[datetime] = None
     link_url:     Optional[str]      = None
     student_name: Optional[str]      = None  # join từ User
+    grade:        Optional[float]    = None  # Điểm GV chấm
+    feedback:     Optional[str]      = None  # Nhận xét GV
 
     model_config = {"from_attributes": True}
+
+
+class GradeSubmission(BaseModel):
+    """Schema để giáo viên chấm điểm bài nộp."""
+    grade:    float = Field(..., ge=0, le=10, description="Điểm từ 0 đến 10")
+    feedback: Optional[str] = Field(None, max_length=500, description="Nhận xét")
 
 
 # ============================================================
@@ -103,6 +111,8 @@ class DocumentBase(BaseModel):
     deadline:      Optional[datetime] = None
     teacher_id:    Optional[str]      = Field(None, max_length=10)  # auto-filled by backend
     link_url:      Optional[str]      = Field(None, max_length=500, description="Link đến tài liệu")
+    course_id:     Optional[str]      = Field(None, max_length=10, description="Mã môn học")
+    class_id:      Optional[str]      = Field(None, max_length=10, description="Mã lớp học")
 
 
 class DocumentCreate(DocumentBase):
@@ -113,10 +123,14 @@ class DocumentUpdate(BaseModel):
     document_name: Optional[str]      = Field(None, max_length=50)
     deadline:      Optional[datetime] = None
     link_url:      Optional[str]      = Field(None, max_length=500)
+    course_id:     Optional[str]      = Field(None, max_length=10)
+    class_id:      Optional[str]      = Field(None, max_length=10)
 
 
 class DocumentResponse(DocumentBase):
     document_id: str
     teacher_id:  Optional[str] = None
+    course_id:   Optional[str] = None
+    class_id:    Optional[str] = None
 
     model_config = {"from_attributes": True}

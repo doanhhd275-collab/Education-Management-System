@@ -174,9 +174,9 @@ export const enrollmentsApi = {
  * Documents API - Tài liệu học tập
  */
 export const documentsApi = {
-  list: (teacherId = null, page = 1, pageSize = 20) =>
+  list: (teacherId = null, page = 1, pageSize = 20, classId = null, courseId = null) =>
     apiClient.get("/documents", {
-      params: { teacher_id: teacherId, page, page_size: pageSize },
+      params: { teacher_id: teacherId, page, page_size: pageSize, class_id: classId, course_id: courseId },
     }),
 
   create: (data) => apiClient.post("/documents", data),
@@ -192,10 +192,8 @@ export const documentsApi = {
  * Assignments API - Bài tập
  */
 export const assignmentsApi = {
-  list: (classId = null, courseId = null) =>
-    apiClient.get("/assignments", {
-      params: { class_id: classId, course_id: courseId },
-    }),
+  list: (params = {}) =>
+    apiClient.get("/assignments", { params }),
 
   create: (data) => apiClient.post("/assignments", data),
 
@@ -208,6 +206,12 @@ export const assignmentsApi = {
 
   getReports: (assignmentId) =>
     apiClient.get(`/assignments/${assignmentId}/reports`),
+
+  gradeSubmission: (assignmentId, studentId, data) =>
+    apiClient.put(`/assignments/${assignmentId}/reports/${studentId}/grade`, data),
+
+  getMySubmissions: () =>
+    apiClient.get("/assignments/my-submissions"),
 
   submit: (assignmentId, data) =>
     apiClient.post(`/assignments/${assignmentId}/submit`, data),

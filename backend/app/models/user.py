@@ -323,13 +323,14 @@ class AssignmentReport(Base):
     """
     __tablename__ = "assignment_reports"
 
-    # Không đặt primary_key=True trên column khi đã dùng PrimaryKeyConstraint
     assignment_id = Column("AssignmentID", String(10), ForeignKey("assignments.AssignmentID"), nullable=False)
     class_id      = Column("ClassID",      String(10), nullable=False)
     submit_date   = Column("SubmitDate",   DateTime)
     student_id    = Column("StudentID",    String(10), nullable=False)
     lesson_id     = Column("LessonID",     String(10))
     link_url      = Column("LinkURL",      String(500))
+    grade         = Column("Grade",        Float)        # Điểm GV chấm (0-10)
+    feedback      = Column("Feedback",     String(500))  # Nhận xét của GV
 
     __table_args__ = (
         PrimaryKeyConstraint("AssignmentID", "StudentID"),
@@ -388,14 +389,16 @@ class LessonReport(Base):
 # ============================================================
 
 class Document(Base):
-    """ERD: DocumentID (PK), DocumentName, Deadline, TeacherID."""
+    """ERD: DocumentID (PK), DocumentName, Deadline, TeacherID, CourseID, ClassID."""
     __tablename__ = "documents"
 
     document_id   = Column("DocumentID",   String(10), primary_key=True)
     document_name = Column("DocumentName", String(50), nullable=False)
     deadline      = Column("Deadline",     DateTime)
     teacher_id    = Column("TeacherID",    String(10), ForeignKey("teachers.TeacherID"))
-    link_url      = Column("LinkURL",      String(500))  # Link đến tài liệu
+    link_url      = Column("LinkURL",      String(500))
+    course_id     = Column("CourseID",     String(10))  # Mã môn học
+    class_id      = Column("ClassID",      String(10))  # Mã lớp học
 
     # relationships
     teacher = relationship("Teacher", back_populates="documents")

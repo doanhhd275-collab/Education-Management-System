@@ -1,36 +1,47 @@
 /**
  * Trang Tài liệu học tập
- * - Teacher: đăng tài liệu (teacher_id tự động từ tài khoản)
- * - Student/All: xem và mở link tài liệu
+ * - Teacher: đăng tài liệu (chọn lớp/môn từ dropdown), teacher_id tự động từ JWT
+ * - Student/All: xem và mở link tài liệu (có thể lọc theo lớp)
  */
 import { useState, useEffect } from "react";
-import { documentsApi } from "../../api";
+import { documentsApi, classesApi } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 
-function CreateDocModal({ onClose, onCreated }) {
+/* ─── Modal đăng tài liệu (Teacher) ─────────────────────────────── */
+function CreateDocModal({ onClose, onCreated, myClasses }) {
   const [form, setForm] = useState({
     document_id: "",
     document_name: "",
     link_url: "",
     deadline: "",
+    class_id: "",
+    course_id: "",
   });
-  const [error, setError] = useState("");
+  const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleClassChange = (e) => {
+    const sel = myClasses.find((c) => c.class_id === e.target.value);
+    setForm((f) => ({
+      ...f,
+      class_id:  e.target.value,
+      course_id: sel ? sel.course_id : f.course_id,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
+    setLoading(true); setError("");
     try {
-      // teacher_id được backend tự lấy từ JWT — không cần gửi
       await documentsApi.create({
-        document_id: form.document_id,
+        document_id:   form.document_id,
         document_name: form.document_name,
-        link_url: form.link_url || undefined,
-        deadline: form.deadline || undefined,
+        link_url:      form.link_url  || undefined,
+        deadline:      form.deadline  || undefined,
+        class_id:      form.class_id  || undefined,
+        course_id:     form.course_id || undefined,
       });
-      onCreated();
-      onClose();
+      onCreated(); onClose();
     } catch (err) {
       setError(err.response?.data?.detail || "Tạo tài liệu thất bại");
     } finally {
@@ -51,41 +62,54 @@ function CreateDocModal({ onClose, onCreated }) {
             <div className="form-group">
               <label className="form-label">Mã tài liệu *</label>
               <input
-                className="form-input"
-                placeholder="VD: DOC010"
-                required
-                maxLength={10}
-                value={form.document_id}
-                onChange={(e) => setForm({ ...form, document_id: e.target.value })}
+                className="form-input" placeholder="VD: DOC010" required maxLength={10}
+                value={form.document_id} onChange={(e) => setForm({ ...form, document_id: e.target.value })}
               />
             </div>
             <div className="form-group">
               <label className="form-label">Tên tài liệu *</label>
               <input
-                className="form-input"
-                placeholder="VD: Slide bài giảng Tuần 1"
-                required
-                value={form.document_name}
-                onChange={(e) => setForm({ ...form, document_name: e.target.value })}
+                className="form-input" placeholder="VD: Slide bài giảng Tuần 1" required
+                value={form.document_name} onChange={(e) => setForm({ ...form, document_name: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Lớp học</label>
+              {myClasses.length > 0 ? (
+                <select className="form-input" value={form.class_id} onChange={handleClassChange}>
+                  <option value="">-- Chọn lớp (tùy chọn) --</option>
+                  {myClasses.map((c) => (
+                    <option key={c.class_id} value={c.class_id}>
+                      {c.course_id} · {c.class_id}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  className="form-input" placeholder="VD: CS101-01" maxLength={10}
+                  value={form.class_id} onChange={(e) => setForm({ ...form, class_id: e.target.value })}
+                />
+              )}
+            </div>
+            <div className="form-group">
+              <label className="form-label">Mã môn học</label>
+              <input
+                className="form-input" placeholder="VD: CS101" maxLength={10}
+                value={form.course_id} onChange={(e) => setForm({ ...form, course_id: e.target.value })}
               />
             </div>
             <div className="form-group">
               <label className="form-label">Link tài liệu</label>
               <input
-                className="form-input"
-                type="url"
-                placeholder="https://drive.google.com/..."
-                value={form.link_url}
-                onChange={(e) => setForm({ ...form, link_url: e.target.value })}
+                className="form-input" type="url" placeholder="https://drive.google.com/..."
+                value={form.link_url} onChange={(e) => setForm({ ...form, link_url: e.target.value })}
               />
             </div>
             <div className="form-group">
               <label className="form-label">Hạn (tuỳ chọn)</label>
               <input
-                className="form-input"
-                type="datetime-local"
-                value={form.deadline}
-                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+                className="form-input" type="datetime-local"
+                value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })}
               />
             </div>
           </form>
@@ -101,19 +125,43 @@ function CreateDocModal({ onClose, onCreated }) {
   );
 }
 
+/* ─── Main Page ───────────────────────────────────────────────── */
 export default function DocumentsPage() {
-  const { isTeacher, isAdmin } = useAuth();
-  const [docs, setDocs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showCreate, setShowCreate] = useState(false);
-  const [search, setSearch] = useState("");
-  const [error, setError] = useState("");
+  const { isTeacher, isAdmin, isStudent, user } = useAuth();
+  const [docs,        setDocs]        = useState([]);
+  const [myClasses,   setMyClasses]   = useState([]);
+  const [filterClass, setFilterClass] = useState("");
+  const [loading,     setLoading]     = useState(true);
+  const [showCreate,  setShowCreate]  = useState(false);
+  const [search,      setSearch]      = useState("");
+  const [error,       setError]       = useState("");
 
-  const loadDocs = async () => {
+  const loadAll = async () => {
     setLoading(true);
     try {
-      const res = await documentsApi.list(null, 1, 100);
-      setDocs(res.data);
+      const params = { page: 1, page_size: 100 };
+      if (filterClass) params.class_id = filterClass;
+
+      const [docRes, classRes] = await Promise.all([
+        documentsApi.list(null, params.page, params.page_size, filterClass || undefined),
+        classesApi.list(),
+      ]);
+      setDocs(docRes.data);
+
+      // Lấy danh sách lớp liên quan đến user
+      if (user?.user_id) {
+        let filtered = [];
+        if (isTeacher) {
+          filtered = classRes.data.filter((c) =>
+            c.teachers?.some((t) => t.teacher_id === user.user_id || t.user_id === user.user_id)
+          );
+        } else if (isStudent) {
+          filtered = classRes.data.filter((c) =>
+            c.students?.some((s) => s.student_id === user.user_id || s.user_id === user.user_id)
+          );
+        }
+        setMyClasses(filtered.length > 0 ? filtered : classRes.data);
+      }
     } catch {
       setError("Không thể tải tài liệu");
     } finally {
@@ -121,29 +169,28 @@ export default function DocumentsPage() {
     }
   };
 
-  useEffect(() => { loadDocs(); }, []);
+  useEffect(() => { loadAll(); }, [filterClass]);
 
   const handleDelete = async (docId) => {
-    if (!window.confirm("Xóa tài liệu này?")) return;
+    if (!confirm("Xóa tài liệu này?")) return;
     try {
       await documentsApi.delete(docId);
-      setDocs((prev) => prev.filter((d) => d.document_id !== docId));
-    } catch (err) {
-      setError(err.response?.data?.detail || "Xóa thất bại");
+      loadAll();
+    } catch {
+      alert("Xóa thất bại");
     }
   };
 
   const filtered = docs.filter((d) =>
-    d.document_name?.toLowerCase().includes(search.toLowerCase()) ||
-    d.teacher_id?.toLowerCase().includes(search.toLowerCase())
+    !search || d.document_name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">📄 Tài liệu học tập</h2>
-          <p className="page-subtitle">{docs.length} tài liệu</p>
+          <h2 className="page-title">📁 Tài liệu học tập</h2>
+          <p className="page-subtitle">{filtered.length} tài liệu</p>
         </div>
         {(isTeacher || isAdmin) && (
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
@@ -152,78 +199,112 @@ export default function DocumentsPage() {
         )}
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
-
-      <div className="search-bar">
-        <div className="search-input-wrapper">
-          <span className="search-icon">🔍</span>
-          <input
-            className="form-input"
-            placeholder="Tìm tài liệu..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+      {/* Thanh lọc */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        <input
+          className="form-input"
+          style={{ flex: 1, minWidth: 200 }}
+          placeholder="🔍 Tìm tài liệu..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select
+          className="form-input"
+          style={{ minWidth: 240 }}
+          value={filterClass}
+          onChange={(e) => setFilterClass(e.target.value)}
+        >
+          <option value="">📚 Tất cả lớp học</option>
+          {myClasses.map((c) => (
+            <option key={c.class_id} value={c.class_id}>
+              {c.course_id} · {c.class_id}
+            </option>
+          ))}
+        </select>
+        {filterClass && (
+          <button className="btn btn-secondary btn-sm" onClick={() => setFilterClass("")}>
+            ✕ Xóa lọc
+          </button>
+        )}
       </div>
+
+      {error && <div className="alert alert-error">⚠️ {error}</div>}
 
       {loading ? (
         <div className="loading-page"><div className="spinner" /> Đang tải...</div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📄</div>
+          <div className="empty-state-icon">📁</div>
           <h3>Chưa có tài liệu nào</h3>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {filtered.map((doc) => (
-            <div key={doc.document_id} className="card" style={{ position: "relative" }}>
-              <div style={{ fontSize: 32, marginBottom: 10 }}>📄</div>
-              <div style={{ fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>
-                {doc.document_name}
+            <div key={doc.document_id} className="card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* Icon + tên */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{
+                  width: 42, height: 42, borderRadius: 10,
+                  background: "var(--bg-card-hover)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 22, flexShrink: 0
+                }}>📄</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14,
+                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {doc.document_name}
+                  </div>
+                  {/* Mã môn + lớp */}
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2, display: "flex", gap: 8 }}>
+                    {doc.course_id && (
+                      <span className="badge badge-muted" style={{ fontSize: 11 }}>{doc.course_id}</span>
+                    )}
+                    {doc.class_id && (
+                      <span className="badge badge-muted" style={{ fontSize: 11 }}>{doc.class_id}</span>
+                    )}
+                    {!doc.course_id && !doc.class_id && (
+                      <span>ID: {doc.document_id} · GV: {doc.teacher_id || "—"}</span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 8 }}>
-                ID: <span className="badge badge-muted">{doc.document_id}</span>
-                {" · "}Giáo viên: <span className="badge badge-primary">{doc.teacher_id || "—"}</span>
-              </div>
-              {doc.deadline && (
-                <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 8 }}>
-                  📅 Hạn: {new Date(doc.deadline).toLocaleDateString("vi-VN")}
+
+              {/* GV / deadline */}
+              {(doc.teacher_id || doc.deadline) && (
+                <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", gap: 12 }}>
+                  {doc.teacher_id && <span>GV: <strong>{doc.teacher_id}</strong></span>}
+                  {doc.deadline && (
+                    <span>Hạn: {new Date(doc.deadline).toLocaleDateString("vi-VN")}</span>
+                  )}
                 </div>
               )}
 
-              {/* Link tài liệu */}
-              {doc.link_url ? (
-                <a
-                  href={doc.link_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-secondary btn-sm"
-                  style={{ display: "inline-block", marginBottom: 8 }}
-                >
-                  🔗 Mở tài liệu
-                </a>
-              ) : (
-                <span style={{ fontSize: 12, color: "var(--text-muted)", display: "block", marginBottom: 8 }}>
-                  Chưa có link
-                </span>
-              )}
-
-              {(isTeacher || isAdmin) && (
-                <button
-                  className="btn btn-danger btn-sm"
-                  style={{ marginTop: 4 }}
-                  onClick={() => handleDelete(doc.document_id)}
-                >
-                  🗑️ Xóa
-                </button>
-              )}
+              {/* Actions */}
+              <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
+                {doc.link_url ? (
+                  <a href={doc.link_url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">
+                    🔗 Mở tài liệu
+                  </a>
+                ) : (
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Không có link</span>
+                )}
+                {(isTeacher || isAdmin) && (
+                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(doc.document_id)}>
+                    🗑 Xóa
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
       )}
 
       {showCreate && (
-        <CreateDocModal onClose={() => setShowCreate(false)} onCreated={loadDocs} />
+        <CreateDocModal
+          onClose={() => setShowCreate(false)}
+          onCreated={loadAll}
+          myClasses={myClasses}
+        />
       )}
     </div>
   );

@@ -18,7 +18,7 @@ from app.core.dependencies import get_db, get_current_user, require_role
 from app.models.user import Assignment, AssignmentReport, Teacher, Student, User
 from app.schemas.assignment import (
     AssignmentCreate, AssignmentUpdate, AssignmentResponse,
-    AssignmentReportCreate, AssignmentReportResponse
+    AssignmentReportCreate, AssignmentReportResponse, GradeSubmission
 )
 
 router = APIRouter(prefix="/assignments", tags=["Bài tập"])
@@ -66,6 +66,31 @@ def create_assignment(
     db.commit()
     db.refresh(assignment)
     return assignment
+
+
+@router.get("/my-submissions")
+def get_my_submissions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Sinh viên xem tất cả bài nộp của mình (kèm điểm)."""
+    reports = db.query(AssignmentReport).filter(
+        AssignmentReport.student_id == current_user.user_id
+    ).all()
+    result = []
+    for r in reports:
+        ass = r.assignment
+        result.append({
+            "assignment_id":   r.assignment_id,
+            "assignment_name": ass.assignment_name if ass else r.assignment_id,
+            "course_id":       ass.course_id if ass else None,
+            "class_id":        r.class_id,
+            "submit_date":     r.submit_date,
+            "link_url":        r.link_url,
+            "grade":           r.grade,
+            "feedback":        r.feedback,
+        })
+    return result
 
 
 @router.get("/{assignment_id}", response_model=AssignmentResponse)
@@ -147,6 +172,55 @@ def get_assignment_reports(
             "lesson_id":     r.lesson_id,
             "submit_date":   r.submit_date,
             "link_url":      r.link_url,
+            "grade":         r.grade,
+            "feedback":      r.feedback,
+        })
+    return result
+
+
+@router.put("/{assignment_id}/reports/{student_id}/grade")
+def grade_submission(
+    assignment_id: str,
+    student_id: str,
+    data: GradeSubmission,
+    db: Session = Depends(get_db),
+    _=Depends(require_role("TEACHER", "ADMIN"))
+):
+    """Giáo viên chấm điểm bài nộp của sinh viên."""
+    report = db.query(AssignmentReport).filter(
+        AssignmentReport.assignment_id == assignment_id,
+        AssignmentReport.student_id == student_id
+    ).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Không tìm thấy bài nộp")
+    report.grade    = data.grade
+    report.feedback = data.feedback
+    db.commit()
+    db.refresh(report)
+    return {"message": "Đã chấm điểm", "grade": report.grade, "feedback": report.feedback}
+
+
+@router.get("/my-submissions")
+def get_my_submissions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Sinh viên xem tất cả bài nộp của mình (kèm điểm)."""
+    reports = db.query(AssignmentReport).filter(
+        AssignmentReport.student_id == current_user.user_id
+    ).all()
+    result = []
+    for r in reports:
+        ass = r.assignment
+        result.append({
+            "assignment_id":   r.assignment_id,
+            "assignment_name": ass.assignment_name if ass else r.assignment_id,
+            "course_id":       ass.course_id if ass else None,
+            "class_id":        r.class_id,
+            "submit_date":     r.submit_date,
+            "link_url":        r.link_url,
+            "grade":           r.grade,
+            "feedback":        r.feedback,
         })
     return result
 
@@ -180,7 +254,22 @@ def submit_assignment(
         AssignmentReport.student_id == data.student_id
     ).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Bạn đã nộp bài này rồi")
+        # Cho nộp lại: cập nhật link mới
+        existing.link_url    = data.link_url
+        existing.submit_date = data.submit_date or datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(existing)
+        return {
+            "assignment_id": existing.assignment_id,
+            "student_id":    existing.student_id,
+            "student_name":  None,
+            "class_id":      existing.class_id,
+            "lesson_id":     existing.lesson_id,
+            "submit_date":   existing.submit_date,
+            "link_url":      existing.link_url,
+            "grade":         existing.grade,
+            "feedback":      existing.feedback,
+        }
 
     report = AssignmentReport(
         assignment_id=assignment_id,

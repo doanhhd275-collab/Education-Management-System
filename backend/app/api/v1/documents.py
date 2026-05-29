@@ -25,15 +25,21 @@ def _get_teacher_by_user(db: Session, user_id: str) -> Teacher | None:
 @router.get("", response_model=list[DocumentResponse])
 def list_documents(
     teacher_id: str | None = Query(None, description="Lọc theo giáo viên"),
+    course_id:  str | None = Query(None, description="Lọc theo môn học"),
+    class_id:   str | None = Query(None, description="Lọc theo lớp"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user)  # Mọi user đăng nhập đều xem được
+    _: User = Depends(get_current_user)
 ):
     """Lấy danh sách tài liệu học tập."""
     query = db.query(Document)
     if teacher_id:
         query = query.filter(Document.teacher_id == teacher_id)
+    if course_id:
+        query = query.filter(Document.course_id == course_id)
+    if class_id:
+        query = query.filter(Document.class_id == class_id)
     return query.offset((page - 1) * page_size).limit(page_size).all()
 
 
@@ -77,6 +83,8 @@ def create_document(
         deadline=data.deadline,
         teacher_id=teacher_id,
         link_url=data.link_url,
+        course_id=data.course_id,
+        class_id=data.class_id,
     )
     db.add(doc)
     db.commit()

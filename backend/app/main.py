@@ -62,6 +62,20 @@ def _run_migrations():
             conn.execute(__import__('sqlalchemy').text(
                 'ALTER TABLE classes ADD COLUMN IF NOT EXISTS "Room" VARCHAR(20);'
             ))
+            # Tài liệu: thêm mã môn và lớp học
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE documents ADD COLUMN IF NOT EXISTS "CourseID" VARCHAR(10);'
+            ))
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE documents ADD COLUMN IF NOT EXISTS "ClassID" VARCHAR(10);'
+            ))
+            # Bài nộp: thêm điểm và nhận xét
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE assignment_reports ADD COLUMN IF NOT EXISTS "Grade" FLOAT;'
+            ))
+            conn.execute(__import__('sqlalchemy').text(
+                'ALTER TABLE assignment_reports ADD COLUMN IF NOT EXISTS "Feedback" VARCHAR(500);'
+            ))
             conn.commit()
         logger.info("✅ Migration hoàn tất.")
     except Exception as e:
