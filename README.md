@@ -18,7 +18,9 @@
 - [Tài khoản mặc định](#tài-khoản-mặc-định)
 - [API Endpoints](#api-endpoints)
 - [Cấu trúc dự án](#cấu-trúc-dự-án)
+- [Quy trình tạo lớp học](#quy-trình-tạo-lớp-học)
 - [Deploy Production](#deploy-production)
+- [Lỗi đã biết & Giải pháp](#lỗi-đã-biết--giải-pháp)
 
 ---
 
@@ -237,25 +239,27 @@ Base URL: `http://localhost:8000/api/v1`
 | `DELETE` | `/enrollments/{id}` | Hủy đăng ký | STUDENT |
 
 ### ✅ Attendance
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| `GET` | `/attendance/class/{class_id}` | Lịch sử điểm danh |
-| `POST` | `/attendance` | Tạo buổi điểm danh |
-| `PUT` | `/attendance/{id}` | Cập nhật điểm danh |
+| Method | Endpoint | Mô tả | Role |
+|---|---|---|---|
+| `GET` | `/attendance/class/{class_id}` | Lịch sử điểm danh | ADMIN, TEACHER, STUDENT |
+| `POST` | `/attendance` | Tạo buổi & điểm danh sinh viên | TEACHER |
+| `PUT` | `/attendance/{id}` | Cập nhật điểm danh | TEACHER |
 
 ### 📊 Grading
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| `GET` | `/grading/{course_id}/{class_id}` | Bảng điểm lớp |
-| `POST/PUT` | `/grading` | Nhập/cập nhật điểm |
+| Method | Endpoint | Mô tả | Role |
+|---|---|---|---|
+| `GET` | `/grading/{course_id}/{class_id}` | Bảng điểm lớp | ADMIN, TEACHER |
+| `POST` | `/grading` | Nhập điểm sinh viên | TEACHER |
+| `PUT` | `/grading/{id}` | Cập nhật điểm | TEACHER |
 
 ### 📚 Assignments
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| `GET` | `/assignments` | Danh sách bài tập |
-| `POST` | `/assignments` | Tạo bài tập |
-| `POST` | `/assignments/{id}/submit` | Nộp bài (link URL) |
-| `GET` | `/assignments/{id}/submissions` | Xem bài nộp |
+| Method | Endpoint | Mô tả | Role |
+|---|---|---|---|
+| `GET` | `/assignments` | Danh sách bài tập | ADMIN, TEACHER, STUDENT |
+| `POST` | `/assignments` | Tạo bài tập | TEACHER |
+| `DELETE` | `/assignments/{id}` | Xóa bài tập | TEACHER |
+| `POST` | `/assignments/{id}/submit` | Nộp bài (link URL) | STUDENT |
+| `GET` | `/assignments/{id}/submissions` | Xem bài nộp của sinh viên | TEACHER |
 
 ---
 
@@ -275,10 +279,9 @@ Education-Management-System/
 │   │   │   ├── curriculum.py   # Chương trình đào tạo
 │   │   │   ├── enrollments.py  # Đăng ký học
 │   │   │   ├── attendance.py   # Điểm danh
-│   │   │   ├── assignments.py  # Bài tập
-│   │   │   ├── documents.py    # Tài liệu
-│   │   │   ├── logs.py         # Nhật ký hệ thống
-│   │   │   └── grading.py      # Điểm số (nếu có)
+│   │   │   ├── assignments.py  # Bài tập + chấm điểm
+│   │   │   ├── documents.py    # Tài liệu học tập
+│   │   │   └── logs.py         # Nhật ký hệ thống
 │   │   ├── core/
 │   │   │   ├── database.py     # SQLAlchemy engine/session
 │   │   │   ├── dependencies.py # get_db, get_current_user, require_role
