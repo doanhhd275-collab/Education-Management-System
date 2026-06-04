@@ -222,7 +222,7 @@ function SubmitModal({ assignment, studentId, onClose, onSubmitted }) {
 /* ─── Modal tạo bài tập (Teacher) ────────────────────────────── */
 function CreateAssignmentModal({ onClose, onCreated, myClasses }) {
   const [form, setForm] = useState({
-    assignment_id: "", assignment_name: "",
+    assignment_name: "",
     class_id: "", course_id: "", link_url: "", deadline: "",
   });
   const [error,   setError]   = useState("");
@@ -237,12 +237,15 @@ function CreateAssignmentModal({ onClose, onCreated, myClasses }) {
     }));
   };
 
+  // Tự sinh ID ngắn dạng ASS-xxxx
+  const genId = () => "ASS-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); setError("");
     try {
       await assignmentsApi.create({
-        assignment_id: form.assignment_id,
+        assignment_id: genId(),
         assignment_name: form.assignment_name,
         class_id: form.class_id,
         course_id: form.course_id,
@@ -270,10 +273,6 @@ function CreateAssignmentModal({ onClose, onCreated, myClasses }) {
           {error && <div className="alert alert-error">⚠️ {error}</div>}
           <form id="assign-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">Mã bài tập *</label>
-              <input className="form-input" placeholder="VD: ASS001" required maxLength={10} {...f("assignment_id")} />
-            </div>
-            <div className="form-group">
               <label className="form-label">Tên bài tập *</label>
               <input className="form-input" placeholder="VD: Bài tập lập trình tuần 1" required {...f("assignment_name")} />
             </div>
@@ -291,10 +290,6 @@ function CreateAssignmentModal({ onClose, onCreated, myClasses }) {
               ) : (
                 <input className="form-input" placeholder="VD: CS101-01" required maxLength={10} {...f("class_id")} />
               )}
-            </div>
-            <div className="form-group">
-              <label className="form-label">Mã môn *</label>
-              <input className="form-input" placeholder="VD: CS101" required maxLength={10} {...f("course_id")} />
             </div>
             <div className="form-group">
               <label className="form-label">Link đề bài</label>

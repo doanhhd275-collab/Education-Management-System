@@ -232,12 +232,18 @@ export default function AttendancePage() {
           <div className="flex gap-16" style={{ alignItems: "flex-end" }}>
             <div className="form-group" style={{ flex: 1, margin: 0 }}>
               <label className="form-label">Lọc theo lớp</label>
-              <input
+              <select
                 className="form-input"
-                placeholder="Nhập mã lớp..."
                 value={filterClass}
                 onChange={(e) => setFilterClass(e.target.value)}
-              />
+              >
+                <option value="">-- Tất cả lớp --</option>
+                {classes.map((c) => (
+                  <option key={c.class_id} value={c.class_id}>
+                    {c.course_id} · {c.class_id}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-group" style={{ flex: 1, margin: 0 }}>
               <label className="form-label">Lọc theo sinh viên</label>
