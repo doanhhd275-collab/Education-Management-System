@@ -61,6 +61,7 @@ class AssignmentReportResponse(AssignmentReportBase):
     student_name: Optional[str]      = None  # join từ User
     grade:        Optional[float]    = None  # Điểm GV chấm
     feedback:     Optional[str]      = None  # Nhận xét GV
+    is_late:      Optional[bool]     = None  # Nộp muộn (submit_date > deadline)
 
     model_config = {"from_attributes": True}
 

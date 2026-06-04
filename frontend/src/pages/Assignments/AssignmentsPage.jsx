@@ -73,6 +73,7 @@ function ViewReportsModal({ assignment, onClose }) {
                   <th>Họ tên</th>
                   <th>Ngày nộp</th>
                   <th>Link bài nộp</th>
+                  <th style={{ textAlign: "center" }}>Muộn</th>
                   <th style={{ width: 90 }}>Điểm</th>
                   <th>Nhận xét</th>
                   <th></th>
@@ -92,6 +93,13 @@ function ViewReportsModal({ assignment, onClose }) {
                           🔗 Xem bài
                         </a>
                       ) : <span style={{ color: "var(--text-muted)", fontSize: 12 }}>Chưa nộp</span>}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {r.is_late
+                        ? <span className="badge badge-warning" title="Nộp muộn">⏰ Muộn</span>
+                        : r.submit_date
+                          ? <span className="badge badge-success">✅ Đúng hạn</span>
+                          : <span style={{ color: "var(--text-muted)", fontSize: 12 }}>—</span>}
                     </td>
                     <td>
                       <input
@@ -443,6 +451,9 @@ export default function AssignmentsPage() {
                     {isStudent && mySub && mySub.grade == null && (
                       <span className="badge badge-muted">📤 Đã nộp · Chờ chấm</span>
                     )}
+                    {isStudent && mySub?.is_late && (
+                      <span className="badge badge-warning" title="Bài nộp sau deadline">⏰ Nộp muộn</span>
+                    )}
                   </div>
                 </div>
 
@@ -471,8 +482,7 @@ export default function AssignmentsPage() {
                     <button
                       className={`btn btn-sm ${mySub ? "btn-warning" : "btn-success"}`}
                       onClick={() => setSubmitTarget(a)}
-                      disabled={isOverdue(a.deadline) && !mySub}
-                      title={isOverdue(a.deadline) ? "Đã quá hạn nộp bài" : (mySub ? "Nộp lại" : "Nộp bài")}
+                      title={isOverdue(a.deadline) ? "Quá hạn — vẫn có thể nộp muộn" : (mySub ? "Nộp lại" : "Nộp bài")}
                     >
                       {mySub ? "🔄 Nộp lại" : "📤 Nộp bài"}
                     </button>

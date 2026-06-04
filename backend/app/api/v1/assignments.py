@@ -164,6 +164,8 @@ def get_assignment_reports(
     result = []
     for r in reports:
         student_name = r.student.user.name if r.student and r.student.user else None
+        deadline = r.assignment.deadline if r.assignment else None
+        is_late = bool(deadline and r.submit_date and r.submit_date.replace(tzinfo=None) > deadline.replace(tzinfo=None)) if r.submit_date else None
         result.append({
             "assignment_id": r.assignment_id,
             "student_id":    r.student_id,
@@ -174,6 +176,7 @@ def get_assignment_reports(
             "link_url":      r.link_url,
             "grade":         r.grade,
             "feedback":      r.feedback,
+            "is_late":       is_late,
         })
     return result
 
@@ -259,6 +262,9 @@ def submit_assignment(
         existing.submit_date = data.submit_date or datetime.now(timezone.utc)
         db.commit()
         db.refresh(existing)
+        deadline = assignment.deadline
+        sub_dt   = existing.submit_date
+        is_late  = bool(deadline and sub_dt and sub_dt.replace(tzinfo=None) > deadline.replace(tzinfo=None))
         return {
             "assignment_id": existing.assignment_id,
             "student_id":    existing.student_id,
@@ -269,6 +275,7 @@ def submit_assignment(
             "link_url":      existing.link_url,
             "grade":         existing.grade,
             "feedback":      existing.feedback,
+            "is_late":       is_late,
         }
 
     report = AssignmentReport(
@@ -282,6 +289,9 @@ def submit_assignment(
     db.add(report)
     db.commit()
     db.refresh(report)
+    deadline = assignment.deadline
+    sub_dt   = report.submit_date
+    is_late  = bool(deadline and sub_dt and sub_dt.replace(tzinfo=None) > deadline.replace(tzinfo=None))
     return {
         "assignment_id": report.assignment_id,
         "student_id":    report.student_id,
@@ -290,4 +300,5 @@ def submit_assignment(
         "lesson_id":     report.lesson_id,
         "submit_date":   report.submit_date,
         "link_url":      report.link_url,
+        "is_late":       is_late,
     }
