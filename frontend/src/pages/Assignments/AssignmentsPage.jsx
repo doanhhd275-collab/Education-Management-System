@@ -227,6 +227,74 @@ function SubmitModal({ assignment, studentId, onClose, onSubmitted }) {
   );
 }
 
+/* ─── Modal xác nhận xóa bài tập (Teacher/Admin) ─────────────── */
+function DeleteConfirmModal({ assignment, onClose, onDeleted }) {
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState("");
+
+  const handleDelete = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await assignmentsApi.delete(assignment.assignment_id);
+      onDeleted();
+      onClose();
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Xóa bài tập thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">🗑️ Xóa bài tập</h2>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          <div style={{
+            background: "rgba(239,68,68,0.08)",
+            border: "1.5px solid rgba(239,68,68,0.25)",
+            borderRadius: 10,
+            padding: "16px 20px",
+            marginBottom: 16,
+          }}>
+            <p style={{ margin: 0, fontWeight: 600, color: "var(--text-primary)", marginBottom: 6 }}>
+              Bạn có chắc chắn muốn xóa bài tập này?
+            </p>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--text-secondary)" }}>
+              <span className="badge badge-primary" style={{ marginRight: 8 }}>{assignment.assignment_id}</span>
+              {assignment.assignment_name}
+            </p>
+            <p style={{ margin: "10px 0 0", fontSize: 12, color: "#ef4444" }}>
+              ⚠️ Hành động này không thể hoàn tác. Tất cả bài nộp liên quan cũng sẽ bị xóa.
+            </p>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose} disabled={loading}>Hủy</button>
+          <button
+            className="btn btn-danger"
+            onClick={handleDelete}
+            disabled={loading}
+            style={{
+              background: "linear-gradient(135deg,#ef4444,#dc2626)",
+              color: "#fff",
+              border: "none",
+            }}
+          >
+            {loading ? "Đang xóa..." : "🗑️ Xác nhận xóa"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Modal tạo bài tập (Teacher) ────────────────────────────── */
 function CreateAssignmentModal({ onClose, onCreated, myClasses }) {
   const [form, setForm] = useState({
@@ -331,6 +399,7 @@ export default function AssignmentsPage() {
   const [showCreate,   setShowCreate]   = useState(false);
   const [submitTarget, setSubmitTarget] = useState(null);
   const [viewReportsTarget, setViewReportsTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [error, setError] = useState("");
 
   const loadAll = async () => {
@@ -493,6 +562,22 @@ export default function AssignmentsPage() {
                       📄 Xem bài nộp
                     </button>
                   )}
+
+                  {(isTeacher || isAdmin) && (
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        background: "rgba(239,68,68,0.1)",
+                        color: "#ef4444",
+                        border: "1px solid rgba(239,68,68,0.3)",
+                        fontWeight: 600,
+                      }}
+                      onClick={() => setDeleteTarget(a)}
+                      title="Xóa bài tập"
+                    >
+                      🗑️ Xóa
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -519,6 +604,13 @@ export default function AssignmentsPage() {
         <ViewReportsModal
           assignment={viewReportsTarget}
           onClose={() => setViewReportsTarget(null)}
+        />
+      )}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          assignment={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onDeleted={loadAll}
         />
       )}
     </div>
