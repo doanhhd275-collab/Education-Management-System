@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>UC05 – Sequence Diagram: Learning Support</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Times New Roman', Times, serif; background: #f0ede8; padding: 24px 16px; }
+  h1 { text-align: center; font-size: 17px; font-weight: bold; margin-bottom: 4px; color: #111; }
+  .sub { text-align: center; font-size: 12px; color: #666; margin-bottom: 18px; }
+  svg { display: block; margin: 0 auto; background: #fff;
+        border: 1.5px solid #999; box-shadow: 3px 3px 10px rgba(0,0,0,.15); }
+  .legend { width: 850px; margin: 12px auto 0; display: flex; gap: 18px; flex-wrap: wrap;
+            font-size: 11px; color: #444; border-top: 1px solid #bbb; padding-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Sequence Diagram — UC05: Learning Support</h1>
+<p class="sub">Scenario: Create Assignment · Submit Assignment · Grade Submission</p>
+
+<!--
+  Participant lifeline centers:
+    Teacher=80  Student=220  LearningSupport=385  AssignmentDB=545  AssignmentReportDB=725
+  Row spacing: 40px  |  Canvas: 850 × 920
+-->
+<svg width="850" height="920" xmlns="http://www.w3.org/2000/svg"
+     font-family="'Times New Roman', Times, serif">
+<defs>
+  <marker id="mf" markerWidth="9" markerHeight="8" refX="8.5" refY="4" orient="auto">
+    <polygon points="0,0 9,4 0,8" fill="#333"/>
+  </marker>
+  <marker id="mr" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto">
+    <polyline points="0,0 9,4.5 0,9" fill="none" stroke="#666" stroke-width="1.3"/>
+  </marker>
+</defs>
+
+<!-- PARTICIPANT BOXES (top) -->
+<rect x="15"  y="22" width="130" height="36" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="80"  y="44" font-size="12" font-weight="bold" text-anchor="middle">Teacher</text>
+
+<rect x="155" y="22" width="130" height="36" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="220" y="44" font-size="12" font-weight="bold" text-anchor="middle">Student</text>
+
+<rect x="320" y="22" width="130" height="36" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="385" y="38" font-size="11" font-weight="bold" text-anchor="middle">Learning</text>
+<text x="385" y="52" font-size="11" font-weight="bold" text-anchor="middle">Support</text>
+
+<rect x="480" y="22" width="130" height="36" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="545" y="44" font-size="12" font-weight="bold" text-anchor="middle">AssignmentDB</text>
+
+<rect x="655" y="22" width="140" height="36" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="725" y="38" font-size="11" font-weight="bold" text-anchor="middle">Assignment</text>
+<text x="725" y="52" font-size="11" font-weight="bold" text-anchor="middle">ReportDB</text>
+
+<!-- LIFELINES -->
+<line x1="80"  y1="58" x2="80"  y2="858" stroke="#bbb" stroke-width="1.2" stroke-dasharray="7,4"/>
+<line x1="220" y1="58" x2="220" y2="858" stroke="#bbb" stroke-width="1.2" stroke-dasharray="7,4"/>
+<line x1="385" y1="58" x2="385" y2="858" stroke="#bbb" stroke-width="1.2" stroke-dasharray="7,4"/>
+<line x1="545" y1="58" x2="545" y2="858" stroke="#bbb" stroke-width="1.2" stroke-dasharray="7,4"/>
+<line x1="725" y1="58" x2="725" y2="858" stroke="#bbb" stroke-width="1.2" stroke-dasharray="7,4"/>
+
+<!-- ACTIVATION BARS -->
+<!-- Teacher active whole time (initiates sec 1 & 3) -->
+<rect x="75"  y="108" width="10" height="702" fill="#d6eaff" stroke="#88a" stroke-width="1"/>
+<!-- LearningSupport active whole time (mediator) -->
+<rect x="380" y="108" width="10" height="702" fill="#d6eaff" stroke="#88a" stroke-width="1"/>
+<!-- Student active in sections 2 -->
+<rect x="215" y="318" width="10" height="312" fill="#d6eaff" stroke="#88a" stroke-width="1"/>
+
+<!-- Section 1: AssignmentDB active for save(Assignment) (y=170..210) -->
+<rect x="540" y="170" width="10" height="40" fill="#d6eaff" stroke="#88a" stroke-width="1"/>
+
+<!-- Section 2: AssignmentDB active for findAssignment (y=378..418) -->
+<rect x="540" y="378" width="10" height="40" fill="#d6eaff" stroke="#88a" stroke-width="1"/>
+<!-- Section 2 alt [within deadline]: AssignmentReportDB active for save (y=490..530) -->
+<rect x="720" y="490" width="10" height="40" fill="#d6eaff" stroke="#88a" stroke-width="1"/>
+
+<!-- Section 3: AssignmentReportDB active for find (y=700..740) and update (y=758..798) -->
+<rect x="720" y="700" width="10" height="40" fill="#d6eaff" stroke="#88a" stroke-width="1"/>
+<rect x="720" y="758" width="10" height="40" fill="#d6eaff" stroke="#88a" stroke-width="1"/>
+
+<!-- ── SECTION 1: Create Assignment ── -->
+<text x="20" y="100" font-size="10.5" fill="#777" font-style="italic">1. Teacher creates assignment</text>
+
+<!-- 1→ Teacher → LearningSupport: createAssignment -->
+<text x="232" y="121" text-anchor="middle" font-size="11">createAssignment(name, deadline, classID, linkURL)</text>
+<line x1="85" y1="130" x2="377" y2="130" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+
+<!-- 2→ LearningSupport → AssignmentDB: save -->
+<text x="465" y="161" text-anchor="middle" font-size="11">save(Assignment)</text>
+<line x1="390" y1="170" x2="537" y2="170" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+
+<!-- 3← AssignmentDB → LearningSupport: Assignment object -->
+<text x="465" y="201" text-anchor="middle" font-size="10.5" fill="#555">Assignment object</text>
+<line x1="540" y1="210" x2="393" y2="210" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+
+<!-- 4← LearningSupport → Teacher: 201 Created -->
+<text x="232" y="241" text-anchor="middle" font-size="10.5" fill="#555">201 Created</text>
+<line x1="380" y1="250" x2="88" y2="250" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+
+<!-- ── SECTION 2: Student submits ── -->
+<line x1="20" y1="276" x2="820" y2="276" stroke="#ddd" stroke-width="1"/>
+<text x="20" y="290" font-size="10.5" fill="#777" font-style="italic">2. Student submits assignment</text>
+
+<!-- 5→ Student → LearningSupport: submitAssignment -->
+<text x="302" y="313" text-anchor="middle" font-size="11">submitAssignment(assignmentID, linkURL)</text>
+<line x1="225" y1="322" x2="377" y2="322" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+
+<!-- 6→ LearningSupport → AssignmentDB: findAssignment -->
+<text x="465" y="369" text-anchor="middle" font-size="11">findAssignment(assignmentID)</text>
+<line x1="390" y1="378" x2="537" y2="378" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+
+<!-- 7← AssignmentDB → LearningSupport: Assignment { deadline } -->
+<text x="465" y="409" text-anchor="middle" font-size="10.5" fill="#555">Assignment { deadline }</text>
+<line x1="540" y1="418" x2="393" y2="418" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+
+<!-- ALT box -->
+<rect x="50" y="436" width="770" height="196" fill="rgba(220,236,255,0.12)" stroke="#444" stroke-width="1.3"/>
+<polygon points="50,436 94,436 94,454 88,461 50,461" fill="#c8e0ff" stroke="#444" stroke-width="1"/>
+<text x="56" y="451" font-size="11" font-weight="bold">alt</text>
+<text x="100" y="451" font-size="10.5">[within deadline]</text>
+
+<!-- 8→ LearningSupport → AssignmentReportDB: save -->
+<text x="615" y="481" text-anchor="middle" font-size="11">save(AssignmentReport)</text>
+<line x1="390" y1="490" x2="717" y2="490" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+
+<!-- 9← AssignmentReportDB → LearningSupport: AssignmentReport object -->
+<text x="615" y="521" text-anchor="middle" font-size="10.5" fill="#555">AssignmentReport object</text>
+<line x1="720" y1="530" x2="393" y2="530" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+
+<!-- 10← LearningSupport → Student: 201 Created -->
+<text x="302" y="561" text-anchor="middle" font-size="10.5" fill="#555">201 Created — submission saved</text>
+<line x1="380" y1="570" x2="228" y2="570" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+
+<!-- separator -->
+<line x1="50" y1="590" x2="820" y2="590" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="56" y="604" font-size="10.5">[past deadline — overdue]</text>
+
+<!-- 11← LearningSupport → Student: 400 -->
+<text x="302" y="620" text-anchor="middle" font-size="10.5" fill="#555">400 — Submission deadline has passed</text>
+<line x1="380" y1="630" x2="228" y2="630" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+
+<!-- ── SECTION 3: Teacher grades ── -->
+<line x1="20" y1="648" x2="820" y2="648" stroke="#ddd" stroke-width="1"/>
+<text x="20" y="662" font-size="10.5" fill="#777" font-style="italic">3. Teacher grades submission</text>
+
+<!-- 12→ Teacher → LearningSupport: gradeSubmission -->
+<text x="232" y="685" text-anchor="middle" font-size="11">gradeSubmission(assignmentID, studentID, grade, feedback)</text>
+<line x1="85" y1="694" x2="377" y2="694" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+
+<!-- 13→ LearningSupport → AssignmentReportDB: find -->
+<text x="615" y="691" text-anchor="middle" font-size="11">find(assignmentID, studentID)</text>
+<line x1="390" y1="700" x2="717" y2="700" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+
+<!-- 14← AssignmentReportDB → LearningSupport: record -->
+<text x="615" y="731" text-anchor="middle" font-size="10.5" fill="#555">AssignmentReport record</text>
+<line x1="720" y1="740" x2="393" y2="740" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+
+<!-- 15→ LearningSupport → AssignmentReportDB: update -->
+<text x="615" y="749" text-anchor="middle" font-size="11">update(grade, feedback)</text>
+<line x1="390" y1="758" x2="717" y2="758" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+
+<!-- 16← AssignmentReportDB → LearningSupport: updated record -->
+<text x="615" y="789" text-anchor="middle" font-size="10.5" fill="#555">Updated AssignmentReport</text>
+<line x1="720" y1="798" x2="393" y2="798" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+
+<!-- 17← LearningSupport → Teacher: 200 OK -->
+<text x="232" y="819" text-anchor="middle" font-size="10.5" fill="#555">200 OK — grading saved</text>
+<line x1="380" y1="828" x2="88" y2="828" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#mr)"/>
+
+<!-- BOTTOM PARTICIPANT BOXES -->
+<rect x="15"  y="858" width="130" height="44" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="80"  y="886" font-size="12" font-weight="bold" text-anchor="middle">Teacher</text>
+<rect x="155" y="858" width="130" height="44" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="220" y="886" font-size="12" font-weight="bold" text-anchor="middle">Student</text>
+<rect x="320" y="858" width="130" height="44" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="385" y="878" font-size="11" font-weight="bold" text-anchor="middle">Learning</text>
+<text x="385" y="894" font-size="11" font-weight="bold" text-anchor="middle">Support</text>
+<rect x="480" y="858" width="130" height="44" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="545" y="886" font-size="12" font-weight="bold" text-anchor="middle">AssignmentDB</text>
+<rect x="655" y="858" width="140" height="44" fill="#fff" stroke="#333" stroke-width="1.5" rx="2"/>
+<text x="725" y="878" font-size="11" font-weight="bold" text-anchor="middle">Assignment</text>
+<text x="725" y="894" font-size="11" font-weight="bold" text-anchor="middle">ReportDB</text>
+</svg>
+
+<div class="legend">
+  <span>——▶ Synchronous call (filled)</span>
+  <span>– – –&gt; Return message (dashed, open V)</span>
+  <span>┌alt┐ Alternative combined fragment (deadline check)</span>
+  <span>░░ Activation bar (scoped to active processing period)</span>
+</div>
+</body>
+</html>
