@@ -23,42 +23,26 @@
 <body>
 
 <h1>Class Diagram — UC05: Learning Support</h1>
-<p class="sub">Main Actors: Teacher, StudentActor &nbsp;|&nbsp; Priority: Medium</p>
+<p class="sub">Refactored: Stateless Controller & Boundary Actors</p>
 
 <!--
-  ════════════════════════════════════════════════════════
-  h = 42 + nA*17 + 8 + nM*17 + 8
+  TeacherView      «boundary» nA=0, nM=5  → 160
+  StudentView      «boundary» nA=0, nM=5  → 160
+  LearningSupport  «control»  nA=0, nM=10 → 245
+  Assignment       «entity»   nA=8, nM=3  → 245
+  Document         «entity»   nA=7, nM=2  → 211
+  AssignmentReport «entity»   nA=7, nM=2  → 211
+  Class            «entity»   nA=5, nM=3  → 194
 
-  Teacher          «actor»   nA=2 nM=5  → 42+34+8+85+8 = 177
-  StudentActor     «actor»   nA=2 nM=5  → 42+34+8+85+8 = 177
-  LearningSupport  «control» nA=4 nM=10 → 42+68+8+170+8 = 296
-  Assignment       «entity»  nA=8 nM=3  → 42+136+8+51+8 = 245
-  Document         «entity»  nA=7 nM=2  → 42+119+8+34+8 = 211
-  AssignmentReport «entity»  nA=7 nM=2  → 42+119+8+34+8 = 211
-  Class            «entity»  nA=5 nM=3  → 42+85+8+51+8 = 194
-
-  COLUMNS:
-    Col1  x=20..212   w=192  Teacher (top) / StudentActor (bottom)
-    ChanA x=228
-    Col2  x=244..504  w=260  LearningSupport
-    ChanB x=520
-    Col3  x=536..746  w=210  Assignment (top) / Document (bottom)
-    ChanC x=762
-    Col4  x=778..978  w=200  AssignmentReport (top) / Class (bottom)
-
-  POSITIONS (x, y):
-    Teacher          : (20,  30)   bottom=207
-    StudentActor     : (20, 360)   bottom=537
-    LearningSupport  : (244,140)   bottom=436
-    Assignment       : (536, 30)   bottom=275
-    Document         : (536,420)   bottom=631
-    AssignmentReport : (778, 30)   bottom=241
-    Class            : (778,420)   bottom=614
-
-  Canvas: 1000 × 670
-  ════════════════════════════════════════════════════════
+  TeacherView      : (20, 20)
+  StudentView      : (20, 200)
+  LearningSupport  : (250, 40)
+  Assignment       : (550, 20)
+  Document         : (550, 280)
+  AssignmentReport : (790, 20)
+  Class            : (790, 280)
 -->
-<svg width="1000" height="670" xmlns="http://www.w3.org/2000/svg"
+<svg width="1020" height="520" xmlns="http://www.w3.org/2000/svg"
      font-family="'Times New Roman', Times, serif">
 <defs>
   <marker id="mf" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto">
@@ -69,239 +53,140 @@
   </marker>
 </defs>
 
-<!-- ════ 1. TEACHER «actor»  x=20 y=30 w=192 h=177 ════
-     div1=72, div2=114
-     attrs: 89,106  methods: 131,148,165,182,199 -->
-<rect x="20"  y="30"  width="192" height="177" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="72"  x2="212" y2="72"  stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="114" x2="212" y2="114" stroke="#333" stroke-width="1.5"/>
-<text x="116" y="45"  font-size="10.5" font-style="italic" text-anchor="middle">«actor»</text>
-<text x="116" y="62"  font-size="13"   font-weight="bold"  text-anchor="middle">Teacher</text>
-<text x="26"  y="89"  font-size="11">+ teacherID : String</text>
-<text x="26"  y="106" font-size="11">+ name : String</text>
-<text x="26"  y="131" font-size="11">+ uploadDocument() : void</text>
-<text x="26"  y="148" font-size="11">+ listDocuments() : List</text>
-<text x="26"  y="165" font-size="11">+ deleteDocument() : void</text>
-<text x="26"  y="182" font-size="11">+ manageAssignments() : void</text>
-<text x="26"  y="199" font-size="11">+ checkReports() : void</text>
+<!-- ════ 1. TEACHERVIEW «boundary» ════ -->
+<rect x="20" y="20" width="200" height="160" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="20" y1="62" x2="220" y2="62" stroke="#333" stroke-width="1.5"/>
+<line x1="20" y1="79" x2="220" y2="79" stroke="#333" stroke-width="1.5"/>
+<text x="120" y="35" font-size="10.5" font-style="italic" text-anchor="middle">«boundary»</text>
+<text x="120" y="52" font-size="13" font-weight="bold" text-anchor="middle">TeacherView</text>
+<text x="26" y="104" font-size="11">+ uploadDocument() : void</text>
+<text x="26" y="121" font-size="11">+ listDocuments() : void</text>
+<text x="26" y="138" font-size="11">+ deleteDocument() : void</text>
+<text x="26" y="155" font-size="11">+ manageAssignments() : void</text>
+<text x="26" y="172" font-size="11">+ checkReports() : void</text>
 
-<!-- ════ 2. STUDENTACTOR «actor»  x=20 y=360 w=192 h=177 ════
-     div1=402, div2=444
-     attrs: 419,436  methods: 461,478,495,512,529 -->
-<rect x="20"  y="360" width="192" height="177" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="402" x2="212" y2="402" stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="444" x2="212" y2="444" stroke="#333" stroke-width="1.5"/>
-<text x="116" y="375" font-size="10.5" font-style="italic" text-anchor="middle">«actor»</text>
-<text x="116" y="392" font-size="13"   font-weight="bold"  text-anchor="middle">StudentActor</text>
-<text x="26"  y="419" font-size="11">+ studentID : String</text>
-<text x="26"  y="436" font-size="11">+ name : String</text>
-<text x="26"  y="461" font-size="11">+ viewDocuments() : List</text>
-<text x="26"  y="478" font-size="11">+ downloadDocument() : void</text>
-<text x="26"  y="495" font-size="11">+ viewAssignments() : List</text>
-<text x="26"  y="512" font-size="11">+ submitAssignment() : void</text>
-<text x="26"  y="529" font-size="11">+ viewGrades() : Float</text>
+<!-- ════ 2. STUDENTVIEW «boundary» ════ -->
+<rect x="20" y="200" width="200" height="160" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="20" y1="242" x2="220" y2="242" stroke="#333" stroke-width="1.5"/>
+<line x1="20" y1="259" x2="220" y2="259" stroke="#333" stroke-width="1.5"/>
+<text x="120" y="215" font-size="10.5" font-style="italic" text-anchor="middle">«boundary»</text>
+<text x="120" y="232" font-size="13" font-weight="bold" text-anchor="middle">StudentView</text>
+<text x="26" y="284" font-size="11">+ viewDocuments() : void</text>
+<text x="26" y="301" font-size="11">+ downloadDocument() : void</text>
+<text x="26" y="318" font-size="11">+ viewAssignments() : void</text>
+<text x="26" y="335" font-size="11">+ submitAssignment() : void</text>
+<text x="26" y="352" font-size="11">+ viewGrades() : void</text>
 
-<!-- ════ 3. LEARNINGSUPPORT «control»  x=244 y=140 w=260 h=296 ════
-     div1=182, div2=258
-     attrs: 199,216,233,250  methods: 275,292,309,326,343,360,377,394,411,428 -->
-<rect x="244" y="140" width="260" height="296" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="244" y1="182" x2="504" y2="182" stroke="#333" stroke-width="1.5"/>
-<line x1="244" y1="258" x2="504" y2="258" stroke="#333" stroke-width="1.5"/>
-<text x="374" y="155" font-size="10.5" font-style="italic" text-anchor="middle">«control»</text>
-<text x="374" y="172" font-size="13"   font-weight="bold"  text-anchor="middle">LearningSupport</text>
-<text x="250" y="199" font-size="11">+ currentUser : User</text>
-<text x="250" y="216" font-size="11">+ documentList : List&lt;Document&gt;</text>
-<text x="250" y="233" font-size="11">+ assignmentList : List</text>
-<text x="250" y="250" font-size="11">+ classList : List&lt;Class&gt;</text>
-<text x="250" y="275" font-size="11">+ listDocuments() : List</text>
-<text x="250" y="292" font-size="11">+ uploadDocument() : Document</text>
-<text x="250" y="309" font-size="11">+ deleteDocument() : void</text>
-<text x="250" y="326" font-size="11">+ downloadDocument() : File</text>
-<text x="250" y="343" font-size="11">+ listAssignments() : List</text>
-<text x="250" y="360" font-size="11">+ createAssignment() : Assignment</text>
-<text x="250" y="377" font-size="11">+ submitAssignment() : Report</text>
-<text x="250" y="394" font-size="11">+ gradeSubmission() : void</text>
-<text x="250" y="411" font-size="11">+ getReports() : List</text>
-<text x="250" y="428" font-size="11">+ getStudentList() : List</text>
+<!-- ════ 3. LEARNINGSUPPORT «control» ════ -->
+<rect x="250" y="40" width="270" height="245" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="250" y1="82" x2="520" y2="82" stroke="#333" stroke-width="1.5"/>
+<line x1="250" y1="99" x2="520" y2="99" stroke="#333" stroke-width="1.5"/>
+<text x="385" y="55" font-size="10.5" font-style="italic" text-anchor="middle">«control»</text>
+<text x="385" y="72" font-size="13" font-weight="bold" text-anchor="middle">LearningSupport</text>
+<text x="256" y="124" font-size="11">+ listDocuments() : List</text>
+<text x="256" y="141" font-size="11">+ uploadDocument() : Document</text>
+<text x="256" y="158" font-size="11">+ deleteDocument() : void</text>
+<text x="256" y="175" font-size="11">+ downloadDocument() : File</text>
+<text x="256" y="192" font-size="11">+ listAssignments() : List</text>
+<text x="256" y="209" font-size="11">+ createAssignment() : Assignment</text>
+<text x="256" y="226" font-size="11">+ submitAssignment() : Report</text>
+<text x="256" y="243" font-size="11">+ gradeSubmission() : void</text>
+<text x="256" y="260" font-size="11">+ getReports() : List</text>
+<text x="256" y="277" font-size="11">+ getStudentList() : List</text>
 
-<!-- ════ 4. ASSIGNMENT «entity»  x=536 y=30 w=210 h=245 ════
-     div1=72, div2=216
-     Actually: div2 = 72 + 8*17 + 8 = 216
-     attrs: 89,106,123,140,157,174,191,208  methods: 233,250,267 -->
-<rect x="536" y="30"  width="210" height="245" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="536" y1="72"  x2="746" y2="72"  stroke="#333" stroke-width="1.5"/>
-<line x1="536" y1="216" x2="746" y2="216" stroke="#333" stroke-width="1.5"/>
-<text x="641" y="45"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="641" y="62"  font-size="13"   font-weight="bold"  text-anchor="middle">Assignment</text>
-<text x="542" y="89"  font-size="11">+ assignmentID : String</text>
-<text x="542" y="106" font-size="11">+ assignmentName : String</text>
-<text x="542" y="123" font-size="11">+ deadline : DateTime</text>
-<text x="542" y="140" font-size="11">+ classID : String</text>
-<text x="542" y="157" font-size="11">+ courseID : String</text>
-<text x="542" y="174" font-size="11">+ teacherID : String</text>
-<text x="542" y="191" font-size="11">+ semester : String</text>
-<text x="542" y="208" font-size="11">+ linkURL : String</text>
-<text x="542" y="233" font-size="11">+ validate() : Boolean</text>
-<text x="542" y="250" font-size="11">+ isOverdue() : Boolean</text>
-<text x="542" y="267" font-size="11">+ getReports() : List</text>
+<!-- ════ 4. ASSIGNMENT «entity» ════ -->
+<rect x="550" y="20" width="210" height="245" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="550" y1="62" x2="760" y2="62" stroke="#333" stroke-width="1.5"/>
+<line x1="550" y1="206" x2="760" y2="206" stroke="#333" stroke-width="1.5"/>
+<text x="655" y="35" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="655" y="52" font-size="13" font-weight="bold" text-anchor="middle">Assignment</text>
+<text x="556" y="79" font-size="11">+ assignmentID : String</text>
+<text x="556" y="96" font-size="11">+ assignmentName : String</text>
+<text x="556" y="113" font-size="11">+ deadline : DateTime</text>
+<text x="556" y="130" font-size="11">+ classID : String</text>
+<text x="556" y="147" font-size="11">+ courseID : String</text>
+<text x="556" y="164" font-size="11">+ teacherID : String</text>
+<text x="556" y="181" font-size="11">+ semester : String</text>
+<text x="556" y="198" font-size="11">+ linkURL : String</text>
+<text x="556" y="223" font-size="11">+ validate() : Boolean</text>
+<text x="556" y="240" font-size="11">+ isOverdue() : Boolean</text>
+<text x="556" y="257" font-size="11">+ getReports() : List</text>
 
-<!-- ════ 5. DOCUMENT «entity»  x=536 y=420 w=210 h=211 ════
-     div1=462, div2=589
-     attrs: 479,496,513,530,547,564,581  methods: 606,623 -->
-<rect x="536" y="420" width="210" height="211" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="536" y1="462" x2="746" y2="462" stroke="#333" stroke-width="1.5"/>
-<line x1="536" y1="589" x2="746" y2="589" stroke="#333" stroke-width="1.5"/>
-<text x="641" y="435" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="641" y="452" font-size="13"   font-weight="bold"  text-anchor="middle">Document</text>
-<text x="542" y="479" font-size="11">+ docID : String</text>
-<text x="542" y="496" font-size="11">+ title : String</text>
-<text x="542" y="513" font-size="11">+ description : String</text>
-<text x="542" y="530" font-size="11">+ fileURL : String</text>
-<text x="542" y="547" font-size="11">+ uploadDate : DateTime</text>
-<text x="542" y="564" font-size="11">+ teacherID : String</text>
-<text x="542" y="581" font-size="11">+ classID : String</text>
-<text x="542" y="606" font-size="11">+ validate() : Boolean</text>
-<text x="542" y="623" font-size="11">+ isAccessibleBy(studentID) : Boolean</text>
+<!-- ════ 5. DOCUMENT «entity» ════ -->
+<rect x="550" y="280" width="210" height="211" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="550" y1="322" x2="760" y2="322" stroke="#333" stroke-width="1.5"/>
+<line x1="550" y1="449" x2="760" y2="449" stroke="#333" stroke-width="1.5"/>
+<text x="655" y="295" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="655" y="312" font-size="13" font-weight="bold" text-anchor="middle">Document</text>
+<text x="556" y="339" font-size="11">+ docID : String</text>
+<text x="556" y="356" font-size="11">+ title : String</text>
+<text x="556" y="373" font-size="11">+ description : String</text>
+<text x="556" y="390" font-size="11">+ fileURL : String</text>
+<text x="556" y="407" font-size="11">+ uploadDate : DateTime</text>
+<text x="556" y="424" font-size="11">+ teacherID : String</text>
+<text x="556" y="441" font-size="11">+ classID : String</text>
+<text x="556" y="466" font-size="11">+ validate() : Boolean</text>
+<text x="556" y="483" font-size="11">+ isAccessibleBy() : Boolean</text>
 
-<!-- ════ 6. ASSIGNMENTREPORT «entity»  x=778 y=30 w=200 h=211 ════
-     div1=72, div2=199
-     attrs: 89,106,123,140,157,174,191  methods: 216,233 -->
-<rect x="778" y="30"  width="200" height="211" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="778" y1="72"  x2="978" y2="72"  stroke="#333" stroke-width="1.5"/>
-<line x1="778" y1="199" x2="978" y2="199" stroke="#333" stroke-width="1.5"/>
-<text x="878" y="45"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="878" y="62"  font-size="13"   font-weight="bold"  text-anchor="middle">AssignmentReport</text>
-<text x="784" y="89"  font-size="11">+ assignmentID : String</text>
-<text x="784" y="106" font-size="11">+ studentID : String</text>
-<text x="784" y="123" font-size="11">+ classID : String</text>
-<text x="784" y="140" font-size="11">+ submitDate : DateTime</text>
-<text x="784" y="157" font-size="11">+ linkURL : String</text>
-<text x="784" y="174" font-size="11">+ grade : Float</text>
-<text x="784" y="191" font-size="11">+ feedback : String</text>
-<text x="784" y="216" font-size="11">+ checkIsLate() : Boolean</text>
-<text x="784" y="233" font-size="11">+ getGradeStatus() : String</text>
+<!-- ════ 6. ASSIGNMENTREPORT «entity» ════ -->
+<rect x="790" y="20" width="200" height="211" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="790" y1="62" x2="990" y2="62" stroke="#333" stroke-width="1.5"/>
+<line x1="790" y1="189" x2="990" y2="189" stroke="#333" stroke-width="1.5"/>
+<text x="890" y="35" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="890" y="52" font-size="13" font-weight="bold" text-anchor="middle">AssignmentReport</text>
+<text x="796" y="79" font-size="11">+ assignmentID : String</text>
+<text x="796" y="96" font-size="11">+ studentID : String</text>
+<text x="796" y="113" font-size="11">+ classID : String</text>
+<text x="796" y="130" font-size="11">+ submitDate : DateTime</text>
+<text x="796" y="147" font-size="11">+ linkURL : String</text>
+<text x="796" y="164" font-size="11">+ grade : Float</text>
+<text x="796" y="181" font-size="11">+ feedback : String</text>
+<text x="796" y="206" font-size="11">+ checkIsLate() : Boolean</text>
+<text x="796" y="223" font-size="11">+ getGradeStatus() : String</text>
 
-<!-- ════ 7. CLASS «entity»  x=778 y=420 w=200 h=194 ════
-     div1=462, div2=555
-     attrs: 479,496,513,530,547  methods: 572,589,606 -->
-<rect x="778" y="420" width="200" height="194" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="778" y1="462" x2="978" y2="462" stroke="#333" stroke-width="1.5"/>
-<line x1="778" y1="555" x2="978" y2="555" stroke="#333" stroke-width="1.5"/>
-<text x="878" y="435" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="878" y="452" font-size="13"   font-weight="bold"  text-anchor="middle">Class</text>
-<text x="784" y="479" font-size="11">+ classID : String</text>
-<text x="784" y="496" font-size="11">+ courseID : String</text>
-<text x="784" y="513" font-size="11">+ semester : String</text>
-<text x="784" y="530" font-size="11">+ capacity : Integer</text>
-<text x="784" y="547" font-size="11">+ room : String</text>
-<text x="784" y="572" font-size="11">+ getAssignments() : List</text>
-<text x="784" y="589" font-size="11">+ getDocuments() : List</text>
-<text x="784" y="606" font-size="11">+ getEnrollments() : List</text>
+<!-- ════ 7. CLASS «entity» ════ -->
+<rect x="790" y="280" width="200" height="194" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="790" y1="322" x2="990" y2="322" stroke="#333" stroke-width="1.5"/>
+<line x1="790" y1="415" x2="990" y2="415" stroke="#333" stroke-width="1.5"/>
+<text x="890" y="295" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="890" y="312" font-size="13" font-weight="bold" text-anchor="middle">Class</text>
+<text x="796" y="339" font-size="11">+ classID : String</text>
+<text x="796" y="356" font-size="11">+ courseID : String</text>
+<text x="796" y="373" font-size="11">+ semester : String</text>
+<text x="796" y="390" font-size="11">+ capacity : Integer</text>
+<text x="796" y="407" font-size="11">+ room : String</text>
+<text x="796" y="432" font-size="11">+ getAssignments() : List</text>
+<text x="796" y="449" font-size="11">+ getDocuments() : List</text>
+<text x="796" y="466" font-size="11">+ getEnrollments() : List</text>
 
 
-<!-- ════════════ ARROWS ════════════
-  ChanA x=228  ChanB x=520  ChanC x=762  Top y=8
--->
+<!-- ════════════════════ ARROWS ════════════════════ -->
 
-<!-- Arrow 1: Teacher ——> LearningSupport  "Manages docs/assignments"  1 → 1..*
-     Teacher center-y = 30+88 = 118
-     LS top-mid y = 140+34 = 174 (attributes top)
-     (212,118) → (228,118→174) → (244,174) -->
-<path d="M 212,118 H 228 V 174 H 244"
-      fill="none" stroke="#333" stroke-width="1.4"
-      stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="215" y="114" font-size="10">1</text>
-<text x="230" y="191" font-size="10">1..*</text>
-<rect x="215" y="137" width="128" height="14" fill="#fff"/>
-<text x="216" y="148" font-size="11" font-style="italic">Manages docs/assignments</text>
+<path d="M 220,100 H 235 V 100 H 250" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+<path d="M 220,240 H 235 V 240 H 250" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
 
-<!-- Arrow 2: StudentActor ——> LearningSupport  "Views / Submits"  1 → 1..*
-     SA center-y = 360+88 = 448
-     LS bottom y = 436, let's enter at y=410
-     (212,448) → (228,448→410) → (244,410) -->
-<path d="M 212,448 H 228 V 410 H 244"
-      fill="none" stroke="#333" stroke-width="1.4"
-      stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="215" y="444" font-size="10">1</text>
-<text x="230" y="407" font-size="10">1..*</text>
-<rect x="215" y="415" width="82" height="14" fill="#fff"/>
-<text x="216" y="426" font-size="11" font-style="italic">Views / Submits</text>
+<path d="M 520,100 H 535 V 100 H 550" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
+<text x="523" y="96" font-size="10">1</text>
+<text x="535" y="96" font-size="10">0..*</text>
 
-<!-- Arrow 3: LearningSupport ——> Assignment  "Manages"  1 → 0..*
-     LS right at y=190, Assignment left at y=150
-     (504,190) → (520,190→150) → (536,150) -->
-<path d="M 504,190 H 520 V 150 H 536"
-      fill="none" stroke="#333" stroke-width="1.4"
-      stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="507" y="186" font-size="10">1</text>
-<text x="522" y="147" font-size="10">0..*</text>
-<rect x="507" y="156" width="50" height="14" fill="#fff"/>
-<text x="508" y="167" font-size="11" font-style="italic">Manages</text>
+<path d="M 520,240 H 535 V 310 H 550" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
 
-<!-- Arrow 4: LearningSupport ——> Document  "Manages"  1 → 0..*
-     LS right at y=390, Document left at y=525
-     (504,390) → (520,390→525) → (536,525) -->
-<path d="M 504,390 H 520 V 525 H 536"
-      fill="none" stroke="#333" stroke-width="1.4"
-      stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="507" y="386" font-size="10">1</text>
-<text x="522" y="522" font-size="10">0..*</text>
-<rect x="507" y="446" width="50" height="14" fill="#fff"/>
-<text x="508" y="457" font-size="11" font-style="italic">Manages</text>
+<path d="M 760,120 H 790" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
 
-<!-- Arrow 5: Assignment ◆——> AssignmentReport  Composition "Has"  1 → 0..*
-     Diamond ◆ at Assignment right (746, 130): tip at (758, 130)
-     (758,130) → (778,130) -->
-<polygon points="746,130 752,125 758,130 752,135" fill="#333" stroke="#333" stroke-width="0.5"/>
-<path d="M 758,130 H 778"
-      fill="none" stroke="#333" stroke-width="1.4"
-      marker-end="url(#mf)"/>
-<text x="737" y="123" font-size="10" text-anchor="end">1</text>
-<text x="765" y="123" font-size="10">0..*</text>
-<rect x="759" y="132" width="22" height="14" fill="#fff"/>
-<text x="760" y="143" font-size="11" font-style="italic">Has</text>
+<path d="M 760,350 H 790" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
 
-<!-- Arrow 6: Document ——> Class  "Belongs to"  0..* → 1
-     Document right (746, 510) → (778,510) -->
-<path d="M 746,510 H 778"
-      fill="none" stroke="#333" stroke-width="1.4"
-      marker-end="url(#mf)"/>
-<text x="749" y="506" font-size="10">0..*</text>
-<text x="764" y="506" font-size="10">1</text>
-<rect x="750" y="513" width="55" height="14" fill="#fff"/>
-<text x="751" y="524" font-size="11" font-style="italic">Belongs to</text>
+<path d="M 760,200 H 775 V 300 H 790" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#mf)"/>
 
-<!-- Arrow 7: Assignment ——> Class  "Belongs to"  0..* → 1
-     Assignment bottom (641, 275) → ChanC (762,275→420) → Class top (878,420)... 
-     Actually Assignment right is at x=746, class top is at 420.
-     Assignment right (746, 250) → ChanC (762,250→460) → Class left (778,460) -->
-<path d="M 746,250 H 762 V 460 H 778"
-      fill="none" stroke="#333" stroke-width="1.4"
-      stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="749" y="246" font-size="10">0..*</text>
-<text x="764" y="457" font-size="10">1</text>
-<rect x="750" y="342" width="55" height="14" fill="#fff"/>
-<text x="751" y="353" font-size="11" font-style="italic">Belongs to</text>
-
-<!-- Arrow 8: LearningSupport «uses» Class  (dashed, top channel y=8)
-     (374,140) → (374,8) → (878,8) → (878,420)... wait 878,420 overlaps with AssignmentReport!
-     Let's route to Class right: (374,140) → (374,8) → (990,8) → (990,510) → (978,510) -->
-<path d="M 374,140 V 8 H 990 V 510 H 978"
-      fill="none" stroke="#333" stroke-width="1.3"
-      stroke-dasharray="6,3" stroke-linejoin="round" marker-end="url(#md)"/>
-<rect x="589" y="0" width="44" height="13" fill="#fff"/>
-<text x="590" y="11" font-size="11" font-style="italic">«uses»</text>
+<path d="M 520,160 H 535 V 380 H 790" fill="none" stroke="#333" stroke-width="1.3" stroke-dasharray="6,3" marker-end="url(#md)"/>
 
 </svg>
 
-<!-- Legend -->
 <div class="legend">
   <span><b>Access modifiers:</b> &nbsp; <b>+</b> public &nbsp;|&nbsp; <b>−</b> private</span>
   <span>——&gt; Directed Association (open V)</span>
-  <span>◆——&gt; Composition (filled diamond)</span>
-  <span>– – –&gt; Dependency / «uses» (open V, dashed)</span>
-  <span><b>1 &nbsp; 0..* &nbsp; 1..*</b> — Multiplicity</span>
-  <span><b>«actor»</b> / <b>«control»</b> / <b>«entity»</b> — UML stereotypes</span>
+  <span>– – –&gt; Dependency / «uses»</span>
+  <span><b>1 &nbsp; 0..*</b> — Multiplicity</span>
+  <span><b>«boundary»</b> / <b>«control»</b> / <b>«entity»</b></span>
 </div>
 
 </body>

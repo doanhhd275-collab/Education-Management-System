@@ -11,8 +11,8 @@
   svg  { display: block; margin: 0 auto; background: #fff;
          border: 1.5px solid #999; box-shadow: 3px 3px 10px rgba(0,0,0,.15); }
   .legend {
-    width: 1080px; margin: 14px auto 0;
-    display: flex; gap: 22px; flex-wrap: wrap;
+    width: 1040px; margin: 14px auto 0;
+    display: flex; gap: 20px; flex-wrap: wrap;
     font-size: 11px; color: #444;
     font-family: 'Times New Roman', Times, serif;
     border-top: 1px solid #bbb; padding-top: 10px;
@@ -23,42 +23,24 @@
 <body>
 
 <h1>Class Diagram — UC03: Student Management</h1>
-<p class="sub">Main Actors: Admin, StudentActor &nbsp;|&nbsp; Priority: High</p>
+<p class="sub">Refactored: Stateless Controller & Boundary Actors</p>
 
 <!--
-  ════════════════════════════════════════════════════════
-  h = 42 + nA*17 + 8 + nM*17 + 8
+  AdminView       : nA=0, nM=3  → 75+51 = 126
+  StudentView     : nA=0, nM=3  → 75+51 = 126
+  StudentManager  : nA=0, nM=12 → 75+204= 279
+  Student         : nA=5, nM=5  → 42+85+8+85+8 = 228
+  Class           : nA=4, nM=3  → 42+68+8+51+8 = 177
+  Enrollment      : nA=5, nM=2  → 42+85+8+34+8 = 177
 
-  Admin         «actor»   nA=2  nM=8  → 42+34+8+136+8 = 228
-  StudentActor  «actor»   nA=2  nM=7  → 42+34+8+119+8 = 211
-  StudentMgr    «control» nA=4  nM=9  → 42+68+8+153+8 = 279
-  Student       «entity»  nA=7  nM=4  → 42+119+8+68+8 = 245
-  Enrollment    «entity»  nA=8  nM=3  → 42+136+8+51+8 = 245
-  Curriculum    «entity»  nA=2  nM=3  → 42+34+8+51+8  = 143
-  Class         «entity»  nA=6  nM=3  → 42+102+8+51+8 = 211
-
-  COLUMNS:
-    Col1  x=20..215    w=195  Admin (top) / StudentActor (bottom)
-    ChanA x=230
-    Col2  x=245..510   w=265  StudentManager
-    ChanB x=528
-    Col3  x=543..748   w=205  Student (top) / Enrollment (bottom)
-    ChanC x=766
-    Col4  x=781..975   w=194  Curriculum (top) / Class (bottom)
-
-  POSITIONS (x, y):
-    Admin        : (20,  30)   bottom=258
-    StudentActor : (20, 380)   bottom=591
-    StudentMgr   : (245,175)   bottom=454
-    Student      : (543, 20)   bottom=265
-    Enrollment   : (543,450)   bottom=695
-    Curriculum   : (781, 20)   bottom=163
-    Class        : (781,435)   bottom=646
-
-  Canvas: 990 × 720
-  ════════════════════════════════════════════════════════
+  AdminView   : (20, 30)
+  StudentView : (20, 200)
+  StudentMgr  : (250, 50)
+  Student     : (590, 20)
+  Class       : (590, 280)
+  Enrollment  : (830, 150)
 -->
-<svg width="990" height="720" xmlns="http://www.w3.org/2000/svg"
+<svg width="1050" height="500" xmlns="http://www.w3.org/2000/svg"
      font-family="'Times New Roman', Times, serif">
 <defs>
   <marker id="mf" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto">
@@ -69,247 +51,158 @@
   </marker>
 </defs>
 
-<!-- ════ 1. ADMIN «actor»  x=20 y=30 w=195 h=228 ════
-     div1=72, div2=114
-     attrs: 89,106   methods: 131,148,165,182,199,216,233,250 -->
-<rect x="20"  y="30"  width="195" height="228" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="72"  x2="215" y2="72"  stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="114" x2="215" y2="114" stroke="#333" stroke-width="1.5"/>
-<text x="117" y="45"  font-size="10.5" font-style="italic" text-anchor="middle">«actor»</text>
-<text x="117" y="62"  font-size="13"   font-weight="bold"  text-anchor="middle">Admin</text>
-<text x="26"  y="89"  font-size="11">+ userID : String</text>
-<text x="26"  y="106" font-size="11">+ name : String</text>
-<text x="26"  y="131" font-size="11">+ listStudents() : List</text>
-<text x="26"  y="148" font-size="11">+ getStudentDetail() : Student</text>
-<text x="26"  y="165" font-size="11">+ updateStudentInfo() : void</text>
-<text x="26"  y="182" font-size="11">+ cancelEnrollment() : void</text>
-<text x="26"  y="199" font-size="11">+ enrollForStudent() : void</text>
-<text x="26"  y="216" font-size="11">+ viewWarningReport() : void</text>
-<text x="26"  y="233" font-size="11">+ computeWarning() : Integer</text>
-<text x="26"  y="250" font-size="11">+ getAcademicRecord() : void</text>
+<!-- ════════ 1. ADMINVIEW «boundary» ════════ -->
+<rect x="20"  y="30"  width="200" height="126" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="72"  x2="220" y2="72"  stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="89"  x2="220" y2="89"  stroke="#333" stroke-width="1.5"/>
+<text x="120" y="45"  font-size="10.5" font-style="italic" text-anchor="middle">«boundary»</text>
+<text x="120" y="62"  font-size="13"   font-weight="bold"  text-anchor="middle">AdminView</text>
+<text x="26"  y="114" font-size="11">+ enrollStudent() : void</text>
+<text x="26"  y="131" font-size="11">+ manageStudents() : void</text>
+<text x="26"  y="148" font-size="11">+ viewWarnings() : void</text>
 
-<!-- ════ 2. STUDENTACTOR «actor»  x=20 y=380 w=195 h=211 ════
-     div1=422, div2=464
-     attrs: 439,456   methods: 481,498,515,532,549,566,583 -->
-<rect x="20"  y="380" width="195" height="211" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="422" x2="215" y2="422" stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="464" x2="215" y2="464" stroke="#333" stroke-width="1.5"/>
-<text x="117" y="395" font-size="10.5" font-style="italic" text-anchor="middle">«actor»</text>
-<text x="117" y="412" font-size="13"   font-weight="bold"  text-anchor="middle">StudentActor</text>
-<text x="26"  y="439" font-size="11">+ userID : String</text>
-<text x="26"  y="456" font-size="11">+ name : String</text>
-<text x="26"  y="481" font-size="11">+ viewMyProfile() : void</text>
-<text x="26"  y="498" font-size="11">+ viewMyCPA_GPA() : Float</text>
-<text x="26"  y="515" font-size="11">+ enrollClass() : void</text>
-<text x="26"  y="532" font-size="11">+ viewEnrollments() : List</text>
-<text x="26"  y="549" font-size="11">+ checkWarningLevel() : Integer</text>
-<text x="26"  y="566" font-size="11">+ viewDocuments() : List</text>
-<text x="26"  y="583" font-size="11">+ cancelEnrollment() : void</text>
+<!-- ════════ 2. STUDENTVIEW «boundary» ════════ -->
+<rect x="20"  y="200" width="200" height="126" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="242" x2="220" y2="242" stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="259" x2="220" y2="259" stroke="#333" stroke-width="1.5"/>
+<text x="120" y="215" font-size="10.5" font-style="italic" text-anchor="middle">«boundary»</text>
+<text x="120" y="232" font-size="13"   font-weight="bold"  text-anchor="middle">StudentView</text>
+<text x="26"  y="284" font-size="11">+ viewMyGPA() : void</text>
+<text x="26"  y="301" font-size="11">+ registerClass() : void</text>
+<text x="26"  y="318" font-size="11">+ checkWarning() : void</text>
 
-<!-- ════ 3. STUDENTMANAGER «control»  x=245 y=175 w=265 h=279 ════
-     div1=217, div2=285
-     attrs: 234,251,268,285(border→div2 at 285)
-     Actually div2 = 217 + 4*17 + 8 = 293
-     attrs: 234,251,268,285  methods: 310,327,344,361,378,395,412,429,446 -->
-<rect x="245" y="175" width="265" height="279" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="245" y1="217" x2="510" y2="217" stroke="#333" stroke-width="1.5"/>
-<line x1="245" y1="293" x2="510" y2="293" stroke="#333" stroke-width="1.5"/>
-<text x="377" y="190" font-size="10.5" font-style="italic" text-anchor="middle">«control»</text>
-<text x="377" y="207" font-size="13"   font-weight="bold"  text-anchor="middle">StudentManager</text>
-<text x="251" y="234" font-size="11">+ currentUser : User</text>
-<text x="251" y="251" font-size="11">+ studentList : List&lt;Student&gt;</text>
-<text x="251" y="268" font-size="11">+ selectedStudent : Student</text>
-<text x="251" y="285" font-size="11">+ filterProgram : String</text>
-<text x="251" y="310" font-size="11">+ listStudents() : List</text>
-<text x="251" y="327" font-size="11">+ getStudentDetail() : Student</text>
-<text x="251" y="344" font-size="11">+ updateStudent() : Student</text>
-<text x="251" y="361" font-size="11">+ enrollClass() : Enrollment</text>
-<text x="251" y="378" font-size="11">+ cancelEnrollment() : void</text>
-<text x="251" y="395" font-size="11">+ getEnrollments() : List</text>
-<text x="251" y="412" font-size="11">+ checkWarning() : Integer</text>
-<text x="251" y="429" font-size="11">+ listAvailableClasses() : List</text>
-<text x="251" y="446" font-size="11">+ getAcademicRecord() : void</text>
+<!-- ════════ 3. STUDENTMANAGER «control» ════════ -->
+<rect x="250" y="50"  width="290" height="279" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="250" y1="92"  x2="540" y2="92"  stroke="#333" stroke-width="1.5"/>
+<line x1="250" y1="109" x2="540" y2="109" stroke="#333" stroke-width="1.5"/>
+<text x="395" y="65"  font-size="10.5" font-style="italic" text-anchor="middle">«control»</text>
+<text x="395" y="82"  font-size="13"   font-weight="bold"  text-anchor="middle">StudentManager</text>
+<text x="256" y="134" font-size="11">+ listStudents() : List</text>
+<text x="256" y="151" font-size="11">+ createStudent() : Student</text>
+<text x="256" y="168" font-size="11">+ getStudent() : Student</text>
+<text x="256" y="185" font-size="11">+ updateStudent() : Student</text>
+<text x="256" y="202" font-size="11">+ listAvailableClasses() : List</text>
+<text x="256" y="219" font-size="11">+ registerClass() : Enrollment</text>
+<text x="256" y="236" font-size="11">+ cancelRegistration() : void</text>
+<text x="256" y="253" font-size="11">+ calculateCPA() : Float</text>
+<text x="256" y="270" font-size="11">+ calculateGPA() : Float</text>
+<text x="256" y="287" font-size="11">+ checkAcademicWarning() : void</text>
+<text x="256" y="304" font-size="11">+ getWarningList() : List</text>
+<text x="256" y="321" font-size="11">+ enrollStudentToProgram() : void</text>
 
-<!-- ════ 4. STUDENT «entity»  x=543 y=20 w=205 h=245 ════
-     div1=62, div2=181
-     attrs: 79,96,113,130,147,164,181(=div2 border → div2 at 189)
-     Actually: div2 = 62 + 7*17 + 8 = 189
-     attrs: 79,96,113,130,147,164,181  methods: 206,223,240,257 -->
-<rect x="543" y="20"  width="205" height="245" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="543" y1="62"  x2="748" y2="62"  stroke="#333" stroke-width="1.5"/>
-<line x1="543" y1="189" x2="748" y2="189" stroke="#333" stroke-width="1.5"/>
-<text x="645" y="35"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="645" y="52"  font-size="13"   font-weight="bold"  text-anchor="middle">Student</text>
-<text x="549" y="79"  font-size="11">+ userID : String</text>
-<text x="549" y="96"  font-size="11">+ programID : String</text>
-<text x="549" y="113" font-size="11">+ cpa : Float</text>
-<text x="549" y="130" font-size="11">+ gpa : Float</text>
-<text x="549" y="147" font-size="11">+ warningLevel : Integer</text>
-<text x="549" y="164" font-size="11">+ graduationCondition : Boolean</text>
-<text x="549" y="181" font-size="11">+ name : String</text>
-<text x="549" y="206" font-size="11">+ getEnrollments() : List</text>
-<text x="549" y="223" font-size="11">+ getWarningStatus() : String</text>
-<text x="549" y="240" font-size="11">+ checkGraduation() : Boolean</text>
-<text x="549" y="257" font-size="11">+ computeGPA() : Float</text>
+<!-- ════════ 4. STUDENT «entity» ════════ -->
+<rect x="590" y="20"  width="200" height="228" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="590" y1="62"  x2="790" y2="62"  stroke="#333" stroke-width="1.5"/>
+<line x1="590" y1="155" x2="790" y2="155" stroke="#333" stroke-width="1.5"/>
+<text x="690" y="35"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="690" y="52"  font-size="13"   font-weight="bold"  text-anchor="middle">Student</text>
+<text x="596" y="79"  font-size="11">+ studentID : String</text>
+<text x="596" y="96"  font-size="11">+ cohort : String</text>
+<text x="596" y="113" font-size="11">+ cpa : Float</text>
+<text x="596" y="130" font-size="11">+ warningLevel : Integer</text>
+<text x="596" y="147" font-size="11">+ programID : String</text>
+<text x="596" y="180" font-size="11">+ getEnrollments() : List</text>
+<text x="596" y="197" font-size="11">+ validateRegistration() : Boolean</text>
+<text x="596" y="214" font-size="11">+ isWarned() : Boolean</text>
+<text x="596" y="231" font-size="11">+ calculateCredits() : Integer</text>
+<text x="596" y="248" font-size="11">+ toUser() : User</text>
 
-<!-- ════ 5. ENROLLMENT «entity»  x=543 y=450 w=205 h=245 ════
-     div1=492, div2=628
-     Actually: div2 = 492 + 8*17 + 8 = 636
-     attrs: 509,526,543,560,577,594,611,628  methods: 653,670,687 -->
-<rect x="543" y="450" width="205" height="245" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="543" y1="492" x2="748" y2="492" stroke="#333" stroke-width="1.5"/>
-<line x1="543" y1="628" x2="748" y2="628" stroke="#333" stroke-width="1.5"/>
-<text x="645" y="465" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="645" y="482" font-size="13"   font-weight="bold"  text-anchor="middle">Enrollment</text>
-<text x="549" y="509" font-size="11">+ enrollmentID : String</text>
-<text x="549" y="526" font-size="11">+ classID : String</text>
-<text x="549" y="543" font-size="11">+ courseID : String</text>
-<text x="549" y="560" font-size="11">+ studentID : String</text>
-<text x="549" y="577" font-size="11">+ midtermScore : Float</text>
-<text x="549" y="594" font-size="11">+ finalTermScore : Float</text>
-<text x="549" y="611" font-size="11">+ grade : String</text>
-<text x="549" y="628" font-size="11">+ status : String</text>
-<text x="549" y="653" font-size="11">+ computeStatus() : String</text>
-<text x="549" y="670" font-size="11">+ computeFinalGrade() : Float</text>
-<text x="549" y="687" font-size="11">+ isActive() : Boolean</text>
+<!-- ════════ 5. CLASS «entity» ════════ -->
+<rect x="590" y="280" width="200" height="177" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="590" y1="322" x2="790" y2="322" stroke="#333" stroke-width="1.5"/>
+<line x1="590" y1="398" x2="790" y2="398" stroke="#333" stroke-width="1.5"/>
+<text x="690" y="295" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="690" y="312" font-size="13"   font-weight="bold"  text-anchor="middle">Class</text>
+<text x="596" y="339" font-size="11">+ classID : String</text>
+<text x="596" y="356" font-size="11">+ courseID : String</text>
+<text x="596" y="373" font-size="11">+ capacity : Integer</text>
+<text x="596" y="390" font-size="11">+ semester : String</text>
+<text x="596" y="423" font-size="11">+ checkCapacity() : Boolean</text>
+<text x="596" y="440" font-size="11">+ getEnrollments() : List</text>
+<text x="596" y="457" font-size="11">+ validate() : Boolean</text>
 
-<!-- ════ 6. CURRICULUM «entity»  x=781 y=20 w=194 h=143 ════
-     div1=62, div2=113
-     attrs: 79,96  methods: 130,147,164 -->
-<rect x="781" y="20"  width="194" height="152" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="781" y1="62"  x2="975" y2="62"  stroke="#333" stroke-width="1.5"/>
-<line x1="781" y1="113" x2="975" y2="113" stroke="#333" stroke-width="1.5"/>
-<text x="878" y="35"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="878" y="52"  font-size="13"   font-weight="bold"  text-anchor="middle">Curriculum</text>
-<text x="787" y="79"  font-size="11">+ programID : String</text>
-<text x="787" y="96"  font-size="11">+ programName : String</text>
-<text x="787" y="130" font-size="11">+ getStudents() : List</text>
-<text x="787" y="147" font-size="11">+ getCourses() : List</text>
-<text x="787" y="164" font-size="11">+ validate() : Boolean</text>
-
-<!-- ════ 7. CLASS «entity»  x=781 y=435 w=194 h=211 ════
-     div1=477, div2=579
-     Actually: div2 = 477 + 6*17 + 8 = 587
-     attrs: 494,511,528,545,562,579  methods: 604,621,638 -->
-<rect x="781" y="435" width="194" height="211" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="781" y1="477" x2="975" y2="477" stroke="#333" stroke-width="1.5"/>
-<line x1="781" y1="587" x2="975" y2="587" stroke="#333" stroke-width="1.5"/>
-<text x="878" y="450" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="878" y="467" font-size="13"   font-weight="bold"  text-anchor="middle">Class</text>
-<text x="787" y="494" font-size="11">+ classID : String</text>
-<text x="787" y="511" font-size="11">+ courseID : String</text>
-<text x="787" y="528" font-size="11">+ semester : String</text>
-<text x="787" y="545" font-size="11">+ capacity : Integer</text>
-<text x="787" y="562" font-size="11">+ room : String</text>
-<text x="787" y="579" font-size="11">+ dayOfWeek : String</text>
-<text x="787" y="604" font-size="11">+ getEnrollments() : List</text>
-<text x="787" y="621" font-size="11">+ checkCapacity() : Boolean</text>
-<text x="787" y="638" font-size="11">+ isOpen() : Boolean</text>
+<!-- ════════ 6. ENROLLMENT «entity» ════════ -->
+<rect x="830" y="150" width="200" height="177" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="830" y1="192" x2="1030" y2="192" stroke="#333" stroke-width="1.5"/>
+<line x1="830" y1="285" x2="1030" y2="285" stroke="#333" stroke-width="1.5"/>
+<text x="930" y="165" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="930" y="182" font-size="13"   font-weight="bold"  text-anchor="middle">Enrollment</text>
+<text x="836" y="209" font-size="11">+ enrollmentID : String</text>
+<text x="836" y="226" font-size="11">+ studentID : String</text>
+<text x="836" y="243" font-size="11">+ classID : String</text>
+<text x="836" y="260" font-size="11">+ status : String</text>
+<text x="836" y="277" font-size="11">+ finalGrade : Float</text>
+<text x="836" y="310" font-size="11">+ computeGPA() : void</text>
+<text x="836" y="327" font-size="11">+ validate() : Boolean</text>
 
 
-<!-- ════════════════ ARROWS ════════════════
-  ChanA x=230  ChanB x=528  ChanC x=766  Top y=8
--->
+<!-- ════════════════════ ARROWS ════════════════════ -->
 
-<!-- Arrow 1: Admin ——> StudentManager  "Manages"  1 → 1
-     Admin center-y = 30+114 = 144
-     StudentMgr left at y=314 (mid)
-     (215,144) → (230,144→314) → (245,314) -->
-<path d="M 215,144 H 230 V 314 H 245"
+<!-- 1. AdminView ——> StudentManager  1 → 1 -->
+<path d="M 220,100 H 235 V 100 H 250"
       fill="none" stroke="#333" stroke-width="1.4"
       stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="218" y="140" font-size="10">1</text>
-<text x="234" y="331" font-size="10">1</text>
-<rect x="218" y="220" width="52" height="14" fill="#fff"/>
-<text x="219" y="231" font-size="11" font-style="italic">Manages</text>
+<text x="223" y="96" font-size="10">1</text>
+<text x="239" y="96" font-size="10">1</text>
+<rect x="223" y="103" width="56" height="14" fill="#fff"/>
+<text x="224" y="114" font-size="11" font-style="italic">Uses API</text>
 
-<!-- Arrow 2: StudentActor ——> StudentManager  "Uses"  1 → 1
-     StudentActor center-y = 380+105 = 485
-     StudentMgr right area y=380
-     (215,485) → (230,485→395) → (245,395) -->
-<path d="M 215,485 H 230 V 395 H 245"
+<!-- 2. StudentView ——> StudentManager  1 → 1 -->
+<path d="M 220,260 H 235 V 260 H 250"
       fill="none" stroke="#333" stroke-width="1.4"
       stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="218" y="481" font-size="10">1</text>
-<text x="234" y="412" font-size="10">1</text>
-<rect x="218" y="430" width="34" height="14" fill="#fff"/>
-<text x="219" y="441" font-size="11" font-style="italic">Uses</text>
+<text x="223" y="256" font-size="10">1</text>
+<text x="239" y="256" font-size="10">1</text>
 
-<!-- Arrow 3: StudentManager ——> Student  "Reads / updates"  1 → 0..*
-     SM right at y=234, Student left at y=130 (mid-attrs)
-     (510,234) → (528,234→130) → (543,130) -->
-<path d="M 510,234 H 528 V 130 H 543"
+<!-- 3. StudentManager ——> Student  1 → 0..* -->
+<path d="M 540,100 H 565 V 100 H 590"
       fill="none" stroke="#333" stroke-width="1.4"
       stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="513" y="230" font-size="10">1</text>
-<text x="532" y="127" font-size="10">0..*</text>
-<rect x="513" y="175" width="94" height="14" fill="#fff"/>
-<text x="514" y="186" font-size="11" font-style="italic">Reads / updates</text>
+<text x="543" y="96" font-size="10">1</text>
+<text x="575" y="96" font-size="10">0..*</text>
+<rect x="544" y="103" width="50" height="14" fill="#fff"/>
+<text x="545" y="114" font-size="11" font-style="italic">Manages</text>
 
-<!-- Arrow 4: StudentManager ——> Enrollment  "Creates / cancels"  1 → 0..*
-     SM right at y=400, Enrollment left at y=570 (mid)
-     (510,400) → (528,400→570) → (543,570) -->
-<path d="M 510,400 H 528 V 570 H 543"
+<!-- 4. StudentManager ——> Class  1 → 0..* -->
+<path d="M 540,290 H 565 V 290 H 590"
       fill="none" stroke="#333" stroke-width="1.4"
       stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="513" y="396" font-size="10">1</text>
-<text x="532" y="567" font-size="10">0..*</text>
-<rect x="513" y="472" width="98" height="14" fill="#fff"/>
-<text x="514" y="483" font-size="11" font-style="italic">Creates / cancels</text>
+<text x="543" y="286" font-size="10">1</text>
+<text x="575" y="286" font-size="10">0..*</text>
+<rect x="544" y="293" width="50" height="14" fill="#fff"/>
+<text x="545" y="304" font-size="11" font-style="italic">Manages</text>
 
-<!-- Arrow 5: Student ◆——> Enrollment  Composition "Has"  1 → 0..*
-     Diamond ◆ at Student bottom (645, 265): tip at (645, 277)
-     (645,277) → (645,450) -->
-<polygon points="645,265 639,271 645,277 651,271" fill="#333" stroke="#333" stroke-width="0.5"/>
-<path d="M 645,277 V 450"
-      fill="none" stroke="#333" stroke-width="1.4"
-      marker-end="url(#mf)"/>
-<text x="649" y="263" font-size="10">1</text>
-<text x="649" y="445" font-size="10">0..*</text>
-<rect x="649" y="354" width="22" height="14" fill="#fff"/>
-<text x="650" y="365" font-size="11" font-style="italic">Has</text>
-
-<!-- Arrow 6: Student ——> Curriculum  "Belongs to"  0..* → 1
-     Straight horizontal (748, 90) → (781, 90) -->
-<path d="M 748,90 H 781"
-      fill="none" stroke="#333" stroke-width="1.4"
-      marker-end="url(#mf)"/>
-<text x="751" y="86" font-size="10">0..*</text>
-<text x="766" y="86" font-size="10">1</text>
-<rect x="752" y="92" width="55" height="14" fill="#fff"/>
-<text x="753" y="103" font-size="11" font-style="italic">Belongs to</text>
-
-<!-- Arrow 7: Enrollment ——> Class  "Registers for"  0..* → 1
-     Straight horizontal (748, 560) → (781, 560) but Class starts at 435
-     Class mid-y = 435+105=540
-     (748,570) → (766,570→540) → (781,540) -->
-<path d="M 748,570 H 766 V 540 H 781"
+<!-- 5. StudentManager ——> Enrollment  1 → 0..* -->
+<path d="M 540,190 H 565 V 190 H 830"
       fill="none" stroke="#333" stroke-width="1.4"
       stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="751" y="566" font-size="10">0..*</text>
-<text x="770" y="537" font-size="10">1</text>
-<rect x="751" y="553" width="76" height="14" fill="#fff"/>
-<text x="752" y="564" font-size="11" font-style="italic">Registers for</text>
+<text x="543" y="186" font-size="10">1</text>
+<text x="815" y="186" font-size="10">0..*</text>
+<rect x="544" y="193" width="50" height="14" fill="#fff"/>
+<text x="545" y="204" font-size="11" font-style="italic">Manages</text>
 
-<!-- Arrow 8: StudentManager «uses» Curriculum  (dashed, top channel y=8)
-     (377,175) → (377,8) → (878,8) → (878,30) → Curriculum top y=20... 
-     Curriculum top is at y=20, so: (878,8)→(878,20) -->
-<path d="M 377,175 V 8 H 878 V 20"
-      fill="none" stroke="#333" stroke-width="1.3"
-      stroke-dasharray="6,3" stroke-linejoin="round" marker-end="url(#md)"/>
-<rect x="576" y="0" width="44" height="13" fill="#fff"/>
-<text x="577" y="11" font-size="11" font-style="italic">«uses»</text>
+<!-- 6. Student ——> Enrollment  1 → 0..* -->
+<path d="M 790,170 H 830"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="793" y="166" font-size="10">1</text>
+<text x="815" y="166" font-size="10">0..*</text>
+
+<!-- 7. Class ——> Enrollment  1 → 0..* -->
+<path d="M 790,300 H 810 V 230 H 830"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="793" y="296" font-size="10">1</text>
+<text x="815" y="226" font-size="10">0..*</text>
 
 </svg>
 
 <!-- Legend -->
 <div class="legend">
   <span><b>Access modifiers:</b> &nbsp; <b>+</b> public &nbsp;|&nbsp; <b>−</b> private</span>
-  <span>——&gt; Directed Association (open V)</span>
-  <span>◆——&gt; Composition (filled diamond at composite end)</span>
-  <span>– – –&gt; Dependency / «uses» (open V, dashed)</span>
-  <span><b>1 &nbsp; 0..* &nbsp; 1..*</b> — Multiplicity</span>
-  <span><b>«actor»</b> / <b>«control»</b> / <b>«entity»</b> — UML stereotypes</span>
+  <span>——&gt; Directed Association (open V arrowhead)</span>
+  <span><b>1 &nbsp; 0..*</b> — Multiplicity</span>
+  <span><b>«boundary»</b> / <b>«control»</b> / <b>«entity»</b> — UML stereotypes</span>
 </div>
 
 </body>

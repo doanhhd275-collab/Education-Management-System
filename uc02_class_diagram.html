@@ -23,304 +23,179 @@
 <body>
 
 <h1>Class Diagram — UC02: Curriculum Management</h1>
-<p class="sub">
-  Main Actor: Admin &nbsp;|&nbsp;
-  Features: Manage Curriculum · Manage Course · Manage Class · Assign Prerequisite
-</p>
+<p class="sub">Refactored: Stateless Controller & Boundary Actors & Direct M2M</p>
 
 <!--
-  ════════════════════════════════════════════════════════
-  LAYOUT — all pixel values carefully pre-calculated
+  BOXES
+  AdminView          : nA=0, nM=7  → 42+17+8+119+8 = 194
+  CurriculumManager  : nA=0, nM=13 → 42+17+8+221+8 = 296
+  Curriculum         : nA=3, nM=3  → 42+51+8+51+8  = 160
+  Course             : nA=3, nM=4  → 42+51+8+68+8  = 177
+  Class              : nA=4, nM=3  → 42+68+8+51+8  = 177
 
-  Font: 11px Times New Roman
-  Line-height in boxes: 17px per row
-  Box header block: 42px  (stereotype at +15, name at +30, divider at +42)
-  Section end-padding: 8px before divider/bottom
-
-  Columns:
-    Col 1  x = 20..225   w=205   Admin
-    ChanA  x = 240
-    Col 2  x = 255..560  w=305   CurriculumManager  (wide — longest methods ~240px at 11px)
-    ChanB  x = 578
-    Col 3  x = 593..815  w=222   Curriculum (top) / Class (bottom)
-    ChanC  x = 833
-    Col 4  x = 848..1085 w=237   CurriculumCourse (top) / Course (mid) / CoursePrerequisite (bot)
-
-  Canvas: 1105 × 780
-  ════════════════════════════════════════════════════════
-
-  BOX HEIGHT FORMULA:
-    h = 42 + nAttrs*17 + 8 + nMethods*17 + 8
-
-  Admin:              nA=2, nM=7  → 42+34+8+119+8  = 211
-  CurriculumManager:  nA=4, nM=13 → 42+68+8+221+8  = 347
-  Curriculum:         nA=3, nM=3  → 42+51+8+51+8   = 160
-  Class:              nA=4, nM=3  → 42+68+8+51+8   = 177
-  CurriculumCourse:   nA=2, nM=1  → 42+34+8+17+8   = 109
-  Course:             nA=3, nM=4  → 42+51+8+68+8   = 177
-  CoursePrerequisite: nA=2, nM=3  → 42+34+8+51+8   = 143
-
-  BOX POSITIONS (x, y):
-    Admin              : (20,  215)  bottom=426
-    CurriculumManager  : (255,  70)  bottom=417
-    Curriculum         : (593,  20)  bottom=180
-    Class              : (593, 545)  bottom=722
-    CurriculumCourse   : (848,  20)  bottom=129
-    Course             : (848, 215)  bottom=392
-    CoursePrerequisite : (848, 490)  bottom=633
-  ════════════════════════════════════════════════════════
+  POSITIONS
+    AdminView          : (20,  100)  bot=294
+    CurriculumManager  : (250, 50)   bot=346
+    Curriculum         : (590, 20)   bot=180
+    Course             : (848, 100)  bot=277
+    Class              : (590, 250)  bot=427
 -->
-<svg width="1105" height="760" xmlns="http://www.w3.org/2000/svg"
+<svg width="1105" height="500" xmlns="http://www.w3.org/2000/svg"
      font-family="'Times New Roman', Times, serif">
 <defs>
-  <!-- Association: open V arrowhead -->
   <marker id="mf" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto">
     <polyline points="0,0 10,4.5 0,9" fill="none" stroke="#333" stroke-width="1.4"/>
   </marker>
-  <!-- Dependency «uses»: open V + dashed -->
   <marker id="md" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto">
     <polyline points="0,0 10,4.5 0,9" fill="none" stroke="#333" stroke-width="1.4"/>
   </marker>
 </defs>
 
-<!-- ════════ 1. ADMIN «actor»  x=20 y=215 w=205 h=211 ════════
-     div1 at y=257,  div2 at y=299
-     attrs:  y=274, 291
-     methods y=316,333,350,367,384,401,418  -->
-<rect x="20"  y="215" width="205" height="211" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="257" x2="225" y2="257" stroke="#333" stroke-width="1.5"/>
-<line x1="20"  y1="299" x2="225" y2="299" stroke="#333" stroke-width="1.5"/>
-<text x="122" y="230" font-size="10.5" font-style="italic" text-anchor="middle">«actor»</text>
-<text x="122" y="247" font-size="13"   font-weight="bold"  text-anchor="middle">Admin</text>
-<text x="26"  y="274" font-size="11">+ userID : String</text>
-<text x="26"  y="291" font-size="11">+ name : String</text>
-<text x="26"  y="316" font-size="11">+ createCurriculum() : void</text>
-<text x="26"  y="333" font-size="11">+ manageCourse() : void</text>
-<text x="26"  y="350" font-size="11">+ manageClass() : void</text>
-<text x="26"  y="367" font-size="11">+ assignPrerequisite() : void</text>
-<text x="26"  y="384" font-size="11">+ addCourseToCurriculum() : void</text>
-<text x="26"  y="401" font-size="11">+ deleteCurriculum() : void</text>
-<text x="26"  y="418" font-size="11">+ updateCurriculum() : void</text>
+<!-- ════════ 1. ADMINVIEW «boundary» ════════ -->
+<rect x="20"  y="100" width="200" height="194" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="142" x2="220" y2="142" stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="159" x2="220" y2="159" stroke="#333" stroke-width="1.5"/>
+<text x="120" y="115" font-size="10.5" font-style="italic" text-anchor="middle">«boundary»</text>
+<text x="120" y="132" font-size="13"   font-weight="bold"  text-anchor="middle">AdminView</text>
+<text x="26"  y="184" font-size="11">+ createCurriculum() : void</text>
+<text x="26"  y="201" font-size="11">+ manageCourse() : void</text>
+<text x="26"  y="218" font-size="11">+ manageClass() : void</text>
+<text x="26"  y="235" font-size="11">+ assignPrerequisite() : void</text>
+<text x="26"  y="252" font-size="11">+ addCourseToCurriculum() : void</text>
+<text x="26"  y="269" font-size="11">+ deleteCurriculum() : void</text>
+<text x="26"  y="286" font-size="11">+ updateCurriculum() : void</text>
 
 
-<!-- ════════ 2. CURRICULUMMANAGER «control»  x=255 y=70 w=305 h=347 ════════
-     div1 at y=112,  div2 at y=188
-     attrs:  y=129, 146, 163, 180
-     methods y=205, 222, 239, 256, 273, 290, 307, 324, 341, 358, 375, 392, 409  -->
-<rect x="255" y="70"  width="305" height="347" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="255" y1="112" x2="560" y2="112" stroke="#333" stroke-width="1.5"/>
-<line x1="255" y1="188" x2="560" y2="188" stroke="#333" stroke-width="1.5"/>
-<text x="407" y="85"  font-size="10.5" font-style="italic" text-anchor="middle">«control»</text>
-<text x="407" y="102" font-size="13"   font-weight="bold"  text-anchor="middle">CurriculumManager</text>
-<text x="261" y="129" font-size="11">+ currentUser : User</text>
-<text x="261" y="146" font-size="11">+ curriculumList : List&lt;Curriculum&gt;</text>
-<text x="261" y="163" font-size="11">+ courseList : List&lt;Course&gt;</text>
-<text x="261" y="180" font-size="11">+ classList : List&lt;Class&gt;</text>
-<text x="261" y="205" font-size="11">+ listCurriculum() : List</text>
-<text x="261" y="222" font-size="11">+ createCurriculum() : Curriculum</text>
-<text x="261" y="239" font-size="11">+ getCurriculum() : Curriculum</text>
-<text x="261" y="256" font-size="11">+ updateCurriculum() : Curriculum</text>
-<text x="261" y="273" font-size="11">+ deleteCurriculum() : void</text>
-<text x="261" y="290" font-size="11">+ addCourseToCurriculum() : void</text>
-<text x="261" y="307" font-size="11">+ removeCourseFromCurriculum() : void</text>
-<text x="261" y="324" font-size="11">+ listCourses() : List</text>
-<text x="261" y="341" font-size="11">+ createCourse() : Course</text>
-<text x="261" y="358" font-size="11">+ updateCourse() : Course</text>
-<text x="261" y="375" font-size="11">+ addPrerequisite() : void</text>
-<text x="261" y="392" font-size="11">+ listClasses() : List</text>
-<text x="261" y="409" font-size="11">+ createClass() : Class</text>
+<!-- ════════ 2. CURRICULUMMANAGER «control» ════════ -->
+<rect x="250" y="50"  width="305" height="296" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="250" y1="92"  x2="555" y2="92"  stroke="#333" stroke-width="1.5"/>
+<line x1="250" y1="109" x2="555" y2="109" stroke="#333" stroke-width="1.5"/>
+<text x="402" y="65"  font-size="10.5" font-style="italic" text-anchor="middle">«control»</text>
+<text x="402" y="82"  font-size="13"   font-weight="bold"  text-anchor="middle">CurriculumManager</text>
+<text x="256" y="134" font-size="11">+ listCurriculum() : List</text>
+<text x="256" y="151" font-size="11">+ createCurriculum() : Curriculum</text>
+<text x="256" y="168" font-size="11">+ getCurriculum() : Curriculum</text>
+<text x="256" y="185" font-size="11">+ updateCurriculum() : Curriculum</text>
+<text x="256" y="202" font-size="11">+ deleteCurriculum() : void</text>
+<text x="256" y="219" font-size="11">+ addCourseToCurriculum() : void</text>
+<text x="256" y="236" font-size="11">+ removeCourseFromCurriculum() : void</text>
+<text x="256" y="253" font-size="11">+ listCourses() : List</text>
+<text x="256" y="270" font-size="11">+ createCourse() : Course</text>
+<text x="256" y="287" font-size="11">+ updateCourse() : Course</text>
+<text x="256" y="304" font-size="11">+ addPrerequisite() : void</text>
+<text x="256" y="321" font-size="11">+ listClasses() : List</text>
+<text x="256" y="338" font-size="11">+ createClass() : Class</text>
 
 
-<!-- ════════ 3. CURRICULUM «entity»  x=593 y=20 w=222 h=160 ════════
-     div1 at y=62,  div2 at y=121
-     attrs:  y=79, 96, 113
-     methods y=138, 155, 172  -->
-<rect x="593" y="20"  width="222" height="160" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="593" y1="62"  x2="815" y2="62"  stroke="#333" stroke-width="1.5"/>
-<line x1="593" y1="121" x2="815" y2="121" stroke="#333" stroke-width="1.5"/>
-<text x="704" y="35"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="704" y="52"  font-size="13"   font-weight="bold"  text-anchor="middle">Curriculum</text>
-<text x="599" y="79"  font-size="11">+ programID : String</text>
-<text x="599" y="96"  font-size="11">+ programName : String</text>
-<text x="599" y="113" font-size="11">+ totalCredits : Integer</text>
-<text x="599" y="138" font-size="11">+ getCourses() : List&lt;Course&gt;</text>
-<text x="599" y="155" font-size="11">+ getClasses() : List&lt;Class&gt;</text>
-<text x="599" y="172" font-size="11">+ validate() : Boolean</text>
+<!-- ════════ 3. CURRICULUM «entity» ════════ -->
+<rect x="590" y="20"  width="222" height="160" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="590" y1="62"  x2="812" y2="62"  stroke="#333" stroke-width="1.5"/>
+<line x1="590" y1="121" x2="812" y2="121" stroke="#333" stroke-width="1.5"/>
+<text x="701" y="35"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="701" y="52"  font-size="13"   font-weight="bold"  text-anchor="middle">Curriculum</text>
+<text x="596" y="79"  font-size="11">+ programID : String</text>
+<text x="596" y="96"  font-size="11">+ programName : String</text>
+<text x="596" y="113" font-size="11">+ totalCredits : Integer</text>
+<text x="596" y="138" font-size="11">+ getCourses() : List&lt;Course&gt;</text>
+<text x="596" y="155" font-size="11">+ getClasses() : List&lt;Class&gt;</text>
+<text x="596" y="172" font-size="11">+ validate() : Boolean</text>
 
 
-<!-- ════════ 4. CLASS «entity»  x=593 y=545 w=222 h=177 ════════
-     div1 at y=587,  div2 at y=655
-     attrs:  y=604, 621, 638, 655(border!)
-     Actually: div2 = 587 + 4*17 + 8 = 587+68+8 = 663
-     attrs:  y=604, 621, 638, 655
-     methods y=680, 697, 714   -->
-<rect x="593" y="545" width="222" height="177" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="593" y1="587" x2="815" y2="587" stroke="#333" stroke-width="1.5"/>
-<line x1="593" y1="663" x2="815" y2="663" stroke="#333" stroke-width="1.5"/>
-<text x="704" y="560" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="704" y="577" font-size="13"   font-weight="bold"  text-anchor="middle">Class</text>
-<text x="599" y="604" font-size="11">+ classID : String</text>
-<text x="599" y="621" font-size="11">+ courseID : String</text>
-<text x="599" y="638" font-size="11">+ semester : String</text>
-<text x="599" y="655" font-size="11">+ capacity : Integer</text>
-<text x="599" y="680" font-size="11">+ getEnrollments() : List</text>
-<text x="599" y="697" font-size="11">+ validate() : Boolean</text>
-<text x="599" y="714" font-size="11">+ checkCapacity() : Boolean</text>
+<!-- ════════ 4. CLASS «entity» ════════ -->
+<rect x="590" y="250" width="222" height="177" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="590" y1="292" x2="812" y2="292" stroke="#333" stroke-width="1.5"/>
+<line x1="590" y1="368" x2="812" y2="368" stroke="#333" stroke-width="1.5"/>
+<text x="701" y="265" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="701" y="282" font-size="13"   font-weight="bold"  text-anchor="middle">Class</text>
+<text x="596" y="309" font-size="11">+ classID : String</text>
+<text x="596" y="326" font-size="11">+ courseID : String</text>
+<text x="596" y="343" font-size="11">+ semester : String</text>
+<text x="596" y="360" font-size="11">+ capacity : Integer</text>
+<text x="596" y="385" font-size="11">+ getEnrollments() : List</text>
+<text x="596" y="402" font-size="11">+ validate() : Boolean</text>
+<text x="596" y="419" font-size="11">+ checkCapacity() : Boolean</text>
 
 
-<!-- ════════ 5. CURRICULUMCOURSE «entity»  x=848 y=20 w=237 h=109 ════════
-     div1 at y=62,  div2 at y=104
-     attrs: y=79, 96
-     methods: y=121  -->
-<rect x="848" y="20"  width="237" height="109" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="848" y1="62"  x2="1085" y2="62"  stroke="#333" stroke-width="1.5"/>
-<line x1="848" y1="104" x2="1085" y2="104" stroke="#333" stroke-width="1.5"/>
-<text x="966" y="35"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="966" y="52"  font-size="13"   font-weight="bold"  text-anchor="middle">CurriculumCourse</text>
-<text x="854" y="79"  font-size="11">+ programID : String</text>
-<text x="854" y="96"  font-size="11">+ courseID : String</text>
-<text x="854" y="121" font-size="11">+ validate() : Boolean</text>
+<!-- ════════ 5. COURSE «entity» ════════ -->
+<rect x="848" y="100" width="237" height="177" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="848" y1="142" x2="1085" y2="142" stroke="#333" stroke-width="1.5"/>
+<line x1="848" y1="210" x2="1085" y2="210" stroke="#333" stroke-width="1.5"/>
+<text x="966" y="115" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="966" y="132" font-size="13"   font-weight="bold"  text-anchor="middle">Course</text>
+<text x="854" y="159" font-size="11">+ courseID : String</text>
+<text x="854" y="176" font-size="11">+ courseName : String</text>
+<text x="854" y="193" font-size="11">+ credits : Integer</text>
+<text x="854" y="227" font-size="11">+ getPrerequisites() : List</text>
+<text x="854" y="244" font-size="11">+ getClasses() : List&lt;Class&gt;</text>
+<text x="854" y="261" font-size="11">+ validate() : Boolean</text>
+<text x="854" y="278" font-size="11">+ isAvailable() : Boolean</text>
 
 
-<!-- ════════ 6. COURSE «entity»  x=848 y=215 w=237 h=177 ════════
-     div1 at y=257,  div2 at y=325
-     attrs: y=274, 291, 308
-     methods: y=342, 359, 376, 393  -->
-<rect x="848" y="215" width="237" height="177" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="848" y1="257" x2="1085" y2="257" stroke="#333" stroke-width="1.5"/>
-<line x1="848" y1="325" x2="1085" y2="325" stroke="#333" stroke-width="1.5"/>
-<text x="966" y="230" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="966" y="247" font-size="13"   font-weight="bold"  text-anchor="middle">Course</text>
-<text x="854" y="274" font-size="11">+ courseID : String</text>
-<text x="854" y="291" font-size="11">+ courseName : String</text>
-<text x="854" y="308" font-size="11">+ credits : Integer</text>
-<text x="854" y="342" font-size="11">+ getPrerequisites() : List</text>
-<text x="854" y="359" font-size="11">+ getClasses() : List&lt;Class&gt;</text>
-<text x="854" y="376" font-size="11">+ validate() : Boolean</text>
-<text x="854" y="393" font-size="11">+ isAvailable() : Boolean</text>
+<!-- ════════════════════ ARROWS ════════════════════ -->
 
-
-<!-- ════════ 7. COURSEPREREQUISITE «entity»  x=848 y=490 w=237 h=143 ════════
-     div1 at y=532,  div2 at y=574
-     attrs: y=549, 566
-     methods: y=591, 608, 625  -->
-<rect x="848" y="490" width="237" height="143" fill="#fff" stroke="#333" stroke-width="1.5"/>
-<line x1="848" y1="532" x2="1085" y2="532" stroke="#333" stroke-width="1.5"/>
-<line x1="848" y1="574" x2="1085" y2="574" stroke="#333" stroke-width="1.5"/>
-<text x="966" y="505" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
-<text x="966" y="522" font-size="13"   font-weight="bold"  text-anchor="middle">CoursePrerequisite</text>
-<text x="854" y="549" font-size="11">+ courseID : String</text>
-<text x="854" y="566" font-size="11">+ prerequisiteID : String</text>
-<text x="854" y="591" font-size="11">+ validate() : Boolean</text>
-<text x="854" y="608" font-size="11">+ checkCircular() : Boolean</text>
-<text x="854" y="625" font-size="11">+ getPrerequisite() : Course</text>
-
-
-<!-- ════════════════════ ARROWS ════════════════════
-  Chan A: x=240   gap between Col1(right=225) and Col2(left=255)
-  Chan B: x=578   gap between Col2(right=560) and Col3(left=593)
-  Chan C: x=833   gap between Col3(right=815) and Col4(left=848)
-  Top   : y=8     above all boxes
-
-  Arrow 1 : Admin ——> CurriculumManager      "Operates"           Chan A
-  Arrow 2 : CurriculumManager ——> Curriculum "Creates / manages"  Chan B ↑
-  Arrow 3 : CurriculumManager ——> Class      "Creates / manages"  Chan B ↓
-  Arrow 4 : Curriculum ◆——> CurriculumCourse Composition "Has"    horizontal ChanC
-  Arrow 5 : CurriculumCourse ——> Course      "References"         vertical ChanC
-  Arrow 6 : Course ◆——> CoursePrerequisite   Composition "Has"    vertical ChanC
-  Arrow 7 : CurriculumManager «uses» Course  Dependency           top channel
-  Arrow 8 : Class ——> Course                 "Belongs to"         Chan C
-════════════════════════════════════════════════ -->
-
-<!-- ── Arrow 1: Admin ——> CurriculumManager  "Operates"  1 → 1
-     Admin center-y = 215 + 211/2 ≈ 321
-     CM attrs center ≈ y=158
-     Exit Admin right at (225,321) → ChanA(240,321→158) → CM left (255,158) -->
-<path d="M 225,321 H 240 V 158 H 255"
+<!-- ── Arrow 1: AdminView ——> CurriculumManager  "Uses API"  1 → 1 -->
+<path d="M 220,197 H 235 V 197 H 250"
       fill="none" stroke="#333" stroke-width="1.4"
       stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="228" y="317" font-size="10" text-anchor="start">1</text>
-<text x="244" y="175" font-size="10" text-anchor="start">1</text>
-<rect x="228" y="228" width="56" height="14" fill="#fff"/>
-<text x="229" y="239" font-size="11" font-style="italic">Operates</text>
+<text x="223" y="193" font-size="10">1</text>
+<text x="239" y="193" font-size="10">1</text>
+<rect x="223" y="200" width="56" height="14" fill="#fff"/>
+<text x="224" y="211" font-size="11" font-style="italic">Uses API</text>
 
-<!-- ── Arrow 2: CurriculumManager ——> Curriculum  "Creates / manages"  1 → 0..*
-     Exit CM right top area at y=130, Enter Curriculum left at y=91
-     (560,130) → ChanB(578,130→91) → (593,91) -->
-<path d="M 560,130 H 578 V 91 H 593"
+<!-- ── Arrow 2: CurriculumManager ——> Curriculum  "Manages"  1 → 0..* -->
+<path d="M 555,100 H 573 V 100 H 590"
       fill="none" stroke="#333" stroke-width="1.4"
       stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="563" y="126" font-size="10">1</text>
-<text x="582" y="88"  font-size="10">0..*</text>
-<rect x="563" y="104" width="104" height="14" fill="#fff"/>
-<text x="564" y="115" font-size="11" font-style="italic">Creates / manages</text>
+<text x="558" y="96" font-size="10">1</text>
+<text x="575" y="96" font-size="10">0..*</text>
+<rect x="558" y="103" width="50" height="14" fill="#fff"/>
+<text x="559" y="114" font-size="11" font-style="italic">Manages</text>
 
-<!-- ── Arrow 3: CurriculumManager ——> Class  "Creates / manages"  1 → 0..*
-     Exit CM right bottom area at y=375, Enter Class left at y=610
-     (560,375) → ChanB(578,375→610) → (593,610) -->
-<path d="M 560,375 H 578 V 610 H 593"
+<!-- ── Arrow 3: CurriculumManager ——> Course  "Manages"  1 → 0..* -->
+<path d="M 555,200 H 573 V 200 H 848"
       fill="none" stroke="#333" stroke-width="1.4"
       stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="563" y="371" font-size="10">1</text>
-<text x="582" y="607" font-size="10">0..*</text>
-<rect x="563" y="478" width="104" height="14" fill="#fff"/>
-<text x="564" y="489" font-size="11" font-style="italic">Creates / manages</text>
+<text x="558" y="196" font-size="10">1</text>
+<text x="833" y="196" font-size="10">0..*</text>
+<rect x="558" y="203" width="50" height="14" fill="#fff"/>
+<text x="559" y="214" font-size="11" font-style="italic">Manages</text>
 
-<!-- ── Arrow 4: Curriculum ◆——> CurriculumCourse  Composition "Has"  1 → 0..*
-     Diamond ◆ at Curriculum right edge (815, 77): points form a diamond
-     Line starts from tip at (827, 77) after diamond
-     (827,77) → ChanC(833,77) → (848,77) -->
-<polygon points="815,77 821,72 827,77 821,82" fill="#333" stroke="#333" stroke-width="0.5"/>
-<path d="M 827,77 H 848"
+<!-- ── Arrow 4: CurriculumManager ——> Class  "Manages"  1 → 0..* -->
+<path d="M 555,290 H 573 V 290 H 590"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="558" y="286" font-size="10">1</text>
+<text x="575" y="286" font-size="10">0..*</text>
+<rect x="558" y="293" width="50" height="14" fill="#fff"/>
+<text x="559" y="304" font-size="11" font-style="italic">Manages</text>
+
+<!-- ── Arrow 5: Curriculum ——> Course  "Has Courses (M2M)"  0..* → 0..* -->
+<path d="M 812,120 H 848"
       fill="none" stroke="#333" stroke-width="1.4"
       marker-end="url(#mf)"/>
-<text x="806" y="70" font-size="10" text-anchor="end">1</text>
-<text x="834" y="70" font-size="10">0..*</text>
-<rect x="828" y="79" width="22" height="14" fill="#fff"/>
-<text x="829" y="90" font-size="11" font-style="italic">Has</text>
+<text x="816" y="116" font-size="10">0..*</text>
+<text x="831" y="116" font-size="10">0..*</text>
+<rect x="815" y="123" width="60" height="14" fill="#fff"/>
+<text x="816" y="134" font-size="11" font-style="italic">Has Courses</text>
 
-<!-- ── Arrow 5: CurriculumCourse ——> Course  "References"  0..* → 1
-     CurriculumCourse bottom center (966, 129) → Course top (966, 215) -->
-<path d="M 966,129 V 215"
-      fill="none" stroke="#333" stroke-width="1.4"
-      marker-end="url(#mf)"/>
-<text x="970" y="140" font-size="10">0..*</text>
-<text x="970" y="210" font-size="10">1</text>
-<rect x="970" y="164" width="60" height="14" fill="#fff"/>
-<text x="971" y="175" font-size="11" font-style="italic">References</text>
-
-<!-- ── Arrow 6: Course ◆——> CoursePrerequisite  Composition "Has"  1 → 0..*
-     Diamond ◆ at Course bottom (966, 392): tip at (966, 404)
-     (966,404) → (966,490) -->
-<polygon points="966,392 961,398 966,404 971,398" fill="#333" stroke="#333" stroke-width="0.5"/>
-<path d="M 966,404 V 490"
-      fill="none" stroke="#333" stroke-width="1.4"
-      marker-end="url(#mf)"/>
-<text x="970" y="390" font-size="10">1</text>
-<text x="970" y="486" font-size="10">0..*</text>
-<rect x="970" y="434" width="22" height="14" fill="#fff"/>
-<text x="971" y="445" font-size="11" font-style="italic">Has</text>
-
-<!-- ── Arrow 7: CurriculumManager «uses» Course  (dashed, top channel y=8)
-     (407,70) → up(407,8) → right(966,8) → down(966,30) -- Course top is at y=215!
-     But we want to reach Course box top, so go to (966,215) via top channel:
-     (407,70) → (407,8) → (966,8) → (966,215) -->
-<path d="M 407,70 V 8 H 966 V 215"
-      fill="none" stroke="#333" stroke-width="1.3"
-      stroke-dasharray="6,3" stroke-linejoin="round" marker-end="url(#md)"/>
-<rect x="638" y="0" width="44" height="13" fill="#fff"/>
-<text x="639" y="11" font-size="11" font-style="italic">«uses»</text>
-
-<!-- ── Arrow 8: Class ——> Course  "Belongs to"  0..* → 1
-     Exit Class right at y=616 → ChanC(833,616→303) → Course left (848,303)
-     Course left mid-body y = 215 + 177/2 = 303 -->
-<path d="M 815,616 H 833 V 303 H 848"
+<!-- ── Arrow 6: Class ——> Course  "Belongs to"  0..* → 1 -->
+<path d="M 812,260 H 830 V 260 H 848"
       fill="none" stroke="#333" stroke-width="1.4"
       stroke-linejoin="round" marker-end="url(#mf)"/>
-<text x="818" y="612" font-size="10">0..*</text>
-<text x="837" y="300" font-size="10">1</text>
-<rect x="818" y="444" width="58" height="14" fill="#fff"/>
-<text x="819" y="455" font-size="11" font-style="italic">Belongs to</text>
+<text x="816" y="256" font-size="10">0..*</text>
+<text x="837" y="256" font-size="10">1</text>
+<rect x="815" y="263" width="55" height="14" fill="#fff"/>
+<text x="816" y="274" font-size="11" font-style="italic">Belongs to</text>
+
+<!-- ── Arrow 7: Course ——> Course  "Has Prerequisites (M2M)"  0..* → 0..* 
+     Self-loop around Course box -->
+<path d="M 1085,140 H 1100 V 230 H 1085"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="1068" y="136" font-size="10">0..*</text>
+<text x="1068" y="244" font-size="10">0..*</text>
+<rect x="1080" y="175" width="85" height="14" fill="#fff"/>
+<text x="1082" y="186" font-size="11" font-style="italic">Prerequisites</text>
 
 </svg>
 
@@ -328,11 +203,9 @@
 <div class="legend">
   <span><b>Access modifiers:</b> &nbsp; <b>+</b> public &nbsp;|&nbsp; <b>−</b> private</span>
   <span>——&gt; Directed Association (open V arrowhead)</span>
-  <span>◆——&gt; Composition (filled diamond at composite end)</span>
   <span>– – –&gt; Dependency / «uses» (open V, dashed)</span>
   <span><b>1 &nbsp; 0..*</b> — Multiplicity</span>
-  <span><b>«actor»</b> / <b>«control»</b> / <b>«entity»</b> — UML stereotypes</span>
-  <span>Orthogonal routing — ChanA(x=240) · ChanB(x=578) · ChanC(x=833) · Top(y=8)</span>
+  <span><b>«boundary»</b> / <b>«control»</b> / <b>«entity»</b> — UML stereotypes</span>
 </div>
 
 </body>
