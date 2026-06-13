@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>UC05 – Class Diagram: Learning Support</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Times New Roman', Times, serif; background: #f0ede8; padding: 24px 16px; }
+  h1   { text-align: center; font-size: 17px; font-weight: bold; margin-bottom: 4px; color: #111; }
+  .sub { text-align: center; font-size: 12px; color: #666; margin-bottom: 20px; }
+  svg  { display: block; margin: 0 auto; background: #fff;
+         border: 1.5px solid #999; box-shadow: 3px 3px 10px rgba(0,0,0,.15); }
+  .legend {
+    width: 1030px; margin: 14px auto 0;
+    display: flex; gap: 20px; flex-wrap: wrap;
+    font-size: 11px; color: #444;
+    font-family: 'Times New Roman', Times, serif;
+    border-top: 1px solid #bbb; padding-top: 10px;
+  }
+  .legend b { color: #111; }
+</style>
+</head>
+<body>
+
+<h1>Class Diagram — UC05: Learning Support</h1>
+<p class="sub">
+  Main Actors: Teacher, Student &nbsp;|&nbsp;
+  Features: Assignment (create/view/submit/grade/view grade) &amp; Document (upload/view)
+</p>
+
+<!--
+  ══════════════════════════════════════════════════════════════════
+  LAYOUT  (px)
+
+  Col 1  x =  20.. 200  (w=180)   Teacher (top) / Student (bottom)
+  Chan A x = 220                  routing channel A
+  Col 2  x = 240.. 455  (w=215)   LearningSupport  (center controller)
+  Chan B x = 525                  routing channel B
+  Col 3  x = 545.. 735  (w=190)   Assignment (top) / Document (bottom)
+  Chan C x = 805                  routing channel C
+  Col 4  x = 825.. 1000 (w=175)   AssignmentReport (top) / Class (bottom)
+
+  Canvas : 1030 × 640
+
+  Arrow strategy (no overlaps):
+    1  Teacher    → LearningSupport   "Operates"       Chan A ↓
+    2  Student    → LearningSupport   "Uses"           Chan A ↑
+    3  LSupport   → Assignment        "Creates/views"  Chan B ↑
+    4  LSupport   → Document          "Uploads/views"  Chan B ↓
+    5  Assignment → AssignmentReport  "Has"            horizontal (same row)
+    6  Document   → Class             "Belongs to"     horizontal (same row)
+    7  Assignment → Class             "Belongs to"     Chan C ↓
+    8  LSupport   → AssignmentReport  «uses»           top-channel y=14
+  ══════════════════════════════════════════════════════════════════
+-->
+<svg width="1030" height="640" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <!-- Directed Association: open V arrowhead (UML standard) -->
+  <marker id="mf" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto">
+    <polyline points="0,0 10,4.5 0,9" fill="none" stroke="#333" stroke-width="1.4"/>
+  </marker>
+  <!-- Dependency «uses»: open V + dashed stroke -->
+  <marker id="md" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto">
+    <polyline points="0,0 10,4.5 0,9" fill="none" stroke="#333" stroke-width="1.4"/>
+  </marker>
+</defs>
+
+
+<!-- ════════════════════════════════════════════════
+     CLASS BOXES
+════════════════════════════════════════════════ -->
+
+<!-- ─── 1. TEACHER (Actor)  x=20..200  y=30..200  h=170 ───
+     header=26 | attrs 2 | methods 5 → 2×16+8=40; 5×16+8=88 -->
+<rect x="20"  y="30"  width="180" height="186" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="56"  x2="200" y2="56"  stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="98"  x2="200" y2="98"  stroke="#333" stroke-width="1.5"/>
+<text x="110" y="46"  font-size="10.5" font-style="italic" text-anchor="middle">«actor»</text>
+<text x="110" y="61"  font-size="13"   font-weight="bold"  text-anchor="middle">Teacher</text>
+<text x="26"  y="78"  font-size="11.5">+ teacherID : String</text>
+<text x="26"  y="94"  font-size="11.5">+ name : String</text>
+<text x="26"  y="114" font-size="11.5">+ createAssignment() : void</text>
+<text x="26"  y="130" font-size="11.5">+ viewAssignments() : List</text>
+<text x="26"  y="146" font-size="11.5">+ gradeSubmission() : void</text>
+<text x="26"  y="162" font-size="11.5">+ uploadDocument() : void</text>
+<text x="26"  y="178" font-size="11.5">+ viewDocuments() : List</text>
+
+<!-- ─── 2. STUDENT (Actor)  x=20..200  y=360..514  h=154 ───
+     header=26 | attrs 2 | methods 5 → 5×16+8=88  total=154 -->
+<rect x="20"  y="360" width="180" height="186" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="386" x2="200" y2="386" stroke="#333" stroke-width="1.5"/>
+<line x1="20"  y1="426" x2="200" y2="426" stroke="#333" stroke-width="1.5"/>
+<text x="110" y="376" font-size="10.5" font-style="italic" text-anchor="middle">«actor»</text>
+<text x="110" y="391" font-size="13"   font-weight="bold"  text-anchor="middle">StudentActor</text>
+<text x="26"  y="411" font-size="11.5">+ userID : String</text>
+<text x="26"  y="427" font-size="11.5">+ name : String</text>
+<text x="26"  y="447" font-size="11.5">+ viewAssignments() : List</text>
+<text x="26"  y="463" font-size="11.5">+ submitAssignment() : void</text>
+<text x="26"  y="479" font-size="11.5">+ viewMySubmissions() : List</text>
+<text x="26"  y="495" font-size="11.5">+ viewAssignmentGrade() : Float</text>
+<text x="26"  y="511" font-size="11.5">+ viewDocuments() : List</text>
+
+<!-- ─── 3. LEARNINGSUPPORT (Controller)  x=240..455  y=140..430  h=290 ───
+     header=26 | attrs 4×16+8=72 | methods 10×16+8=168  total=266 → use 290 -->
+<rect x="240" y="140" width="215" height="290" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="240" y1="166" x2="455" y2="166" stroke="#333" stroke-width="1.5"/>
+<line x1="240" y1="238" x2="455" y2="238" stroke="#333" stroke-width="1.5"/>
+<text x="347" y="155" font-size="10.5" font-style="italic" text-anchor="middle">«control»</text>
+<text x="347" y="170" font-size="13"   font-weight="bold"  text-anchor="middle">LearningSupport</text>
+<text x="246" y="180" font-size="11.5">+ currentUser : User</text>
+<text x="246" y="196" font-size="11.5">+ assignmentList : List</text>
+<text x="246" y="212" font-size="11.5">+ documentList : List</text>
+<text x="246" y="228" font-size="11.5">+ submissionList : List</text>
+<text x="246" y="252" font-size="11.5">+ listAssignments()</text>
+<text x="246" y="268" font-size="11.5">+ createAssignment()</text>
+<text x="246" y="284" font-size="11.5">+ viewAssignment()</text>
+<text x="246" y="300" font-size="11.5">+ submitAssignment()</text>
+<text x="246" y="316" font-size="11.5">+ gradeSubmission()</text>
+<text x="246" y="332" font-size="11.5">+ viewGrade()</text>
+<text x="246" y="348" font-size="11.5">+ getMySubmissions()</text>
+<text x="246" y="364" font-size="11.5">+ uploadDocument()</text>
+<text x="246" y="380" font-size="11.5">+ listDocuments()</text>
+<text x="246" y="396" font-size="11.5">+ viewDocument()</text>
+<text x="246" y="412" font-size="11.5">+ deleteDocument()</text>
+
+<!-- ─── 4. ASSIGNMENT  x=545..735  y=30..234  h=204 ───
+     header=26 | attrs 8×16+8=136 | methods 2×16+8=40  total=202 → 204 -->
+<rect x="545" y="30"  width="190" height="204" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="545" y1="56"  x2="735" y2="56"  stroke="#333" stroke-width="1.5"/>
+<line x1="545" y1="192" x2="735" y2="192" stroke="#333" stroke-width="1.5"/>
+<text x="640" y="46"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="640" y="61"  font-size="13"   font-weight="bold"  text-anchor="middle">Assignment</text>
+<text x="551" y="70"  font-size="11.5">+ assignmentID : String</text>
+<text x="551" y="86"  font-size="11.5">+ assignmentName : String</text>
+<text x="551" y="102" font-size="11.5">+ deadline : DateTime</text>
+<text x="551" y="118" font-size="11.5">+ classID : String</text>
+<text x="551" y="134" font-size="11.5">+ courseID : String</text>
+<text x="551" y="150" font-size="11.5">+ teacherID : String</text>
+<text x="551" y="166" font-size="11.5">+ semester : String</text>
+<text x="551" y="182" font-size="11.5">+ linkURL : String</text>
+<text x="551" y="206" font-size="11.5">+ isOverdue() : Boolean</text>
+<text x="551" y="222" font-size="11.5">+ validate()</text>
+
+<!-- ─── 5. DOCUMENT  x=545..735  y=420..590  h=170 ───
+     header=26 | attrs 7×16+8=120 | methods 1×16+8=24  total=170 -->
+<!-- Document không có deadline — tài liệu học không bị giới hạn thời gian nộp -->
+<rect x="545" y="420" width="190" height="170" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="545" y1="446" x2="735" y2="446" stroke="#333" stroke-width="1.5"/>
+<line x1="545" y1="550" x2="735" y2="550" stroke="#333" stroke-width="1.5"/>
+<text x="640" y="436" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="640" y="451" font-size="13"   font-weight="bold"  text-anchor="middle">Document</text>
+<text x="551" y="467" font-size="11.5">+ documentID : String</text>
+<text x="551" y="483" font-size="11.5">+ documentName : String</text>
+<text x="551" y="499" font-size="11.5">+ teacherID : String</text>
+<text x="551" y="515" font-size="11.5">+ linkURL : String</text>
+<text x="551" y="531" font-size="11.5">+ courseID : String</text>
+<text x="551" y="547" font-size="11.5">+ classID : String</text>
+<text x="551" y="567" font-size="11.5">+ isAccessible() : Boolean</text>
+<text x="551" y="583" font-size="11.5">+ getUploadDate() : DateTime</text>
+
+<!-- ─── 6. ASSIGNMENTREPORT  x=825..1000  y=30..232  h=202 ───
+     header=26 | attrs 8×16+8=136 | methods 2×16+8=40  total=202 -->
+<rect x="825" y="30"  width="175" height="202" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="825" y1="56"  x2="1000" y2="56"  stroke="#333" stroke-width="1.5"/>
+<line x1="825" y1="192" x2="1000" y2="192" stroke="#333" stroke-width="1.5"/>
+<text x="912" y="46"  font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="912" y="61"  font-size="13"   font-weight="bold"  text-anchor="middle">AssignmentReport</text>
+<text x="831" y="70"  font-size="11.5">+ assignmentID : String</text>
+<text x="831" y="86"  font-size="11.5">+ classID : String</text>
+<text x="831" y="102" font-size="11.5">+ submitDate : DateTime</text>
+<text x="831" y="118" font-size="11.5">+ studentID : String</text>
+<text x="831" y="134" font-size="11.5">+ lessonID : String</text>
+<text x="831" y="150" font-size="11.5">+ linkURL : String</text>
+<text x="831" y="166" font-size="11.5">+ grade : Float</text>
+<text x="831" y="182" font-size="11.5">+ feedback : String</text>
+<text x="831" y="206" font-size="11.5">+ checkIsLate() : Boolean</text>
+<text x="831" y="222" font-size="11.5">+ getGradeStatus()</text>
+
+<!-- ─── 7. CLASS  x=825..1000  y=420..574  h=154 ───
+     header=26 | attrs 5×16+8=88 | methods 2×16+8=40  total=154 -->
+<rect x="825" y="420" width="175" height="154" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<line x1="825" y1="446" x2="1000" y2="446" stroke="#333" stroke-width="1.5"/>
+<line x1="825" y1="534" x2="1000" y2="534" stroke="#333" stroke-width="1.5"/>
+<text x="912" y="436" font-size="10.5" font-style="italic" text-anchor="middle">«entity»</text>
+<text x="912" y="451" font-size="13"   font-weight="bold"  text-anchor="middle">Class</text>
+<text x="831" y="460" font-size="11.5">+ classID : String</text>
+<text x="831" y="476" font-size="11.5">+ courseID : String</text>
+<text x="831" y="492" font-size="11.5">+ semester : String</text>
+<text x="831" y="508" font-size="11.5">+ capacity : Integer</text>
+<text x="831" y="524" font-size="11.5">+ room : String</text>
+<text x="831" y="548" font-size="11.5">+ getAssignments()</text>
+<text x="831" y="564" font-size="11.5">+ getDocuments()</text>
+
+
+<!-- ════════════════════════════════════════════════
+     ARROWS
+  Chan A : x=220  (between Col1 x=200 and Col2 x=240)
+  Chan B : x=525  (between Col2 x=455 and Col3 x=545)
+  Chan C : x=805  (between Col3 x=735 and Col4 x=825)
+  Top    : y=14   (above all boxes)
+════════════════════════════════════════════════ -->
+
+<!-- ── Arrow 1 : Teacher → LearningSupport  "Operates"  1 → 1
+     Exit Teacher right at y=113 (mid-methods)
+     → Chan A x=220 → down to y=250 → Col2 left at y=250 -->
+<path d="M 200,113 H 220 V 250 H 240"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="203" y="109" font-size="10.5">1</text>
+<text x="224" y="267" font-size="10.5">1</text>
+<rect x="202" y="173" width="53" height="15" fill="#fff"/>
+<text x="203" y="185" font-size="11" font-style="italic">Operates</text>
+
+<!-- ── Arrow 2 : Student (Actor) → LearningSupport  "Uses"  1 → 1
+     Exit Student right at y=430 (mid-methods)
+     → Chan A x=220 → up to y=365 → Col2 left at y=365 -->
+<path d="M 200,430 H 220 V 365 H 240"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="203" y="426" font-size="10.5">1</text>
+<text x="224" y="360" font-size="10.5">1</text>
+<rect x="202" y="393" width="34" height="15" fill="#fff"/>
+<text x="203" y="405" font-size="11" font-style="italic">Uses</text>
+
+<!-- ── Arrow 3 : LearningSupport → Assignment  "Creates / views"  1 → 0..*
+     Exit LSupport right at y=195
+     → Chan B x=525 → up to y=113 → Col3 left at y=113 -->
+<path d="M 455,195 H 525 V 113 H 545"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="458" y="191" font-size="10.5">1</text>
+<text x="529" y="110" font-size="10.5">0..*</text>
+<rect x="462" y="140" width="84" height="15" fill="#fff"/>
+<text x="463" y="152" font-size="11" font-style="italic">Creates / views</text>
+
+<!-- ── Arrow 4 : LearningSupport → Document  "Uploads / views"  1 → 0..*
+     Exit LSupport right at y=385
+     → Chan B x=525 → down to y=505 → Col3 left at y=505 -->
+<path d="M 455,385 H 525 V 505 H 545"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="458" y="381" font-size="10.5">1</text>
+<text x="529" y="502" font-size="10.5">0..*</text>
+<rect x="462" y="432" width="84" height="15" fill="#fff"/>
+<text x="463" y="444" font-size="11" font-style="italic">Uploads / views</text>
+
+<!-- ── Arrow 5 : Assignment ◆→ AssignmentReport  Composition "Has"  1 → 0..*
+     Filled diamond ◆ at Assignment right edge (735,113)
+     Line starts at (747,113) after the diamond tip -->
+<!-- Composition diamond ◆ (filled, at Assignment / composite end) -->
+<polygon points="735,113 741,108.5 747,113 741,117.5"
+         fill="#333" stroke="#333" stroke-width="0.5"/>
+<!-- Association line from diamond tip to AssignmentReport -->
+<path d="M 747,113 H 825"
+      fill="none" stroke="#333" stroke-width="1.4"
+      marker-end="url(#mf)"/>
+<text x="726" y="107" font-size="10.5">1</text>
+<text x="778" y="107" font-size="10.5">0..*</text>
+<rect x="750" y="115" width="22" height="15" fill="#fff"/>
+<text x="751" y="127" font-size="11" font-style="italic">Has</text>
+
+<!-- ── Arrow 6 : Document → Class  "Belongs to"  0..* → 1
+     Direct horizontal at y=505 (same row, no channel needed)
+     (735,505) → (825,505) -->
+<path d="M 735,505 H 825"
+      fill="none" stroke="#333" stroke-width="1.4"
+      marker-end="url(#mf)"/>
+<text x="738" y="501" font-size="10.5">0..*</text>
+<text x="779" y="501" font-size="10.5">1</text>
+<rect x="742" y="507" width="55" height="15" fill="#fff"/>
+<text x="743" y="519" font-size="11" font-style="italic">Belongs to</text>
+
+<!-- ── Arrow 7 : Assignment → Class  "Belongs to"  0..* → 1
+     Exit Assignment right at y=50 (near top)
+     → Chan C x=805 → down to y=480 → Col4 left at y=480
+     Note: Vertical segment x=805, y=50→480 is in Chan C — no other arrow uses it -->
+<path d="M 735,50 H 805 V 480 H 825"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="738" y="46" font-size="10.5">0..*</text>
+<text x="809" y="477" font-size="10.5">1</text>
+<rect x="809" y="250" width="55" height="15" fill="#fff"/>
+<text x="810" y="262" font-size="11" font-style="italic">Belongs to</text>
+
+<!-- ── Arrow 8 : LearningSupport → AssignmentReport  «uses» (dashed)
+     Top-channel routing: y=14 — completely separate from Chan A, B, C
+     (347,140) → up (347,14) → right (912,14) → down (912,30) -->
+<path d="M 347,140 V 14 H 912 V 30"
+      fill="none" stroke="#333" stroke-width="1.3"
+      stroke-dasharray="6,3" stroke-linejoin="round" marker-end="url(#md)"/>
+<rect x="605" y="5" width="44" height="15" fill="#fff"/>
+<text x="606" y="17" font-size="11" font-style="italic">«uses»</text>
+
+<!-- ── Arrow 9 : AssignmentReport → Class  "Belongs to"  0..* → 1
+     (1000,131) → right then down Chan C right side
+     Note: AssignmentReport center-x=912, right=1000
+     Go right then down to Class at y=497 -->
+<path d="M 912,232 V 280 H 960 V 497 H 825"
+      fill="none" stroke="#333" stroke-width="1.4"
+      stroke-linejoin="round" marker-end="url(#mf)"/>
+<text x="915" y="229" font-size="10.5">0..*</text>
+<text x="808" y="494" font-size="10.5">1</text>
+<rect x="961" y="350" width="55" height="15" fill="#fff"/>
+<text x="962" y="362" font-size="11" font-style="italic">Belongs to</text>
+
+</svg>
+
+<!-- Legend -->
+<div class="legend">
+  <span><b>Access modifiers:</b> &nbsp; <b>+</b> public &nbsp;|&nbsp; <b>−</b> private</span>
+  <span>——&gt; Directed Association (open V arrowhead)</span>
+  <span>◆——&gt; Composition (filled diamond at composite end)</span>
+  <span>– – –&gt; Dependency / «uses» (open V, dashed)</span>
+  <span><b>1 &nbsp; 0..*</b> — Multiplicity</span>
+  <span><b>«actor»</b> / <b>«control»</b> / <b>«entity»</b> — UML stereotypes</span>
+  <span>Orthogonal routing — Chan A (x=220) · Chan B (x=525) · Chan C (x=805) · Top (y=14)</span>
+</div>
+
+</body>
+</html>
