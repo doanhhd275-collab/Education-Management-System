@@ -46,6 +46,7 @@ class CourseUpdate(BaseModel):
 
 class CourseResponse(CourseBase):
     course_id: str
+    prerequisites: Optional[List["CoursePrerequisiteResponse"]] = None
 
     model_config = {"from_attributes": True}
 
@@ -83,8 +84,11 @@ class CoursePrerequisiteCreate(BaseModel):
 
 
 class CoursePrerequisiteResponse(CoursePrerequisiteCreate):
+    prerequisite_course_name: Optional[str] = None
+
     model_config = {"from_attributes": True}
 
 
 # Resolve forward references (Pydantic v2)
 CurriculumResponse.model_rebuild()
+CourseResponse.model_rebuild()

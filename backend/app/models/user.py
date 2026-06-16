@@ -124,7 +124,8 @@ class Course(Base):
     prerequisites_of  = relationship(
         "CoursePrerequisite",
         foreign_keys="[CoursePrerequisite.course_id]",
-        back_populates="course"
+        back_populates="course",
+        lazy="select"
     )
     # self-referencing: môn này LÀ tiên quyết của các môn khác
     required_by       = relationship(
@@ -132,6 +133,11 @@ class Course(Base):
         foreign_keys="[CoursePrerequisite.prerequisite_course_id]",
         back_populates="prerequisite_course"
     )
+
+    @property
+    def prerequisites(self):
+        """Alias cho prerequisites_of – dùng để CourseResponse serialize đúng field name."""
+        return self.prerequisites_of
 
 
 class CurriculumCourse(Base):
@@ -156,6 +162,11 @@ class CoursePrerequisite(Base):
     # relationships
     course             = relationship("Course", foreign_keys=[course_id],              back_populates="prerequisites_of")
     prerequisite_course = relationship("Course", foreign_keys=[prerequisite_course_id], back_populates="required_by")
+
+    @property
+    def prerequisite_course_name(self) -> str | None:
+        """Tên môn tiên quyết – dùng để serialize trong CoursePrerequisiteResponse."""
+        return self.prerequisite_course.course_name if self.prerequisite_course else None
 
 
 # ============================================================
