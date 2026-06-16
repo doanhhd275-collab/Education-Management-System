@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>UC04 – State Machine: Class Management</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Times New Roman', Times, serif; background: #f0ede8; padding: 24px 16px; }
+  h1 { text-align: center; font-size: 17px; font-weight: bold; margin-bottom: 4px; color: #111; }
+  .sub { text-align: center; font-size: 12px; color: #666; margin-bottom: 18px; }
+  svg { display: block; margin: 0 auto; background: #fff;
+        border: 1.5px solid #999; box-shadow: 3px 3px 10px rgba(0,0,0,.15); }
+  .legend { width: 660px; margin: 12px auto 0; display: flex; gap: 18px; flex-wrap: wrap;
+            font-size: 11px; color: #444; border-top: 1px solid #bbb; padding-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>State Machine Diagram — UC04: Class Management</h1>
+<p class="sub">Object: Enrollment Record &nbsp;|&nbsp; Actor: Teacher / System</p>
+
+<svg width="660" height="680" xmlns="http://www.w3.org/2000/svg"
+     font-family="'Times New Roman', Times, serif">
+<defs>
+  <marker id="ma" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto">
+    <polyline points="0,0 9,4.5 0,9" fill="none" stroke="#333" stroke-width="1.4"/>
+  </marker>
+</defs>
+
+<!-- ═══ INITIAL ● ═══ -->
+<circle cx="330" cy="30" r="9" fill="#222"/>
+
+<!-- ═══ STATE: Registered ═══ -->
+<rect x="242" y="68" width="176" height="60" rx="14" fill="#fff" stroke="#333" stroke-width="1.6"/>
+<line x1="242" y1="91" x2="418" y2="91" stroke="#333" stroke-width="0.9"/>
+<text x="330" y="85" text-anchor="middle" font-size="13" font-weight="bold">Registered</text>
+<text x="248" y="105" font-size="10" fill="#555">entry / confirm enrollment</text>
+<text x="248" y="118" font-size="10" fill="#555">do / wait for semester start</text>
+
+<!-- ═══ STATE: Attending ═══ -->
+<rect x="242" y="218" width="176" height="60" rx="14" fill="#fff" stroke="#333" stroke-width="1.6"/>
+<line x1="242" y1="241" x2="418" y2="241" stroke="#333" stroke-width="0.9"/>
+<text x="330" y="235" text-anchor="middle" font-size="13" font-weight="bold">Attending</text>
+<text x="248" y="255" font-size="10" fill="#555">do / mark attendance each lesson</text>
+<text x="248" y="268" font-size="10" fill="#555">do / track absent count</text>
+
+<!-- Self-loop: markAttendance() on Attending — labels placed OUTSIDE arc (right side) -->
+<path d="M 418,232 C 480,212 484,264 418,260"
+      fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#ma)"/>
+<!-- Label positioned to the right of the arc's rightmost extent (~x=460) -->
+<rect x="486" y="228" width="104" height="16" fill="white" stroke="none"/>
+<text x="488" y="241" font-size="10.5" font-style="italic">markAttendance()</text>
+<rect x="486" y="246" width="72" height="14" fill="white" stroke="none"/>
+<text x="488" y="258" font-size="10" fill="#888">[each lesson]</text>
+
+<!-- ═══ STATE: Grade Pending ═══ -->
+<rect x="242" y="368" width="176" height="60" rx="14" fill="#fff" stroke="#333" stroke-width="1.6"/>
+<line x1="242" y1="391" x2="418" y2="391" stroke="#333" stroke-width="0.9"/>
+<text x="330" y="385" text-anchor="middle" font-size="13" font-weight="bold">Grade Pending</text>
+<text x="248" y="405" font-size="10" fill="#555">entry / freeze attendance</text>
+<text x="248" y="418" font-size="10" fill="#555">do / await teacher grade input</text>
+
+<!-- ═══ CHOICE PSEUDOSTATE ◇ ═══ -->
+<polygon points="330,478 364,500 330,522 296,500" fill="#fff" stroke="#333" stroke-width="1.6"/>
+<text x="330" y="504" text-anchor="middle" font-size="10.5" font-style="italic">grade?</text>
+
+<!-- ═══ STATE: Passed ═══ -->
+<rect x="74" y="566" width="158" height="44" rx="14" fill="#fff" stroke="#2a7a2a" stroke-width="1.8"/>
+<text x="153" y="593" text-anchor="middle" font-size="13" font-weight="bold">Passed</text>
+
+<!-- ═══ STATE: Failed ═══ -->
+<rect x="428" y="566" width="158" height="44" rx="14" fill="#fff" stroke="#cc2222" stroke-width="1.8"/>
+<text x="507" y="593" text-anchor="middle" font-size="13" font-weight="bold">Failed</text>
+
+<!-- ═══ FINAL ◉ ═══ -->
+<circle cx="330" cy="650" r="14" fill="none" stroke="#222" stroke-width="2.5"/>
+<circle cx="330" cy="650" r="8"  fill="#222"/>
+
+<!-- ══════════ TRANSITIONS ══════════ -->
+
+<!-- T1: ● → Registered -->
+<line x1="330" y1="39" x2="330" y2="68" stroke="#333" stroke-width="1.4" marker-end="url(#ma)"/>
+<rect x="338" y="42" width="96" height="16" fill="white" stroke="none"/>
+<text x="340" y="55" font-size="10.5" font-style="italic">registerClass()</text>
+
+<!-- T2: Registered → Attending -->
+<line x1="330" y1="128" x2="330" y2="218" stroke="#333" stroke-width="1.4" marker-end="url(#ma)"/>
+<rect x="338" y="152" width="94" height="16" fill="white" stroke="none"/>
+<text x="340" y="165" font-size="10.5" font-style="italic">startSemester()</text>
+<rect x="338" y="170" width="108" height="14" fill="white" stroke="none"/>
+<text x="340" y="182" font-size="10" fill="#888">[semester begins]</text>
+
+<!-- T3: Attending → Grade Pending -->
+<line x1="330" y1="278" x2="330" y2="368" stroke="#333" stroke-width="1.4" marker-end="url(#ma)"/>
+<rect x="338" y="302" width="94" height="16" fill="white" stroke="none"/>
+<text x="340" y="315" font-size="10.5" font-style="italic">endSemester()</text>
+<rect x="338" y="320" width="96" height="14" fill="white" stroke="none"/>
+<text x="340" y="332" font-size="10" fill="#888">[semester ends]</text>
+
+<!-- T4: Grade Pending → Choice -->
+<line x1="330" y1="428" x2="330" y2="478" stroke="#333" stroke-width="1.4" marker-end="url(#ma)"/>
+<rect x="338" y="442" width="80" height="16" fill="white" stroke="none"/>
+<text x="340" y="455" font-size="10.5" font-style="italic">enterGrade()</text>
+
+<!-- T5: Choice → Passed -->
+<path d="M 296,500 L 202,566" fill="none" stroke="#2a7a2a" stroke-width="1.4" marker-end="url(#ma)"/>
+<rect x="195" y="524" width="72" height="16" fill="white" stroke="none"/>
+<text x="197" y="537" font-size="10.5" font-style="italic" fill="#2a7a2a">[grade ≥ D]</text>
+
+<!-- T6: Choice → Failed -->
+<path d="M 364,500 L 457,566" fill="none" stroke="#cc2222" stroke-width="1.4" marker-end="url(#ma)"/>
+<rect x="394" y="524" width="72" height="16" fill="white" stroke="none"/>
+<text x="396" y="537" font-size="10.5" font-style="italic" fill="#cc2222">[grade &lt; D]</text>
+
+<!-- T7: Passed → Final -->
+<path d="M 153,610 L 316,636" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#ma)"/>
+<rect x="160" y="624" width="72" height="16" fill="white" stroke="none"/>
+<text x="162" y="637" font-size="10.5" font-style="italic">complete()</text>
+
+<!-- T8: Failed → Final -->
+<path d="M 507,610 L 344,636" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#ma)"/>
+<rect x="418" y="624" width="72" height="16" fill="white" stroke="none"/>
+<text x="420" y="637" font-size="10.5" font-style="italic">complete()</text>
+
+</svg>
+
+<div class="legend">
+  <span>● Initial pseudostate</span>
+  <span>◉ Final pseudostate</span>
+  <span>◇ Choice — conditional branch on grade</span>
+  <span>⟲ Self-loop on Attending (markAttendance)</span>
+  <span>Green border — Pass &nbsp;|&nbsp; Red border — Fail</span>
+</div>
+</body>
+</html>

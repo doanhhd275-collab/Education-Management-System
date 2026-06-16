@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<title>Chương 5 – Thực hiện và triển khai</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 13pt;
+    line-height: 1.6;
+    color: #000;
+    background: #fff;
+  }
+
+  /* ── Trang A4 ── */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 25mm 25mm 20mm 30mm;
+    background: #fff;
+    overflow-x: hidden;
+  }
+
+  @media print {
+    body  { background: #fff; }
+    .page { margin: 0; padding: 25mm 25mm 20mm 30mm; box-shadow: none; }
+  }
+  @media screen {
+    body  { background: #d8d8d8; }
+    .page { box-shadow: 0 0 18px rgba(0,0,0,.25); margin: 24px auto; }
+  }
+
+  /* ── Tiêu đề ── */
+  h1 {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 14pt;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 20pt;
+  }
+  h2 {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 13pt;
+    font-weight: bold;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+  }
+  h3 {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 13pt;
+    font-weight: bold;
+    font-style: italic;
+    margin-top: 12pt;
+    margin-bottom: 6pt;
+  }
+
+  /* ── Văn bản ── */
+  p {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 13pt;
+    text-align: justify;
+    text-indent: 1.25cm;
+    margin-bottom: 6pt;
+  }
+  p.no-indent { text-indent: 0; }
+
+  ul, ol {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 13pt;
+    margin-left: 1.4cm;
+    margin-bottom: 8pt;
+  }
+  li { margin-bottom: 3pt; }
+
+  /* ── Code inline ── */
+  code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11pt;
+    background: #f2f2f2;
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+
+  /* ── Khối code / lệnh ── */
+  pre {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 10pt;
+    background: #f8f8f8;
+    border: 1px solid #ccc;
+    border-left: 3px solid #555;
+    padding: 7pt 9pt;
+    margin: 6pt 0 10pt 0;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.45;
+    max-width: 100%;
+  }
+
+  /* ── Cây thư mục ── */
+  .tree {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 9.5pt;
+    background: #f8f8f8;
+    border: 1px solid #ccc;
+    border-left: 3px solid #555;
+    padding: 7pt 9pt;
+    margin: 6pt 0 10pt 0;
+    white-space: pre;
+    overflow-x: auto;
+    max-width: 100%;
+    line-height: 1.5;
+  }
+
+  /* ── Bảng ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    margin: 8pt 0 12pt 0;
+  }
+  thead tr { background: #dce6f1; }
+  th, td {
+    border: 1px solid #888;
+    padding: 5pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { font-weight: bold; text-align: center; }
+
+  /* ── Chú thích hình/bảng ── */
+  .caption {
+    font-size: 11pt;
+    font-style: italic;
+    text-align: center;
+    color: #333;
+    margin-top: 3pt;
+    margin-bottom: 10pt;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Chương 5. Thực hiện và triển khai</h1>
+
+
+<!-- ═══════════════════════════════════════════════════
+     5.1. CẤU TRÚC MÃ NGUỒN
+════════════════════════════════════════════════════ -->
+<h2>5.1. Cấu trúc mã nguồn và thành phần triển khai</h2>
+
+<p>Hệ thống Quản lý Đào tạo được tổ chức theo mô hình hai tầng: tầng giao diện người dùng
+(<em>frontend</em>) và tầng xử lý nghiệp vụ kết hợp truy cập dữ liệu (<em>backend</em>).
+Toàn bộ mã nguồn nằm trong một kho lưu trữ duy nhất, được phân chia rõ ràng theo chức năng
+của từng use case trong hệ thống.</p>
+
+<h3>5.1.1. Cấu trúc thư mục dự án</h3>
+
+<p>Cấu trúc thư mục tổng thể của hệ thống như sau:</p>
+
+<div class="tree">Education-Management-System/
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/          # Các endpoint REST API
+│   │   │   ├── auth.py          # UC1 – Quản lý tài khoản
+│   │   │   ├── curriculum.py    # UC2 – Chương trình đào tạo
+│   │   │   ├── courses.py       # UC2 – Môn học
+│   │   │   ├── classes.py       # UC2,4 – Lớp học
+│   │   │   ├── enrollments.py   # UC3 – Đăng ký lớp học
+│   │   │   ├── students.py      # UC3 – Quản lý sinh viên
+│   │   │   ├── attendance.py    # UC4 – Điểm danh
+│   │   │   ├── assignments.py   # UC5 – Bài tập
+│   │   │   └── documents.py     # UC5 – Tài liệu
+│   │   ├── core/            # Hạ tầng: database, security, seed
+│   │   ├── models/          # ORM (SQLAlchemy)
+│   │   ├── schemas/         # Validation (Pydantic v2)
+│   │   └── main.py          # Điểm khởi đầu FastAPI
+│   ├── Dockerfile
+│   └── requirements.txt
+│
+├── frontend/
+│   └── src/
+│       ├── pages/
+│       │   ├── Login/           # UC1 – Đăng nhập
+│       │   ├── Users/           # UC1 – Quản lý tài khoản
+│       │   ├── Curriculum/      # UC2 – Chương trình đào tạo
+│       │   ├── Courses/         # UC2 – Môn học
+│       │   ├── Classes/         # UC2,4 – Lớp học
+│       │   ├── Enrollment/      # UC3 – Đăng ký lớp học
+│       │   ├── Students/        # UC3 – Quản lý sinh viên
+│       │   ├── Grading/         # UC4 – Điểm số
+│       │   ├── Attendance/      # UC4 – Điểm danh
+│       │   ├── Assignments/     # UC5 – Bài tập
+│       │   └── Documents/       # UC5 – Tài liệu
+│       ├── api/             # Hàm gọi HTTP (Axios)
+│       ├── context/         # AuthContext (quản lý đăng nhập)
+│       └── components/      # Thành phần giao diện dùng chung
+│
+├── infrastructure/
+│   └── db/                  # Script khởi tạo CSDL
+└── docker-compose.yml       # PostgreSQL + Redis</div>
+<p class="caption">Hình 5.1 – Cấu trúc thư mục dự án</p>
+
+<h3>5.1.2. Thành phần Backend – FastAPI</h3>
+
+<p>Tầng backend được xây dựng trên nền tảng <strong>FastAPI</strong> (Python), sử dụng kiến trúc
+router-based. Mỗi use case được triển khai thành một module API riêng biệt, tất cả có tiền tố
+thống nhất <code>/api/v1</code>. Bảng dưới đây liệt kê các module tương ứng với từng use case:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Use case</th>
+      <th>Module (tệp .py)</th>
+      <th>Chức năng chính</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>UC1 – Quản lý tài khoản</td>
+      <td>auth.py, users.py</td>
+      <td>Đăng nhập, cấp JWT token, thêm/sửa/xóa tài khoản, phân quyền vai trò</td>
+    </tr>
+    <tr>
+      <td>UC2 – Quản lý CTĐT</td>
+      <td>curriculum.py, courses.py, classes.py</td>
+      <td>Quản lý chương trình đào tạo, môn học, lớp học</td>
+    </tr>
+    <tr>
+      <td>UC3 – Quản lý sinh viên</td>
+      <td>students.py, enrollments.py</td>
+      <td>Xem CPA/GPA, mức cảnh báo học tập, đăng ký/hủy lớp học</td>
+    </tr>
+    <tr>
+      <td>UC4 – Quản lý lớp học</td>
+      <td>classes.py, attendance.py</td>
+      <td>Điểm danh theo buổi, nhập và xem điểm số</td>
+    </tr>
+    <tr>
+      <td>UC5 – Hỗ trợ học tập</td>
+      <td>assignments.py, documents.py</td>
+      <td>Giao bài, nộp bài, chấm điểm, đăng tải và xem tài liệu</td>
+    </tr>
+  </tbody>
+</table>
+<p class="caption">Bảng 5.1 – Ánh xạ use case và module backend</p>
+
+<p>Lớp <code>app/core/</code> cung cấp các thành phần dùng chung: <strong>database.py</strong>
+khởi tạo kết nối cơ sở dữ liệu qua SQLAlchemy; <strong>security.py</strong> thực hiện băm mật
+khẩu (bcrypt) và tạo/kiểm tra JWT token; <strong>dependencies.py</strong> cung cấp các hàm
+kiểm tra xác thực và phân quyền theo vai trò (ADMIN, TEACHER, STUDENT) cho từng endpoint.</p>
+
+<h3>5.1.3. Thành phần Frontend – React + Vite</h3>
+
+<p>Tầng frontend sử dụng <strong>React 18</strong> và công cụ build <strong>Vite 5</strong>.
+Mỗi use case tương ứng với một hoặc nhiều trang trong thư mục <code>src/pages/</code>:</p>
+
+<ul>
+  <li><strong>UC1 – Quản lý tài khoản:</strong> Trang <em>Login</em> thực hiện xác thực và
+      nhận JWT token; trang <em>Users</em> cho phép quản trị viên thêm, sửa, xóa và phân quyền
+      tài khoản.</li>
+  <li><strong>UC2 – Quản lý chương trình đào tạo:</strong> Trang <em>Curriculum</em> quản lý
+      chương trình; trang <em>Courses</em> quản lý môn học; trang <em>Classes</em> quản lý lớp
+      học bao gồm thông tin phòng học, sĩ số và giảng viên phụ trách.</li>
+  <li><strong>UC3 – Quản lý sinh viên:</strong> Trang <em>Students</em> hiển thị CPA, GPA và
+      mức độ cảnh báo học tập của từng sinh viên; trang <em>Enrollment</em> hỗ trợ đăng ký và
+      hủy đăng ký lớp học.</li>
+  <li><strong>UC4 – Quản lý lớp học:</strong> Trang <em>Attendance</em> ghi nhận điểm danh
+      từng buổi học; trang <em>Grading</em> cho phép giảng viên nhập điểm và sinh viên tra cứu
+      kết quả.</li>
+  <li><strong>UC5 – Hỗ trợ học tập:</strong> Trang <em>Assignments</em> quản lý bài tập, nộp
+      bài và chấm điểm; trang <em>Documents</em> cho phép đăng tải và xem tài liệu học tập.</li>
+</ul>
+
+<p>Định tuyến giữa các trang được quản lý bởi <strong>React Router v6</strong>. Thành phần
+<code>ProtectedRoute</code> kiểm tra trạng thái đăng nhập và vai trò người dùng trước khi cho
+phép truy cập, đảm bảo phân quyền nhất quán ở phía trình duyệt. Mọi yêu cầu HTTP đến backend
+được thực hiện qua thư viện <strong>Axios</strong>, các hàm gọi API tập trung trong
+<code>src/api/</code>.</p>
+
+
+<!-- ═══════════════════════════════════════════════════
+     5.2. MÔI TRƯỜNG TRIỂN KHAI
+════════════════════════════════════════════════════ -->
+<h2>5.2. Môi trường triển khai</h2>
+
+<p>Hệ thống hỗ trợ hai môi trường triển khai: <strong>môi trường phát triển cục bộ</strong>
+phục vụ kiểm thử trong quá trình xây dựng, và <strong>môi trường sản xuất</strong> phục vụ
+người dùng thực tế.</p>
+
+<h3>5.2.1. Yêu cầu phần mềm</h3>
+
+<table>
+  <thead>
+    <tr><th>Thành phần</th><th>Phiên bản</th><th>Vai trò</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Python</td><td>3.10+</td><td>Runtime cho backend FastAPI</td></tr>
+    <tr><td>Node.js</td><td>18 LTS+</td><td>Runtime cho công cụ build Vite</td></tr>
+    <tr><td>PostgreSQL</td><td>15</td><td>Hệ quản trị cơ sở dữ liệu chính</td></tr>
+    <tr><td>Redis</td><td>7</td><td>Cache phiên làm việc</td></tr>
+    <tr><td>Docker &amp; Docker Compose</td><td>24+</td><td>Container hóa dịch vụ hạ tầng</td></tr>
+  </tbody>
+</table>
+<p class="caption">Bảng 5.2 – Yêu cầu phần mềm</p>
+
+<h3>5.2.2. Môi trường phát triển cục bộ</h3>
+
+<p>Trong môi trường phát triển, ba thành phần của hệ thống chạy song song trên máy tính của
+lập trình viên.</p>
+
+<p><strong>Bước 1 – Khởi động cơ sở dữ liệu:</strong> PostgreSQL và Redis được khởi chạy thông
+qua Docker Compose:</p>
+
+<pre>docker compose up -d postgres-db redis-cache</pre>
+
+<p>Cơ sở dữ liệu <code>hust_ems</code> được tạo tự động. Script <code>init.sql</code> khởi tạo
+cấu trúc bảng và dữ liệu mẫu cho cả 5 use case ngay lần đầu chạy.</p>
+
+<p><strong>Bước 2 – Khởi động backend:</strong> Ứng dụng FastAPI chạy qua máy chủ Uvicorn:</p>
+
+<pre>cd backend
+source venv/bin/activate
+uvicorn app.main:app --reload --port 8000</pre>
+
+<p>Sau khi khởi động, ứng dụng tự động tạo bảng còn thiếu và chạy migration. Tài liệu API
+tương tác có thể truy cập tại <code>http://localhost:8000/docs</code>.</p>
+
+<p><strong>Bước 3 – Khởi động frontend:</strong></p>
+
+<pre>cd frontend
+npm install
+npm run dev</pre>
+
+<p>Giao diện người dùng được truy cập tại <code>http://localhost:5173</code>. Nhờ cấu hình
+proxy trong <code>vite.config.js</code>, mọi yêu cầu tới <code>/api/*</code> được tự động
+chuyển tiếp tới backend ở cổng <code>8000</code>, không cần cấu hình CORS riêng trong môi
+trường phát triển.</p>
+
+<p><strong>Biến môi trường:</strong> Các thông số kết nối được lưu trong tệp <code>.env</code>
+(không đưa vào Git). Cần cấu hình tối thiểu hai biến:</p>
+
+<pre>DATABASE_URL=postgresql://ems_admin:&lt;password&gt;@localhost:5432/hust_ems
+JWT_SECRET_KEY=&lt;chuỗi ngẫu nhiên, tối thiểu 32 ký tự&gt;</pre>
+
+<h3>5.2.3. Môi trường sản xuất</h3>
+
+<p>Trong môi trường sản xuất, frontend và backend được triển khai tách biệt nhau:</p>
+
+<ul>
+  <li><strong>Frontend:</strong> Ứng dụng React được build thành tệp tĩnh bằng lệnh
+      <code>vite build</code> và triển khai lên nền tảng <strong>Vercel</strong>. Mỗi lần
+      cập nhật mã nguồn lên nhánh chính, Vercel tự động kích hoạt pipeline build và phân phối
+      kết quả qua mạng CDN toàn cầu.</li>
+  <li><strong>Backend:</strong> FastAPI chạy qua Uvicorn trên máy chủ, tiếp nhận yêu cầu từ
+      người dùng qua HTTPS. Middleware <code>CORSMiddleware</code> được cấu hình để chỉ chấp
+      nhận yêu cầu từ tên miền Vercel đã đăng ký và môi trường phát triển cục bộ.</li>
+  <li><strong>Cơ sở dữ liệu:</strong> PostgreSQL và Redis chạy trên cùng máy chủ với backend,
+      kết nối qua mạng nội bộ, không mở cổng ra ngoài.</li>
+</ul>
+
+<h3>5.2.4. Bảo mật cơ bản</h3>
+
+<p>Hệ thống áp dụng các biện pháp bảo mật cơ bản sau:</p>
+
+<ul>
+  <li><strong>Xác thực JWT:</strong> Mọi API (trừ đăng nhập) yêu cầu Bearer token hợp lệ trong
+      tiêu đề HTTP. Token sử dụng thuật toán HS256, có hiệu lực trong 24 giờ.</li>
+  <li><strong>Băm mật khẩu:</strong> Mật khẩu được băm bằng <em>bcrypt</em> trước khi lưu vào
+      cơ sở dữ liệu, không lưu dạng văn bản thô.</li>
+  <li><strong>Phân quyền theo vai trò:</strong> Mỗi endpoint kiểm tra vai trò người dùng
+      (ADMIN, TEACHER, STUDENT) thông qua cơ chế dependency injection của FastAPI, đảm bảo mỗi
+      vai trò chỉ thực hiện được các thao tác trong phạm vi được phép.</li>
+  <li><strong>Quản lý bí mật:</strong> Chuỗi kết nối cơ sở dữ liệu và khóa JWT được đọc từ
+      biến môi trường, không nhúng trong mã nguồn.</li>
+</ul>
+
+</div>
+</body>
+</html>

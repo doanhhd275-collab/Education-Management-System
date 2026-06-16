@@ -11,10 +11,11 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm]       = useState({ course_id: "", course_name: "" });
-  const [saving, setSaving]   = useState(false);
+  const [form, setForm]         = useState({ course_id: "", course_name: "" });
+  const [selectedPrereqs, setSelectedPrereqs] = useState([]); // mã các môn tiên quyết chọn khi tạo
+  const [saving, setSaving]     = useState(false);
   const [formError, setFormError] = useState("");
-  const [error, setError]     = useState("");
+  const [error, setError]       = useState("");
 
   // Quản lý môn tiên quyết
   const [prereqModal, setPrereqModal] = useState(null); // course object đang quản lý prereq
@@ -38,21 +39,37 @@ export default function CoursesPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  // ── Tạo môn học ──────────────────────────────────────────────────
+  // ── Tạo môn học (+ gắn tiên quyết nếu có) ───────────────────────
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
     setFormError("");
     try {
       await coursesApi.create(form);
+      // Gắn môn tiên quyết đã chọn
+      for (const prereqId of selectedPrereqs) {
+        try {
+          await coursesApi.addPrerequisite(form.course_id, prereqId);
+        } catch (_) { /* bỏ qua lỗi trùng */ }
+      }
       setShowForm(false);
       setForm({ course_id: "", course_name: "" });
+      setSelectedPrereqs([]);
       fetchData();
     } catch (err) {
       setFormError(err.response?.data?.detail || err.message);
     } finally {
       setSaving(false);
     }
+  };
+
+  // Toggle chọn/bỏ chọn môn tiên quyết trong form
+  const togglePrereq = (courseId) => {
+    setSelectedPrereqs(prev =>
+      prev.includes(courseId)
+        ? prev.filter(id => id !== courseId)
+        : [...prev, courseId]
+    );
   };
 
   // ── Xóa môn học ──────────────────────────────────────────────────
@@ -168,6 +185,80 @@ export default function CoursesPage() {
                 />
               </div>
             </div>
+
+            {/* Chọn môn tiên quyết */}
+            <div style={{ marginBottom: "16px" }}>
+              <label className="form-label">Môn học tiên quyết</label>
+              <div
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  background: "var(--surface-2, rgba(255,255,255,0.03))",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "8px",
+                  maxHeight: "140px",
+                  overflowY: "auto",
+                }}
+              >
+                {courses.length === 0 ? (
+                  <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Không có môn học nào trong hệ thống</span>
+                ) : (
+                  <>
+                    {/* Nhãn "Không có" – khi chưa chọn gì */}
+                    {selectedPrereqs.length === 0 && (
+                      <span style={{
+                        fontSize: "12px", color: "var(--text-muted)",
+                        fontStyle: "italic", alignSelf: "center"
+                      }}>Không có (chọn bên dưới để thêm)</span>
+                    )}
+                    {courses.map(c => (
+                      <label
+                        key={c.course_id}
+                        style={{
+                          display: "flex", alignItems: "center", gap: "6px",
+                          cursor: "pointer",
+                          padding: "5px 10px",
+                          borderRadius: "6px",
+                          border: selectedPrereqs.includes(c.course_id)
+                            ? "1px solid var(--accent)"
+                            : "1px solid var(--border)",
+                          background: selectedPrereqs.includes(c.course_id)
+                            ? "rgba(99,102,241,0.15)"
+                            : "transparent",
+                          fontSize: "13px",
+                          transition: "all 0.15s",
+                          userSelect: "none",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          style={{ accentColor: "var(--accent)", width: "14px", height: "14px" }}
+                          checked={selectedPrereqs.includes(c.course_id)}
+                          onChange={() => togglePrereq(c.course_id)}
+                        />
+                        <code style={{ fontSize: "12px", color: "var(--accent)" }}>{c.course_id}</code>
+                        <span style={{ color: "var(--text-secondary)" }}>{c.course_name}</span>
+                      </label>
+                    ))}
+                  </>
+                )}
+              </div>
+              {selectedPrereqs.length > 0 && (
+                <div style={{ marginTop: "6px", fontSize: "12px", color: "var(--text-muted)" }}>
+                  Đã chọn: {selectedPrereqs.join(", ")} &nbsp;
+                  <button
+                    type="button"
+                    style={{ fontSize: "11px", color: "var(--danger)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                    onClick={() => setSelectedPrereqs([])}
+                  >
+                    ✕ Bỏ chọn tất cả
+                  </button>
+                </div>
+              )}
+            </div>
+
             {formError && (
               <div style={{ color: "var(--danger)", fontSize: "13px", marginBottom: "12px" }}>❌ {formError}</div>
             )}
@@ -175,7 +266,13 @@ export default function CoursesPage() {
               <button type="submit" className="btn btn-primary" disabled={saving}>
                 {saving ? "Đang lưu..." : "✓ Lưu"}
               </button>
-              <button type="button" className="btn btn-ghost" onClick={() => setShowForm(false)}>Hủy</button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => { setShowForm(false); setSelectedPrereqs([]); }}
+              >
+                Hủy
+              </button>
             </div>
           </form>
         </div>
