@@ -75,7 +75,7 @@ const ALL_NAV_ITEMS = [
   {
     section: "Học tập",
     items: [
-      { path: "/enrollments", icon: "📝", label: "Đăng ký học", roles: ["STUDENT"] },
+      { path: "/enrollments", icon: "📝", label: "Kết quả & Đăng ký", roles: ["STUDENT"] },
       { path: "/attendance",  icon: "✅", label: "Điểm danh",   roles: ["STUDENT"] },
     ],
   },
