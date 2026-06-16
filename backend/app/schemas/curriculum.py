@@ -1,7 +1,7 @@
 """
 Schemas cho Curriculum, Course, CurriculumCourse, CoursePrerequisite.
 """
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 
 
@@ -23,6 +23,7 @@ class CurriculumUpdate(BaseModel):
 
 class CurriculumResponse(CurriculumBase):
     program_id: str
+    curriculum_courses: Optional[List["CurriculumCourseResponse"]] = None
 
     model_config = {"from_attributes": True}
 
@@ -53,12 +54,22 @@ class CourseResponse(CourseBase):
 # CURRICULUM COURSE  (junction: Curriculum ↔ Course)
 # ============================================================
 
+class CourseInfo(BaseModel):
+    """Thông tin tối giản của môn học để nhúng vào CurriculumCourseResponse."""
+    course_id:   str
+    course_name: str
+
+    model_config = {"from_attributes": True}
+
+
 class CurriculumCourseCreate(BaseModel):
     program_id: str = Field(..., max_length=10)
     course_id:  str = Field(..., max_length=10)
 
 
 class CurriculumCourseResponse(CurriculumCourseCreate):
+    course: Optional[CourseInfo] = None
+
     model_config = {"from_attributes": True}
 
 
@@ -75,3 +86,5 @@ class CoursePrerequisiteResponse(CoursePrerequisiteCreate):
     model_config = {"from_attributes": True}
 
 
+# Resolve forward references (Pydantic v2)
+CurriculumResponse.model_rebuild()
