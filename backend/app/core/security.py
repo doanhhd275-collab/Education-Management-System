@@ -1,33 +1,25 @@
 """
-Security utilities:
-  - Băm mật khẩu bằng bcrypt (dùng trực tiếp, không qua passlib)
-  - Tạo và giải mã JWT token (HS256, hết hạn sau 24 giờ)
+core/security.py — Security utilities
+
+- Băm mật khẩu bằng bcrypt (dùng trực tiếp, không qua passlib)
+- Tạo và giải mã JWT token (HS256, hết hạn sau ACCESS_TOKEN_EXPIRE_HOURS)
+
+Config được lấy từ core/config.py thay vì đọc os.getenv trực tiếp.
 """
-import os
-import secrets
-import logging
 import bcrypt
+import logging
 from datetime import datetime, timedelta, timezone
 
-from jose import JWTError, jwt
+from jose import jwt
+
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# ── Cấu hình JWT ────────────────────────────────────────────
-def _load_secret_key() -> str:
-    key = os.getenv("JWT_SECRET_KEY")
-    if key:
-        return key
-    random_key = secrets.token_hex(32)
-    logger.warning(
-        "JWT_SECRET_KEY không được cấu hình! "
-        "Đang dùng key ngẫu nhiên — token sẽ bị mất hiệu lực khi restart server."
-    )
-    return random_key
-
-SECRET_KEY = _load_secret_key()
-ALGORITHM  = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 24
+# Shorthand từ settings
+SECRET_KEY                = settings.JWT_SECRET_KEY
+ALGORITHM                 = settings.JWT_ALGORITHM
+ACCESS_TOKEN_EXPIRE_HOURS = settings.ACCESS_TOKEN_EXPIRE_HOURS
 
 
 # ── Băm mật khẩu (bcrypt trực tiếp) ────────────────────────
@@ -50,8 +42,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 
-
-
 # ── JWT ─────────────────────────────────────────────────────
 
 def create_access_token(user_id: str, roles: list[str]) -> str:
@@ -67,10 +57,10 @@ def create_access_token(user_id: str, roles: list[str]) -> str:
     """
     expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     payload = {
-        "sub":   user_id,   # subject = user_id
-        "roles": roles,     # danh sách vai trò
-        "exp":   expire,    # thời gian hết hạn
-        "iat":   datetime.now(timezone.utc),  # thời gian tạo
+        "sub":   user_id,
+        "roles": roles,
+        "exp":   expire,
+        "iat":   datetime.now(timezone.utc),
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 

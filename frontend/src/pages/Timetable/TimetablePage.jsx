@@ -38,14 +38,12 @@ const PERIOD_TIMES = {
   12: "17:20 – 18:10",
 };
 
-// Màu accent cho từng môn (cycle)
+// Màu accent cho từng môn (cycle) - refined warm professional palette
 const COLORS = [
-  { bg: "rgba(99,102,241,0.18)", border: "#6366f1", text: "#a5b4fc" },
-  { bg: "rgba(16,185,129,0.15)", border: "#10b981", text: "#6ee7b7" },
-  { bg: "rgba(245,158,11,0.15)", border: "#f59e0b", text: "#fcd34d" },
-  { bg: "rgba(239,68,68,0.15)",  border: "#ef4444", text: "#fca5a5" },
-  { bg: "rgba(139,92,246,0.15)", border: "#8b5cf6", text: "#c4b5fd" },
-  { bg: "rgba(6,182,212,0.15)",  border: "#06b6d4", text: "#67e8f9" },
+  { bg: "#FFF0E6", border: "#EA580C", text: "#9A3412" }, // Orange
+  { bg: "#FBE9E7", border: "#9F2D20", text: "#7F1D1D" }, // Brick red
+  { bg: "#E8F5EE", border: "#16A34A", text: "#166534" }, // Green
+  { bg: "#E8F1FB", border: "#2563EB", text: "#1E40AF" }, // Blue
 ];
 
 // ── Timetable Grid ────────────────────────────────────────────
@@ -78,21 +76,22 @@ function TimetableGrid({ classes }) {
         {/* Tiết label */}
         <td
           style={{
-            padding: "6px 12px",
+            padding: "8px 12px",
             textAlign: "center",
             whiteSpace: "nowrap",
             borderRight: "1px solid var(--border)",
-            background: "var(--bg-card)",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--bg-secondary)",
             position: "sticky",
             left: 0,
             zIndex: 1,
-            minWidth: 110,
+            minWidth: 120,
           }}
         >
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
             Tiết {period}
           </div>
-          <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>
             {PERIOD_TIMES[period]}
           </div>
         </td>
@@ -107,8 +106,9 @@ function TimetableGrid({ classes }) {
                 padding: 4,
                 verticalAlign: "top",
                 border: "1px solid var(--border)",
-                minWidth: 130,
-                minHeight: 52,
+                borderBottom: "1px solid var(--border)",
+                minWidth: 150,
+                minHeight: 60,
                 background:
                   matches.length > 0
                     ? colorMap[matches[0].course_id]?.bg
@@ -123,36 +123,43 @@ function TimetableGrid({ classes }) {
                     <div
                       key={c.class_id}
                       style={{
-                        borderLeft: `3px solid ${col.border}`,
-                        padding: "6px 8px",
-                        borderRadius: 4,
+                        borderLeft: `4px solid ${col.border}`,
+                        padding: "8px 12px",
+                        background: col.bg,
                       }}
                     >
                       <div
                         style={{
-                          fontSize: 12,
-                          fontWeight: 700,
+                          fontSize: 14,
+                          fontWeight: 600,
                           color: col.text,
                           lineHeight: 1.3,
+                          marginBottom: 4,
                         }}
                       >
                         {c.course_name || c.course_id}
                       </div>
                       <div
                         style={{
-                          fontSize: 11,
-                          color: "var(--text-muted)",
-                          marginTop: 2,
+                          fontSize: 13,
+                          fontWeight: 500,
+                          color: col.text,
+                          opacity: 0.9,
                         }}
                       >
                         {c.class_id}
-                        {c.start_period !== c.end_period &&
-                          ` · Tiết ${c.start_period}–${c.end_period}`}
-                        {c.room && (
-                          <span style={{ display: "block", marginTop: 2, color: "#6ee7b7" }}>
-                            🏫 {c.room}
-                          </span>
-                        )}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 500,
+                          color: col.text,
+                          opacity: 0.9,
+                          marginTop: 4,
+                        }}
+                      >
+                        Tiết {c.start_period}–{c.end_period}
+                        {c.room && `  •  ${c.room}`}
                       </div>
                     </div>
                   );
@@ -189,16 +196,17 @@ function TimetableGrid({ classes }) {
           <tr>
             <th
               style={{
-                padding: "10px 12px",
+                padding: "12px 16px",
                 textAlign: "center",
-                background: "var(--bg-card)",
+                background: "#F5F3F0",
                 border: "1px solid var(--border)",
                 position: "sticky",
                 left: 0,
                 zIndex: 2,
-                color: "var(--text-muted)",
-                fontSize: 12,
-                minWidth: 110,
+                color: "#44403C",
+                fontSize: 14,
+                fontWeight: 600,
+                minWidth: 120,
               }}
             >
               Tiết / Thứ
@@ -207,13 +215,13 @@ function TimetableGrid({ classes }) {
               <th
                 key={d}
                 style={{
-                  padding: "10px 16px",
+                  padding: "12px 16px",
                   textAlign: "center",
-                  background: "var(--bg-card)",
+                  background: "#F5F3F0",
                   border: "1px solid var(--border)",
-                  color: "var(--text-primary)",
+                  color: "#44403C",
                   fontWeight: 600,
-                  fontSize: 13,
+                  fontSize: 14,
                 }}
               >
                 {DAY_LABELS[d]}
@@ -227,16 +235,19 @@ function TimetableGrid({ classes }) {
             <td
               colSpan={DAYS.length + 1}
               style={{
-                padding: "6px 12px",
-                background: "rgba(245,158,11,0.08)",
-                color: "#f59e0b",
-                fontWeight: 700,
-                fontSize: 12,
+                padding: "10px 16px",
+                background: "#FFF7ED",
+                color: "#C2410C",
+                fontWeight: 600,
+                fontSize: 14,
                 letterSpacing: "0.5px",
-                borderTop: "2px solid rgba(245,158,11,0.3)",
+                borderTop: "2px solid #EA580C",
+                borderBottom: "1px solid var(--border)",
+                borderLeft: "1px solid var(--border)",
+                borderRight: "1px solid var(--border)",
               }}
             >
-              ☀️ BUỔI SÁNG — Tiết 1 đến 6
+              BUỔI SÁNG — Tiết 1 đến 6
             </td>
           </tr>
           {renderPeriodRows(MORNING_PERIODS)}
@@ -246,16 +257,19 @@ function TimetableGrid({ classes }) {
             <td
               colSpan={DAYS.length + 1}
               style={{
-                padding: "6px 12px",
-                background: "rgba(99,102,241,0.08)",
-                color: "var(--accent)",
-                fontWeight: 700,
-                fontSize: 12,
+                padding: "10px 16px",
+                background: "#F5F1EC",
+                color: "#9F2D20",
+                fontWeight: 600,
+                fontSize: 14,
                 letterSpacing: "0.5px",
-                borderTop: "2px solid rgba(99,102,241,0.3)",
+                borderTop: "2px solid #9F2D20",
+                borderBottom: "1px solid var(--border)",
+                borderLeft: "1px solid var(--border)",
+                borderRight: "1px solid var(--border)",
               }}
             >
-              🌆 BUỔI CHIỀU — Tiết 7 đến 12
+              BUỔI CHIỀU — Tiết 7 đến 12
             </td>
           </tr>
           {renderPeriodRows(AFTERNOON_PERIODS)}
@@ -291,12 +305,12 @@ function ClassLegend({ classes }) {
   return (
     <div
       className="card"
-      style={{ padding: "16px 20px", marginBottom: 20 }}
+      style={{ padding: "16px 20px", marginBottom: 24 }}
     >
-      <h4 style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-        📋 Danh sách lớp học
+      <h4 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 16 }}>
+         Danh sách lớp học
       </h4>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
         {unique.map((c) => {
           const col = colorMap[c.course_id] || COLORS[0];
           return (
@@ -305,28 +319,28 @@ function ClassLegend({ classes }) {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
+                gap: 12,
                 background: col.bg,
                 border: `1px solid ${col.border}`,
                 borderRadius: 8,
-                padding: "6px 12px",
-                fontSize: 12,
+                padding: "10px 16px",
+                minHeight: 44,
               }}
             >
               <div
                 style={{
-                  width: 10,
-                  height: 10,
+                  width: 12,
+                  height: 12,
                   borderRadius: "50%",
                   background: col.border,
                   flexShrink: 0,
                 }}
               />
               <div>
-                <div style={{ fontWeight: 700, color: col.text }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: col.text }}>
                   {c.course_name || c.course_id}
                 </div>
-                <div style={{ color: "var(--text-muted)", fontSize: 11 }}>
+                <div style={{ color: col.text, opacity: 0.9, fontSize: 13, marginTop: 4 }}>
                   {c.class_id}
                   {c.day_of_week && c.start_period
                     ? ` · ${DAY_LABELS_SHORT[c.day_of_week]} Tiết ${c.start_period}–${c.end_period}`
@@ -375,10 +389,10 @@ export default function TimetablePage() {
   }, [isTeacher, isStudent, isAdmin]);
 
   const title = isTeacher
-    ? "🗓️ Lịch dạy của tôi"
+    ? " Lịch dạy của tôi"
     : isStudent
-    ? "🗓️ Lịch học của tôi"
-    : "🗓️ Thời khóa biểu";
+    ? " Lịch học của tôi"
+    : " Thời khóa biểu";
 
   const subtitle = isTeacher
     ? "Lịch giảng dạy theo thứ và tiết"
@@ -390,7 +404,7 @@ export default function TimetablePage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">{title}</h2>
+          <h1 className="page-title">{title}</h1>
           <p className="page-subtitle">{subtitle}</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
@@ -409,7 +423,7 @@ export default function TimetablePage() {
         </div>
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
+      {error && <div className="alert alert-error"> {error}</div>}
 
       {loading ? (
         <div className="loading-page">

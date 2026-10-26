@@ -34,14 +34,14 @@ export default function TeachersPage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">👨‍🏫 Quản lý giáo viên</h2>
+          <h1 className="page-title"> Quản lý giáo viên</h1>
           <p className="page-subtitle">Tổng cộng: {teachers.length} giáo viên</p>
         </div>
       </div>
 
       <div className="search-bar">
         <div className="search-input-wrapper">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
           <input className="form-input" placeholder="Tìm theo tên, mã GV..."
             value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>

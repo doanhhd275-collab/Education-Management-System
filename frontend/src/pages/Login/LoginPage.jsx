@@ -72,8 +72,13 @@ export default function LoginPage() {
       <div className="login-card">
         {/* Logo */}
         <div className="login-logo">
-          <div className="login-logo-icon">🎓</div>
-          <h1>Hệ Thống Quản Lý Đào Tạo</h1>
+          <div className="login-logo-icon" style={{
+            background: "linear-gradient(135deg, #E8590C 0%, #FF7A30 100%)",
+            border: "none", color: "white", fontSize: 24, fontWeight: 800
+          }}>
+            P
+          </div>
+          <h1>Paradis - Quản Lý Đào Tạo</h1>
           <p>Đăng nhập để tiếp tục</p>
         </div>
 
@@ -81,7 +86,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           {error && (
             <div className="alert alert-error">
-              <span>⚠️</span> {error}
+              {error}
             </div>
           )}
 
@@ -91,7 +96,7 @@ export default function LoginPage() {
               id="email"
               type="email"
               className="form-input"
-              placeholder="example@ems.edu.vn"
+              placeholder="example@paradis.edu.vn"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -137,13 +142,13 @@ export default function LoginPage() {
           borderRadius: "var(--radius)",
           fontSize: "12px",
         }}>
-          <div style={{ color: "var(--text-muted)", marginBottom: "8px", fontWeight: 600 }}>
-            🔑 Tài khoản test (click để điền):
+          <div style={{ color: "var(--text-muted)", marginBottom: "12px", fontWeight: 600, borderBottom: "1px solid var(--border-light)", paddingBottom: "8px" }}>
+            Tài khoản test (click để điền):
           </div>
           {[
-            { role: "Admin",     email: "admin@ems.edu.vn"    },
-            { role: "Giáo viên", email: "teacher1@ems.edu.vn" },
-            { role: "Sinh viên", email: "student1@ems.edu.vn"  },
+            { role: "Admin",     email: "admin@paradis.edu.vn"    },
+            { role: "Giáo viên", email: "teacher1@paradis.edu.vn" },
+            { role: "Sinh viên", email: "student1@paradis.edu.vn"  },
           ].map((acc) => (
             <div
               key={acc.email}

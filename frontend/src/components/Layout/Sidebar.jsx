@@ -1,141 +1,103 @@
-/**
- * Sidebar - Thanh điều hướng bên trái
- *
- * Menu hiển thị theo role:
- *   ADMIN   → Quản lý hệ thống + Chương trình đào tạo
- *   TEACHER → Quản lý lớp (nhập điểm, điểm danh) + Tài nguyên
- *   STUDENT → Học tập (đăng ký, điểm danh) + Tài nguyên
- */
-import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { authApi } from "../../api";
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { 
+  LayoutDashboard, User, Calendar, Users, GraduationCap, 
+  UserCog, BookOpen, Library, School, UserCheck, 
+  PenTool, CheckSquare, FileText, ClipboardList, Settings, LogOut 
+} from 'lucide-react';
 
-// ── Định nghĩa menu theo section ─────────────────────────────────
-const ALL_NAV_ITEMS = [
-  // ── Chung (tất cả roles) ─────────────────────────────────────
+const NAV_CONFIG = [
   {
-    section: "Tổng quan",
+    title: "Chính",
     items: [
-      { path: "/dashboard", icon: "📊", label: "Dashboard", roles: [] },
-      { path: "/profile",   icon: "👤", label: "Hồ sơ",    roles: [] },
-      { path: "/timetable", icon: "🗓️", label: "Thời khóa biểu", roles: ["TEACHER", "STUDENT"] },
-    ],
+      { path: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
+      { path: "/profile", label: "Hồ sơ cá nhân", icon: User },
+      { path: "/timetable", label: "Thời khóa biểu", icon: Calendar },
+    ]
   },
-
-  // ── Admin: Quản lý hệ thống ──────────────────────────────────
   {
-    section: "Quản lý hệ thống",
+    title: "Quản lý",
     items: [
-      { path: "/users",    icon: "👥",   label: "Người dùng", roles: ["ADMIN"] },
-      { path: "/students", icon: "🎓",   label: "Sinh viên",  roles: ["ADMIN"] },
-      { path: "/teachers", icon: "👨‍🏫", label: "Giáo viên",  roles: ["ADMIN"] },
-      { path: "/logs",     icon: "📋",   label: "Nhật ký HT", roles: ["ADMIN"] },
-    ],
+      { path: "/users", label: "Quản lý người dùng", roles: ["ADMIN"], icon: Users },
+      { path: "/students", label: "Quản lý sinh viên", roles: ["ADMIN", "TEACHER"], icon: GraduationCap },
+      { path: "/teachers", label: "Quản lý giáo viên", roles: ["ADMIN"], icon: UserCog },
+    ]
   },
-
-  // ── Admin: Chương trình đào tạo ──────────────────────────────
   {
-    section: "Chương trình đào tạo",
+    title: "Học tập",
     items: [
-      { path: "/curriculum",  icon: "📚", label: "Chương trình", roles: ["ADMIN"] },
-      { path: "/courses",     icon: "📖", label: "Môn học",       roles: ["ADMIN"] },
-      { path: "/classes",     icon: "🏛️", label: "Lớp học",      roles: ["ADMIN"] },
-    ],
+      { path: "/curriculum", label: "Chương trình đào tạo", icon: BookOpen },
+      { path: "/courses", label: "Môn học", icon: Library },
+      { path: "/classes", label: "Lớp học", icon: School },
+      { path: "/enrollments", label: "Đăng ký học tập", roles: ["STUDENT", "ADMIN"], icon: UserCheck },
+    ]
   },
-
-
-  // ── Teacher: Quản lý sinh viên ───────────────────────────────
   {
-    section: "Quản lý sinh viên",
+    title: "Đánh giá & Theo dõi",
     items: [
-      { path: "/students", icon: "🎓", label: "Danh sách SV", roles: ["TEACHER"] },
-    ],
+      { path: "/grading", label: "Nhập điểm", roles: ["TEACHER"], icon: PenTool },
+      { path: "/grading", label: "Bảng điểm", roles: ["ADMIN"], icon: PenTool },
+      { path: "/attendance", label: "Điểm danh", roles: ["ADMIN", "TEACHER", "STUDENT"], icon: CheckSquare },
+    ]
   },
-
-  // ── Teacher: Quản lý lớp ─────────────────────────────────────
   {
-    section: "Quản lý lớp học",
+    title: "Tài nguyên",
     items: [
-      { path: "/classes",   icon: "🏛️", label: "Lớp học",   roles: ["TEACHER"] },
-      { path: "/grading",   icon: "✏️", label: "Nhập điểm", roles: ["TEACHER"] },
-      { path: "/attendance", icon: "✅", label: "Điểm danh", roles: ["TEACHER"] },
-    ],
+      { path: "/documents", label: "Tài liệu học tập", icon: FileText },
+      { path: "/assignments", label: "Bài tập", icon: ClipboardList },
+    ]
   },
-
-  // ── Teacher: Tài nguyên ──────────────────────────────────────
   {
-    section: "Tài nguyên",
+    title: "Hệ thống",
     items: [
-      { path: "/documents",   icon: "📄", label: "Tài liệu", roles: ["TEACHER"] },
-      { path: "/assignments", icon: "📌", label: "Bài tập",  roles: ["TEACHER"] },
-    ],
-  },
-
-  // ── Student: Học tập ─────────────────────────────────────────
-  {
-    section: "Học tập",
-    items: [
-      { path: "/enrollments", icon: "📝", label: "Kết quả & Đăng ký", roles: ["STUDENT"] },
-      { path: "/attendance",  icon: "✅", label: "Điểm danh",   roles: ["STUDENT"] },
-    ],
-  },
-
-  // ── Student: Tài nguyên ──────────────────────────────────────
-  {
-    section: "Tài nguyên học tập",
-    items: [
-      { path: "/documents",   icon: "📄", label: "Tài liệu", roles: ["STUDENT"] },
-      { path: "/assignments", icon: "📌", label: "Bài tập",  roles: ["STUDENT"] },
-    ],
-  },
+      { path: "/logs", label: "Nhật ký hệ thống", roles: ["ADMIN"], icon: Settings },
+    ]
+  }
 ];
 
-
 export default function Sidebar() {
-  const { user, roles, logout } = useAuth();
-  const navigate = useNavigate();
-
-  // Xử lý đăng xuất
-  const handleLogout = async () => {
-    try { await authApi.logout(); } catch { /* ignore */ }
-    logout();
-  };
-
-  // Avatar và role label
-  const avatarLetter = user?.name?.charAt(0)?.toUpperCase() || "U";
-  const mainRole     = roles[0] || "USER";
-  const roleLabel    = { ADMIN: "Quản trị viên", TEACHER: "Giáo viên", STUDENT: "Sinh viên" }[mainRole] || mainRole;
+  const { user, hasRole, logout } = useAuth();
+  
+  // Avatar initial
+  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
+  
+  // Display role mapping
+  let displayRole = "User";
+  if (hasRole("ADMIN")) displayRole = "Administrator";
+  else if (hasRole("TEACHER")) displayRole = "Giảng viên";
+  else if (hasRole("STUDENT")) displayRole = "Sinh viên";
 
   return (
     <aside className="sidebar">
-      {/* Logo */}
       <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">🎓</div>
+        <div className="sidebar-logo-icon">P</div>
         <div className="sidebar-logo-text">
-          <h2>EMS</h2>
-          <span>Quản lý đào tạo</span>
+          <h2>Paradis</h2>
+          <span>Quản lý Đào tạo</span>
         </div>
       </div>
-
-      {/* Navigation */}
+      
       <nav className="sidebar-nav">
-        {ALL_NAV_ITEMS.map((section) => {
-          // Lọc items theo role của user hiện tại
-          const visibleItems = section.items.filter(
-            (item) => item.roles.length === 0 || item.roles.some((r) => roles.includes(r))
-          );
+        {NAV_CONFIG.map((section, idx) => {
+          // Filter items based on user roles if required
+          const visibleItems = section.items.filter(item => {
+            if (!item.roles) return true;
+            return item.roles.some(role => hasRole(role));
+          });
+
           if (visibleItems.length === 0) return null;
 
           return (
-            <div key={section.section}>
-              <div className="nav-section-title">{section.section}</div>
-              {visibleItems.map((item) => (
+            <div key={idx}>
+              <div className="nav-section-title">{section.title}</div>
+              {visibleItems.map(item => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
                 >
-                  <span className="nav-item-icon">{item.icon}</span>
+                  <item.icon size={24} strokeWidth={2} />
                   {item.label}
                 </NavLink>
               ))}
@@ -144,18 +106,22 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* User info & Logout */}
       <div className="sidebar-footer">
         <div className="sidebar-user">
-          <div className="sidebar-user-avatar">{avatarLetter}</div>
+          <div className="sidebar-user-avatar">{userInitial}</div>
           <div className="sidebar-user-info">
-            <div className="sidebar-user-name">{user?.name || "User"}</div>
-            <div className="sidebar-user-role">{roleLabel}</div>
+            <div className="sidebar-user-name" title={user?.name || user?.email || "User"}>
+              {user?.name || user?.email || "User"}
+            </div>
+            <div className="sidebar-user-role">{displayRole}</div>
           </div>
-          <button onClick={handleLogout} title="Đăng xuất" className="topbar-btn" style={{ marginLeft: "auto" }}>
-            🚪
-          </button>
         </div>
+        <button 
+          className="btn btn-secondary w-full" style={{ marginTop: 24 }}
+          onClick={logout}
+        >
+          <LogOut size={18} style={{ marginRight: 8 }} /> Đăng xuất
+        </button>
       </div>
     </aside>
   );

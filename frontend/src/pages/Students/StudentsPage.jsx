@@ -41,16 +41,18 @@ export default function StudentsPage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">🎓 Quản lý sinh viên</h2>
+          <h1 className="page-title"> Quản lý sinh viên</h1>
           <p className="page-subtitle">Tổng cộng: {students.length} sinh viên</p>
         </div>
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
+      {error && <div className="alert alert-error"> {error}</div>}
 
       <div className="search-bar">
         <div className="search-input-wrapper">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
           <input
             className="form-input"
             placeholder="Tìm theo tên, mã SV, chương trình..."
@@ -64,12 +66,11 @@ export default function StudentsPage() {
         <div className="loading-page"><div className="spinner" /> Đang tải...</div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">🎓</div>
+          <div className="empty-state-icon"></div>
           <h3>Không tìm thấy sinh viên</h3>
         </div>
       ) : (
-        <div className="card" style={{ padding: 0 }}>
-          <div className="table-container">
+        <div className="table-container">
             <table className="table">
               <thead>
                 <tr>
@@ -107,7 +108,6 @@ export default function StudentsPage() {
               </tbody>
             </table>
           </div>
-        </div>
       )}
     </div>
   );

@@ -47,11 +47,11 @@ function ScoreModal({ enrollment, onClose, onSaved }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">✏️ Nhập điểm</h2>
+          <h2 className="modal-title"> Nhập điểm</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <div style={{
             padding: "10px 14px", background: "var(--bg-tertiary)",
             borderRadius: "var(--radius)", marginBottom: 16, fontSize: 13,
@@ -148,11 +148,12 @@ export default function GradingPage() {
           const classRes = await teachersApi.getClasses(res.data.teacher_id);
           setTeacherClasses(classRes.data);
         } else if (isAdmin) {
-          // Admin: không cần teacher_id, có thể chọn lớp từ dropdown
-          setTeacherClasses([]); // Admin sẽ nhập class_id thủ công
+          // Admin: xem danh sách tất cả lớp học
+          const classRes = await classesApi.list(null, null, 1, 100);
+          setTeacherClasses(classRes.data);
         }
       } catch (err) {
-        setError("Không tìm thấy thông tin giáo viên: " + (err.response?.data?.detail || err.message));
+        setError("Không thể tải danh sách lớp: " + (err.response?.data?.detail || err.message));
       } finally {
         setLoading(false);
       }
@@ -181,25 +182,25 @@ export default function GradingPage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">✏️ Nhập điểm</h2>
+          <h1 className="page-title">{isTeacher ? "Nhập điểm" : "Bảng điểm"}</h1>
           <p className="page-subtitle">
-            {isTeacher ? `Lớp đang dạy: ${teacherClasses.length}` : "Admin: nhập điểm cho tất cả lớp"}
+            {isTeacher ? `Lớp đang dạy: ${teacherClasses.length}` : "Xem bảng điểm sinh viên theo từng lớp học"}
           </p>
         </div>
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
+      {error && <div className="alert alert-error"> {error}</div>}
 
       <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 20 }}>
         {/* Cột trái: Danh sách lớp */}
         <div>
           <div className="card" style={{ padding: 0 }}>
             <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-light)" }}>
-              <h3 className="card-title">📚 Lớp của tôi</h3>
+              <h3 className="card-title">{isTeacher ? "Lớp của tôi" : "Danh sách lớp học"}</h3>
             </div>
             {teacherClasses.length === 0 ? (
               <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
-                Chưa được phân công lớp nào
+                {isTeacher ? "Chưa được phân công lớp nào" : "Chưa có lớp học nào"}
               </div>
             ) : (
               <div>
@@ -240,7 +241,7 @@ export default function GradingPage() {
               <div className="empty-state">
                 <div className="empty-state-icon">👈</div>
                 <h3>Chọn lớp để xem sinh viên</h3>
-                <p>Click vào một lớp ở bên trái để xem danh sách sinh viên và nhập điểm.</p>
+                <p>{isTeacher ? "Click vào một lớp ở bên trái để xem danh sách sinh viên và nhập điểm." : "Click vào một lớp ở bên trái để xem danh sách sinh viên và bảng điểm."}</p>
               </div>
             </div>
           ) : (
@@ -282,7 +283,7 @@ export default function GradingPage() {
                         <th style={{ textAlign: "center" }}>Điểm CK</th>
                         <th style={{ textAlign: "center" }}>Xếp loại</th>
                         <th style={{ textAlign: "center" }}>Trạng thái</th>
-                        <th style={{ textAlign: "center" }}>Hành động</th>
+                        {isTeacher && <th style={{ textAlign: "center" }}>Hành động</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -311,14 +312,16 @@ export default function GradingPage() {
                           <td style={{ textAlign: "center" }}>
                             <StatusBadge status={e.status} />
                           </td>
-                          <td style={{ textAlign: "center" }}>
-                            <button
-                              className="btn btn-primary btn-sm"
-                              onClick={() => setScoreTarget(e)}
-                            >
-                              ✏️ Nhập điểm
-                            </button>
-                          </td>
+                          {isTeacher && (
+                            <td style={{ textAlign: "center" }}>
+                              <button
+                                className="btn btn-primary btn-sm"
+                                onClick={() => setScoreTarget(e)}
+                              >
+                                 Nhập điểm
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -331,7 +334,7 @@ export default function GradingPage() {
       </div>
 
       {/* Modal nhập điểm */}
-      {scoreTarget && (
+      {scoreTarget && isTeacher && (
         <ScoreModal
           enrollment={scoreTarget}
           onClose={() => setScoreTarget(null)}

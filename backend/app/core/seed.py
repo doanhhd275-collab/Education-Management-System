@@ -12,7 +12,11 @@ from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
 from app.core.security import hash_password
-from app.models.user import Role, User, UserRole, Student, Teacher, Curriculum, Course
+from app.models.user import Role, User, UserRole
+from app.models.student import Student
+from app.models.teacher import Teacher
+from app.models.curriculum import Curriculum
+from app.models.course import Course
 
 logger = logging.getLogger(__name__)
 

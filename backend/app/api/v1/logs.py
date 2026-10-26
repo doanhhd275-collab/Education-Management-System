@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from app.core.dependencies import get_db, require_role
-from app.models.user import ReportLog, SystemLog
+from app.models.log import ReportLog, SystemLog
 from app.schemas.log import (
     ReportLogResponse,
     SystemLogCreate, SystemLogResponse

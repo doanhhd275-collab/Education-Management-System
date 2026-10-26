@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<title>Package Diagram — Education Management System</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    background: #f0ede8;
+    padding: 40px 32px;
+  }
+  h1   { text-align: center; font-size: 21px; font-weight: bold;
+         margin-bottom: 6px; color: #111; }
+  .sub { text-align: center; font-size: 13.5px; color: #555;
+         margin-bottom: 32px; }
+  svg  {
+    display: block; margin: 0 auto;
+    background: #fff;
+    border: 2px solid #999;
+    box-shadow: 5px 8px 24px rgba(0,0,0,.18);
+  }
+  .legend {
+    width: 1600px; margin: 24px auto 0;
+    display: flex; gap: 0; flex-wrap: wrap;
+    font-size: 13px; color: #444;
+    font-family: 'Times New Roman', Times, serif;
+    border-top: 1.5px solid #bbb; padding-top: 16px;
+  }
+  .legend-item { width: 50%; padding: 5px 24px 5px 0; line-height: 1.7; }
+  .legend b { color: #111; }
+</style>
+</head>
+<body>
+
+<h1>Package Diagram — Education Management System</h1>
+<p class="sub">
+  Kiến trúc module hệ thống &nbsp;·&nbsp;
+  5 Use Cases + Core Infrastructure &nbsp;·&nbsp;
+  UML 2.x Package Diagram
+</p>
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  LAYOUT  SVG 1600 × 920
+
+  ROW 1  tab y=52 · body y=76 · h=210 · bottom=286
+    Account Management      x=40   w=430  right=470   cx=255
+    Curriculum Management   x=540  w=430  right=970   cx=755
+    Student Management      x=1060 w=500  right=1560  cx=1310
+
+  ROW GAP  286 … 384  (98 px for routing)
+
+  ROW 2  tab y=384 · body y=410 · h=200 · bottom=610
+    Assignment Management   x=40   w=640  right=680   cx=360
+    Gap x=680 … 760 (80 px)
+    Learning Support        x=760  w=800  right=1560  cx=1160
+
+  GAP  610 … 698  (88 px)
+
+  CORE  tab y=698 · body y=724 · h=150 · bottom=874
+    Core / Infrastructure   x=40   w=1540 right=1580
+
+  SVG height  874 + 46 = 920
+
+  ARROWS (all dashed + open-V arrowhead):
+    ① «import» Curriculum Mgmt → Account Mgmt   horizontal y=181
+    ② «import» Student Mgmt    → Curriculum Mgmt horizontal y=181
+    ③ «use»    Account Mgmt    → Core  via gap x=718
+    ④ «use»    Curriculum Mgmt → Core  via gap x=700
+    ⑤ «use»    Student Mgmt    → Core  right channel x=1578
+    ⑥ «use»    Assignment Mgmt → Core  straight down x=360
+    ⑦ «use»    Learning Support→ Core  straight down x=1160
+  ═══════════════════════════════════════════════════════════════
+-->
+
+<svg width="1600" height="920"
+     xmlns="http://www.w3.org/2000/svg"
+     font-family="'Times New Roman', Times, serif">
+
+<defs>
+  <!--
+    UML Dependency arrowhead — open V, thin, single stroke.
+    Works for both «import» and «use»; stroke colour is set on the path.
+    context-stroke inherits from the referencing element.
+  -->
+  <marker id="imp-head"
+          viewBox="0 0 11 8" refX="10" refY="4"
+          markerWidth="11" markerHeight="8"
+          orient="auto">
+    <polyline points="0,0 10,4 0,8"
+              fill="none" stroke="#111" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+
+  <marker id="use-head"
+          viewBox="0 0 11 8" refX="10" refY="4"
+          markerWidth="11" markerHeight="8"
+          orient="auto">
+    <polyline points="0,0 10,4 0,8"
+              fill="none" stroke="#666" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     ROW 1 — Three packages across the top
+     ══════════════════════════════════════════════════════════ -->
+
+<!-- ── Account Management ─────────────────────────────────── -->
+<!--   Tab: package name goes HERE (UML 2.x: name in folder tab) -->
+<rect x="40" y="52" width="180" height="26"
+      fill="#c8dcf2" stroke="#2c5f9e" stroke-width="2.2" rx="4 4 0 0"/>
+<text x="130" y="70" font-size="13" font-weight="bold"
+      text-anchor="middle" fill="#1a3d6b">Account Management</text>
+
+<!--   Body: contains classifiers (names only — no attributes/methods) -->
+<rect x="40" y="76" width="430" height="210"
+      fill="#eef4fc" stroke="#2c5f9e" stroke-width="2.2" rx="0 6 6 6"/>
+<text x="72" y="128" font-size="14" fill="#111">AccountManager</text>
+<text x="72" y="168" font-size="14" fill="#111">AuthService</text>
+<text x="72" y="208" font-size="14" fill="#111">User</text>
+<text x="72" y="248" font-size="14" fill="#111">Role</text>
+
+
+<!-- ── Curriculum Management ──────────────────────────────── -->
+<rect x="540" y="52" width="208" height="26"
+      fill="#bbdebb" stroke="#2e7d32" stroke-width="2.2" rx="4 4 0 0"/>
+<text x="644" y="70" font-size="13" font-weight="bold"
+      text-anchor="middle" fill="#1a4d1a">Curriculum Management</text>
+
+<rect x="540" y="76" width="430" height="210"
+      fill="#edf7ed" stroke="#2e7d32" stroke-width="2.2" rx="0 6 6 6"/>
+<text x="572" y="128" font-size="14" fill="#111">CurriculumManager</text>
+<text x="572" y="168" font-size="14" fill="#111">Curriculum</text>
+<text x="572" y="208" font-size="14" fill="#111">Course</text>
+<text x="572" y="248" font-size="14" fill="#111">Class</text>
+
+
+<!-- ── Student Management ─────────────────────────────────── -->
+<rect x="1060" y="52" width="188" height="26"
+      fill="#ffd5a0" stroke="#e65100" stroke-width="2.2" rx="4 4 0 0"/>
+<text x="1154" y="70" font-size="13" font-weight="bold"
+      text-anchor="middle" fill="#7a3c00">Student Management</text>
+
+<rect x="1060" y="76" width="500" height="210"
+      fill="#fff8f0" stroke="#e65100" stroke-width="2.2" rx="0 6 6 6"/>
+<text x="1092" y="128" font-size="14" fill="#111">StudentManager</text>
+<text x="1092" y="168" font-size="14" fill="#111">EnrollmentManager</text>
+<text x="1092" y="208" font-size="14" fill="#111">Student</text>
+<text x="1092" y="248" font-size="14" fill="#111">Enrollment</text>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     ROW 2 — Two packages (80px gap between them)
+     UC04 right=680   gap   UC05 left=760
+     ══════════════════════════════════════════════════════════ -->
+
+<!-- ── Assignment Management ─────────────────────────────── -->
+<rect x="40" y="384" width="218" height="26"
+      fill="#dbb8ee" stroke="#6a1b9a" stroke-width="2.2" rx="4 4 0 0"/>
+<text x="149" y="402" font-size="13" font-weight="bold"
+      text-anchor="middle" fill="#4a0e6a">Assignment Management</text>
+
+<rect x="40" y="410" width="640" height="200"
+      fill="#f3e5fb" stroke="#6a1b9a" stroke-width="2.2" rx="0 6 6 6"/>
+<text x="72" y="468" font-size="14" fill="#111">AssignmentManager</text>
+<text x="72" y="512" font-size="14" fill="#111">Assignment</text>
+<text x="72" y="556" font-size="14" fill="#111">AssignmentReport</text>
+
+
+<!-- ── Learning Support ───────────────────────────────────── -->
+<rect x="760" y="384" width="167" height="26"
+      fill="#ffb3b3" stroke="#b71c1c" stroke-width="2.2" rx="4 4 0 0"/>
+<text x="843" y="402" font-size="13" font-weight="bold"
+      text-anchor="middle" fill="#7b0000">Learning Support</text>
+
+<rect x="760" y="410" width="800" height="200"
+      fill="#fff5f5" stroke="#b71c1c" stroke-width="2.2" rx="0 6 6 6"/>
+<text x="792" y="468" font-size="14" fill="#111">LearningManager</text>
+<text x="792" y="512" font-size="14" fill="#111">Document</text>
+<text x="792" y="556" font-size="14" fill="#111">LessonReport</text>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     CORE / INFRASTRUCTURE — full-width foundation layer
+     Fix: package name is in the TAB; «utility» goes in the body.
+     Body lists only class/module names, no small detail text.
+     ══════════════════════════════════════════════════════════ -->
+<rect x="40" y="698" width="200" height="26"
+      fill="#b0bec5" stroke="#37474f" stroke-width="2.2" rx="4 4 0 0"/>
+<text x="140" y="716" font-size="13" font-weight="bold"
+      text-anchor="middle" fill="#263238">Core / Infrastructure</text>
+
+<rect x="40" y="724" width="1540" height="150"
+      fill="#f5f5f5" stroke="#37474f" stroke-width="2.2" rx="0 6 6 6"/>
+
+<!-- «utility» stereotype centred in body, then four module names in a row -->
+<text x="810" y="760" font-size="13" font-style="italic"
+      text-anchor="middle" fill="#555">«utility»</text>
+
+<!-- Four names, evenly spread, no dividers, no detail text -->
+<text x="230"  y="800" font-size="14" font-weight="bold"
+      text-anchor="middle" fill="#222">Database</text>
+<text x="620"  y="800" font-size="14" font-weight="bold"
+      text-anchor="middle" fill="#222">Security</text>
+<text x="1010" y="800" font-size="14" font-weight="bold"
+      text-anchor="middle" fill="#222">DependencyInjection</text>
+<text x="1400" y="800" font-size="14" font-weight="bold"
+      text-anchor="middle" fill="#222">Configuration</text>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     DEPENDENCY ARROWS
+     Rule: dashed line + open-V arrowhead (UML §7.8)
+           drawn from package BORDER to package BORDER.
+     ══════════════════════════════════════════════════════════ -->
+
+<!--
+  ① «import»  Curriculum Management ──▷ Account Management
+  Meaning: Curriculum uses AuthService / Role from Account.
+  Direction: arrow points INTO the depended-upon package.
+  Route: horizontal, from Curriculum LEFT border → Account RIGHT border.
+-->
+<line x1="538" y1="181" x2="472" y2="181"
+      stroke="#111" stroke-width="2" stroke-dasharray="9,4"
+      marker-end="url(#imp-head)"/>
+<rect x="462" y="162" width="84" height="22" fill="#edf7ed" rx="3"/>
+<text x="504" y="177" font-size="12.5" font-style="italic"
+      text-anchor="middle" fill="#111">«import»</text>
+
+
+<!--
+  ② «import»  Student Management ──▷ Curriculum Management
+  Meaning: Student module uses Curriculum/Class/Course.
+  Route: horizontal, from Student LEFT border → Curriculum RIGHT border.
+-->
+<line x1="1058" y1="181" x2="972" y2="181"
+      stroke="#111" stroke-width="2" stroke-dasharray="9,4"
+      marker-end="url(#imp-head)"/>
+<rect x="962" y="162" width="84" height="22" fill="#fff8f0" rx="3"/>
+<text x="1004" y="177" font-size="12.5" font-style="italic"
+      text-anchor="middle" fill="#111">«import»</text>
+
+
+<!--
+  ③ «use»  Account Management ──▷ Core
+  Route:
+    · DOWN from Account bottom center (255, 286) → row-gap y=330
+    · RIGHT to x=718  (inside 80px gap between UC04 and UC05)
+    · DOWN to Core top border (718, 724)
+-->
+<path d="M 255,286 V 330 H 718 V 722"
+      fill="none" stroke="#777" stroke-width="1.9"
+      stroke-dasharray="8,4" stroke-linejoin="round"
+      marker-end="url(#use-head)"/>
+<rect x="677" y="490" width="44" height="22" fill="#fff" rx="3"/>
+<text x="699" y="505" font-size="12.5" font-style="italic"
+      text-anchor="middle" fill="#666">«use»</text>
+
+
+<!--
+  ④ «use»  Curriculum Management ──▷ Core
+  Route:
+    · DOWN from Curriculum bottom center (755, 286) → y=344
+    · LEFT to x=700  (in gap, 18px apart from ③)
+    · DOWN to Core top (700, 724)
+-->
+<path d="M 755,286 V 344 H 700 V 722"
+      fill="none" stroke="#777" stroke-width="1.9"
+      stroke-dasharray="8,4" stroke-linejoin="round"
+      marker-end="url(#use-head)"/>
+<rect x="659" y="556" width="44" height="22" fill="#fff" rx="3"/>
+<text x="681" y="571" font-size="12.5" font-style="italic"
+      text-anchor="middle" fill="#666">«use»</text>
+
+
+<!--
+  ⑤ «use»  Student Management ──▷ Core
+  Route:
+    · RIGHT from Student right border mid (1560, 181)
+    · → x=1578 (right-side channel, 18px outside all Row packages)
+    · DOWN to Core top (1578, 724)
+  x=1578 is outside UC05 right=1560, and inside Core right=1580. ✓
+-->
+<path d="M 1560,181 H 1578 V 722"
+      fill="none" stroke="#777" stroke-width="1.9"
+      stroke-dasharray="8,4" stroke-linejoin="round"
+      marker-end="url(#use-head)"/>
+<rect x="1538" y="502" width="44" height="22" fill="#fff" rx="3"/>
+<text x="1560" y="517" font-size="12.5" font-style="italic"
+      text-anchor="middle" fill="#666">«use»</text>
+
+
+<!--
+  ⑥ «use»  Assignment Management ──▷ Core
+  Route: straight DOWN from Assignment bottom center (360, 610) → Core top (360, 724)
+-->
+<line x1="360" y1="610" x2="360" y2="722"
+      stroke="#777" stroke-width="1.9" stroke-dasharray="8,4"
+      marker-end="url(#use-head)"/>
+<rect x="318" y="652" width="44" height="22" fill="#fff" rx="3"/>
+<text x="340" y="667" font-size="12.5" font-style="italic"
+      text-anchor="middle" fill="#666">«use»</text>
+
+
+<!--
+  ⑦ «use»  Learning Support ──▷ Core
+  Route: straight DOWN from Learning Support bottom center (1160, 610) → Core top (1160, 724)
+-->
+<line x1="1160" y1="610" x2="1160" y2="722"
+      stroke="#777" stroke-width="1.9" stroke-dasharray="8,4"
+      marker-end="url(#use-head)"/>
+<rect x="1118" y="652" width="44" height="22" fill="#fff" rx="3"/>
+<text x="1140" y="667" font-size="12.5" font-style="italic"
+      text-anchor="middle" fill="#666">«use»</text>
+
+</svg>
+
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item">
+    <b>Ký hiệu Package UML 2.x (folder notation):</b>
+    Hình chữ nhật chính (body) chứa các thành phần; tab nhỏ hình chữ L
+    ở góc trên-trái ghi <i>tên Package</i> — không ghi UC0X.
+  </div>
+  <div class="legend-item">
+    <b>Nội dung bên trong Package:</b>
+    Chỉ liệt kê tên Lớp / Module chính, không hiển thị thuộc tính hay
+    phương thức. Core ghi thêm stereotype «utility» để mô tả tính chất.
+  </div>
+  <div class="legend-item">
+    – – –▷ &nbsp;<b>«import»</b> (đường nét đứt + đầu mũi tên chữ V nét đơn):
+    Package A phụ thuộc vào Package B; mũi tên chỉ vào B (package bị nhập).
+  </div>
+  <div class="legend-item">
+    – – –▷ &nbsp;<b>«use»</b> (nhạt hơn, ký hiệu giống «import»):
+    Package A gọi dịch vụ của B mà không nhập không gian tên.
+    Tất cả 5 package đều «use» Core / Infrastructure.
+  </div>
+</div>
+
+</body>
+</html>

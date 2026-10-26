@@ -140,11 +140,11 @@ export default function CoursesPage() {
   return (
     <div>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)" }}>Môn học</h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "13px", marginTop: "4px" }}>
-            Quản lý các môn học trong hệ thống
+          <h1 className="page-title">Môn học</h1>
+          <p className="page-subtitle">
+            Danh sách các môn học trong hệ thống
           </p>
         </div>
         {isAdmin && (
@@ -260,7 +260,7 @@ export default function CoursesPage() {
             </div>
 
             {formError && (
-              <div style={{ color: "var(--danger)", fontSize: "13px", marginBottom: "12px" }}>❌ {formError}</div>
+              <div style={{ color: "var(--danger)", fontSize: "13px", marginBottom: "12px" }}> {formError}</div>
             )}
             <div style={{ display: "flex", gap: "10px" }}>
               <button type="submit" className="btn btn-primary" disabled={saving}>
@@ -325,7 +325,7 @@ export default function CoursesPage() {
                           style={{ fontSize: "12px", padding: "4px 10px", color: "var(--danger)" }}
                           onClick={() => handleDelete(c.course_id)}
                         >
-                          🗑️ Xóa
+                           Xóa
                         </button>
                       </td>
                     )}
@@ -370,7 +370,7 @@ export default function CoursesPage() {
             {/* Body */}
             <div style={{ padding: "16px 20px 20px" }}>
               {prereqError && (
-                <div style={{ color: "var(--danger)", fontSize: "13px", marginBottom: "12px" }}>❌ {prereqError}</div>
+                <div style={{ color: "var(--danger)", fontSize: "13px", marginBottom: "12px" }}> {prereqError}</div>
               )}
 
               {/* Thêm tiên quyết (admin only) */}
@@ -443,7 +443,7 @@ export default function CoursesPage() {
                           onClick={() => handleRemovePrereq(p.prerequisite_course_id)}
                           title="Bỏ môn tiên quyết này"
                         >
-                          🗑️ Bỏ
+                           Bỏ
                         </button>
                       )}
                     </div>

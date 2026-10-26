@@ -75,14 +75,10 @@ export default function UsersPage() {
   return (
     <div>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)" }}>
-            Quản lý người dùng
-          </h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "13px", marginTop: "4px" }}>
-            Thêm, xóa và quản lý tài khoản hệ thống
-          </p>
+          <h1 className="page-title">Quản lý người dùng</h1>
+          <p className="page-subtitle">Thêm, xóa và quản lý tài khoản hệ thống</p>
         </div>
         <button className="btn btn-primary" onClick={() => { setShowForm(true); setFormError(""); }}>
           + Thêm người dùng
@@ -168,7 +164,7 @@ export default function UsersPage() {
 
             {formError && (
               <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid var(--danger)", borderRadius: "8px", padding: "10px 14px", color: "var(--danger)", fontSize: "13px", marginBottom: "12px" }}>
-                ❌ {formError}
+                 {formError}
               </div>
             )}
 
@@ -191,65 +187,66 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Table */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Danh sách người dùng ({users.length})</h3>
-        </div>
-        {loading ? (
-          <div className="loading-page"><div className="spinner" /> Đang tải...</div>
-        ) : (
-          <div className="table-wrapper">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Mã</th>
-                  <th>Họ và tên</th>
-                  <th>Email</th>
-                  <th>SĐT</th>
-                  <th>Vai trò</th>
-                  <th>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.length === 0 ? (
-                  <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)", padding: "32px" }}>
-                    Chưa có người dùng nào
-                  </td></tr>
-                ) : users.map(u => (
-                  <tr key={u.user_id}>
-                    <td><code style={{ fontSize: "12px" }}>{u.user_id}</code></td>
-                    <td style={{ fontWeight: 500 }}>{u.name}</td>
-                    <td style={{ color: "var(--text-muted)" }}>{u.email}</td>
-                    <td style={{ color: "var(--text-muted)" }}>{u.contact || "—"}</td>
-                    <td>
-                      <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-                        {u.user_roles?.length > 0
-                          ? u.user_roles.map(ur => (
-                              <span key={ur.role_id} className={`badge ${roleBadge[ur.role_id] || "badge-info"}`}>
-                                {roleLabel[ur.role_id] || ur.role_id}
-                              </span>
-                            ))
-                          : <span className="badge badge-default">Chưa có role</span>
-                        }
-                      </div>
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-ghost"
-                        style={{ fontSize: "12px", padding: "4px 10px", color: "var(--danger)" }}
-                        onClick={() => handleDelete(u.user_id)}
-                      >
-                        🗑️ Xóa
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Table Section */}
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "16px", marginTop: "16px" }}>
+        <h3 style={{ fontSize: "16px", fontWeight: 600, color: "var(--text-primary)" }}>
+          Danh sách người dùng ({users.length})
+        </h3>
       </div>
+      
+      {loading ? (
+        <div className="loading-page"><div className="spinner" /> Đang tải...</div>
+      ) : (
+        <div className="table-container">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Họ và tên</th>
+                <th>Email</th>
+                <th>SĐT</th>
+                <th>Vai trò</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.length === 0 ? (
+                <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)", padding: "32px" }}>
+                  Chưa có người dùng nào
+                </td></tr>
+              ) : users.map(u => (
+                <tr key={u.user_id}>
+                  <td><code style={{ fontSize: "13px", color: "var(--text-secondary)" }}>{u.user_id}</code></td>
+                  <td style={{ fontWeight: 500 }}>{u.name}</td>
+                  <td style={{ color: "var(--text-secondary)" }}>{u.email}</td>
+                  <td style={{ color: "var(--text-secondary)" }}>{u.contact || "—"}</td>
+                  <td>
+                    <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                      {u.user_roles?.length > 0
+                        ? u.user_roles.map(ur => (
+                            <span key={ur.role_id} className={`badge badge-${ur.role_id.toLowerCase()}`}>
+                              {roleLabel[ur.role_id] || ur.role_id}
+                            </span>
+                          ))
+                        : <span className="badge badge-default">Chưa có role</span>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-ghost"
+                      style={{ fontSize: "13px", padding: "4px 10px", color: "var(--danger)" }}
+                      onClick={() => handleDelete(u.user_id)}
+                    >
+                       Xóa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

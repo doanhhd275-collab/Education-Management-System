@@ -39,7 +39,7 @@ export default function LogsPage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">📋 Nhật ký hệ thống</h2>
+          <h1 className="page-title"> Nhật ký hệ thống</h1>
           <p className="page-subtitle">Giám sát hoạt động và lỗi</p>
         </div>
         <div className="flex gap-8">

@@ -6,6 +6,7 @@
 import { useState, useEffect } from "react";
 import { documentsApi, classesApi } from "../../api";
 import { useAuth } from "../../context/AuthContext";
+import { Search, FileText as FileTextIcon, ExternalLink, Trash2, X } from "lucide-react";
 
 /* ─── Modal đăng tài liệu (Teacher) ─────────────────────────────── */
 function CreateDocModal({ onClose, onCreated, myClasses }) {
@@ -53,11 +54,11 @@ function CreateDocModal({ onClose, onCreated, myClasses }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">📄 Đăng tài liệu mới</h2>
+          <h2 className="modal-title"> Đăng tài liệu mới</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <form id="doc-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Mã tài liệu *</label>
@@ -189,46 +190,51 @@ export default function DocumentsPage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">📁 Tài liệu học tập</h2>
+          <h1 className="page-title">📁 Tài liệu học tập</h1>
           <p className="page-subtitle">{filtered.length} tài liệu</p>
         </div>
         {(isTeacher || isAdmin) && (
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-            ➕ Đăng tài liệu
+             Đăng tài liệu
           </button>
         )}
       </div>
 
       {/* Thanh lọc */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-        <input
-          className="form-input"
-          style={{ flex: 1, minWidth: 200 }}
-          placeholder="🔍 Tìm tài liệu..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          className="form-input"
-          style={{ minWidth: 240 }}
-          value={filterClass}
-          onChange={(e) => setFilterClass(e.target.value)}
-        >
-          <option value="">📚 Tất cả lớp học</option>
-          {myClasses.map((c) => (
-            <option key={c.class_id} value={c.class_id}>
-              {c.course_id} · {c.class_id}
-            </option>
-          ))}
-        </select>
-        {filterClass && (
-          <button className="btn btn-secondary btn-sm" onClick={() => setFilterClass("")}>
-            ✕ Xóa lọc
-          </button>
-        )}
+      <div style={{ display: "flex", gap: 16, marginBottom: 24, flexWrap: "wrap", alignItems: "center" }}>
+        <div className="search-input-wrapper" style={{ flex: 2, minWidth: 280, position: 'relative' }}>
+          <Search className="search-icon" size={20} />
+          <input
+            className="form-input"
+            style={{ paddingLeft: 44, height: 52, fontSize: 17 }}
+            placeholder="Tìm tài liệu..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: 200, display: "flex", gap: 8 }}>
+          <select
+            className="form-select"
+            style={{ height: 52, fontSize: 17, flex: 1 }}
+            value={filterClass}
+            onChange={(e) => setFilterClass(e.target.value)}
+          >
+            <option value="">Tất cả lớp học</option>
+            {myClasses.map((c) => (
+              <option key={c.class_id} value={c.class_id}>
+                {c.course_id} · {c.class_id}
+              </option>
+            ))}
+          </select>
+          {filterClass && (
+            <button className="btn btn-secondary" style={{ height: 52, padding: "0 16px" }} onClick={() => setFilterClass("")}>
+              <X size={20} />
+            </button>
+          )}
+        </div>
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
+      {error && <div className="alert alert-error"> {error}</div>}
 
       {loading ? (
         <div className="loading-page"><div className="spinner" /> Đang tải...</div>
@@ -238,59 +244,72 @@ export default function DocumentsPage() {
           <h3>Chưa có tài liệu nào</h3>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 24 }}>
           {filtered.map((doc) => (
-            <div key={doc.document_id} className="card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div key={doc.document_id} className="card" style={{ display: "flex", flexDirection: "column", gap: 12, padding: 28, marginBottom: 0 }}>
               {/* Icon + tên */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex", gap: 16 }}>
                 <div style={{
-                  width: 42, height: 42, borderRadius: 10,
-                  background: "var(--bg-card-hover)",
+                  width: 56, height: 56, borderRadius: 12,
+                  background: "var(--accent-light)", color: "var(--accent)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 22, flexShrink: 0
-                }}>📄</div>
+                  flexShrink: 0
+                }}>
+                  <FileTextIcon size={28} />
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: 14,
-                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <div style={{ 
+                    fontWeight: 700, color: "var(--text-primary)", fontSize: 20, lineHeight: 1.3,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", whiteSpace: "normal" 
+                  }}>
                     {doc.document_name}
                   </div>
                   {/* Mã môn + lớp */}
-                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2, display: "flex", gap: 8 }}>
-                    {doc.course_id && (
-                      <span className="badge badge-muted" style={{ fontSize: 11 }}>{doc.course_id}</span>
-                    )}
-                    {doc.class_id && (
-                      <span className="badge badge-muted" style={{ fontSize: 11 }}>{doc.class_id}</span>
-                    )}
-                    {!doc.course_id && !doc.class_id && (
-                      <span>ID: {doc.document_id} · GV: {doc.teacher_id || "—"}</span>
-                    )}
+                  <div style={{ fontSize: 15, color: "#4B5563", marginTop: 6, display: "flex", gap: 8 }}>
+                    <span>ID: {doc.document_id}</span>
+                    <span>·</span>
+                    <span>GV: {doc.teacher_id || "—"}</span>
                   </div>
+                  {(doc.course_id || doc.class_id) && (
+                    <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                      {doc.course_id && (
+                        <span className="badge badge-muted" style={{ fontSize: 13 }}>{doc.course_id}</span>
+                      )}
+                      {doc.class_id && (
+                        <span className="badge badge-muted" style={{ fontSize: 13 }}>{doc.class_id}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* GV / deadline */}
-              {(doc.teacher_id || doc.deadline) && (
-                <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", gap: 12 }}>
-                  {doc.teacher_id && <span>GV: <strong>{doc.teacher_id}</strong></span>}
-                  {doc.deadline && (
-                    <span>Hạn: {new Date(doc.deadline).toLocaleDateString("vi-VN")}</span>
-                  )}
+              {/* Deadline */}
+              {doc.deadline && (
+                <div style={{ fontSize: 14, color: "var(--text-muted)" }}>
+                  <span>Hạn: {new Date(doc.deadline).toLocaleDateString("vi-VN")}</span>
                 </div>
               )}
 
               {/* Actions */}
-              <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
+              <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
                 {doc.link_url ? (
-                  <a href={doc.link_url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">
-                    🔗 Mở tài liệu
+                  <a href={doc.link_url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ flex: 1, height: 44, fontSize: 16 }}>
+                    <ExternalLink size={18} /> Mở tài liệu
                   </a>
                 ) : (
-                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Không có link</span>
+                  <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+                    <span className="badge badge-default" style={{ fontSize: 15 }}>Không có link</span>
+                  </div>
                 )}
                 {(isTeacher || isAdmin) && (
-                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(doc.document_id)}>
-                    🗑 Xóa
+                  <button 
+                    className="btn" 
+                    style={{ height: 44, fontSize: 16, background: "transparent", color: "#B91C1C", border: "1px solid #FECACA", transition: "all 0.15s" }} 
+                    onMouseEnter={e => e.currentTarget.style.background = "#FEE2E2"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                    onClick={() => handleDelete(doc.document_id)}
+                  >
+                    <Trash2 size={18} /> Xóa
                   </button>
                 )}
               </div>

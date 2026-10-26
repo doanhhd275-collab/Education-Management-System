@@ -52,12 +52,6 @@ function App() {
             <Route path="/teachers" element={
               <ProtectedRoute roles={["ADMIN"]}><TeachersPage /></ProtectedRoute>
             } />
-            <Route path="/curriculum" element={
-              <ProtectedRoute roles={["ADMIN"]}><CurriculumPage /></ProtectedRoute>
-            } />
-            <Route path="/courses" element={
-              <ProtectedRoute roles={["ADMIN"]}><CoursesPage /></ProtectedRoute>
-            } />
             <Route path="/logs" element={
               <ProtectedRoute roles={["ADMIN"]}><LogsPage /></ProtectedRoute>
             } />
@@ -71,6 +65,12 @@ function App() {
             } />
 
             {/* ── Teacher + Student + Admin ── */}
+            <Route path="/curriculum" element={
+              <ProtectedRoute roles={["ADMIN", "TEACHER", "STUDENT"]}><CurriculumPage /></ProtectedRoute>
+            } />
+            <Route path="/courses" element={
+              <ProtectedRoute roles={["ADMIN", "TEACHER", "STUDENT"]}><CoursesPage /></ProtectedRoute>
+            } />
             <Route path="/classes" element={
               <ProtectedRoute roles={["ADMIN", "TEACHER", "STUDENT"]}><ClassesPage /></ProtectedRoute>
             } />

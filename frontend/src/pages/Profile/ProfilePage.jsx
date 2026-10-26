@@ -12,7 +12,7 @@ export default function ProfilePage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">👤 Hồ sơ cá nhân</h2>
+          <h1 className="page-title"> Hồ sơ cá nhân</h1>
           <p className="page-subtitle">Thông tin tài khoản của bạn</p>
         </div>
       </div>

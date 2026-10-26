@@ -50,11 +50,11 @@ function CreateClassModal({ onClose, onCreated }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">➕ Tạo lớp học</h2>
+          <h2 className="modal-title"> Tạo lớp học</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <div className="alert" style={{ background: "rgba(99,102,241,0.1)", borderColor: "var(--accent)", marginBottom: 16 }}>
             💡 Môn học phải được tạo trước trong <strong>Môn học</strong>. Mã môn phải chính xác.
           </div>
@@ -175,7 +175,7 @@ function EditScheduleModal({ class_, onClose, onSaved }) {
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <p style={{ color: "var(--text-secondary)", marginBottom: 16, fontSize: 13 }}>
             Lớp: <strong>{class_.class_id}</strong> · Môn: <strong>{class_.course_id}</strong>
           </p>
@@ -276,11 +276,11 @@ function AssignTeacherModal({ class_, onClose, onAssigned }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">👨‍🏫 Gán giáo viên vào lớp</h2>
+          <h2 className="modal-title"> Gán giáo viên vào lớp</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <p style={{ color: "var(--text-secondary)", marginBottom: 16, fontSize: 13 }}>
             Lớp: <strong>{class_.class_id}</strong> · Môn: <strong>{class_.course_id}</strong>
           </p>
@@ -317,7 +317,7 @@ function AssignTeacherModal({ class_, onClose, onAssigned }) {
 
 // ── Main Page ─────────────────────────────────────────────────
 export default function ClassesPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isTeacher, isStudent } = useAuth();
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -331,13 +331,20 @@ export default function ClassesPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await classesApi.list(null, semesterFilter || null, 1, 100);
+      let res;
+      if (isTeacher) {
+        res = await classesApi.getTeacherTimetable();
+      } else if (isStudent) {
+        res = await classesApi.getStudentTimetable();
+      } else {
+        res = await classesApi.list(null, semesterFilter || null, 1, 100);
+      }
       setClasses(res.data);
     } catch { setError("Không thể tải danh sách lớp học"); }
     finally { setLoading(false); }
   };
 
-  useEffect(() => { loadClasses(); }, [semesterFilter]);
+  useEffect(() => { loadClasses(); }, [semesterFilter, isTeacher, isStudent]);
 
   const handleDelete = async (courseId, classId) => {
     if (!window.confirm(`Xóa lớp "${classId}"? Tất cả đăng ký liên quan cũng sẽ bị xóa.`)) return;
@@ -347,23 +354,34 @@ export default function ClassesPage() {
     } catch (err) { setError(err.response?.data?.detail || "Xóa thất bại"); }
   };
 
-  const filtered = classes.filter((c) =>
-    c.class_id?.toLowerCase().includes(search.toLowerCase()) ||
-    c.course_id?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = classes.filter((c) => {
+    const matchesSearch =
+      c.class_id?.toLowerCase().includes(search.toLowerCase()) ||
+      c.course_id?.toLowerCase().includes(search.toLowerCase()) ||
+      c.course_name?.toLowerCase().includes(search.toLowerCase());
+    const matchesSemester = semesterFilter ? c.semester === semesterFilter : true;
+    return matchesSearch && matchesSemester;
+  });
 
   const semesters = [...new Set(classes.map((c) => c.semester).filter(Boolean))];
+
+  const pageTitle = isStudent ? "Lớp học của tôi" : isTeacher ? "Lớp học phụ trách" : "Lớp học";
+  const pageSubtitle = isStudent
+    ? `Lớp bạn đã đăng ký: ${filtered.length} lớp`
+    : isTeacher
+    ? `Lớp bạn phụ trách: ${filtered.length} lớp`
+    : `Tổng cộng: ${filtered.length} lớp`;
 
   return (
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">🏛️ Quản lý lớp học</h2>
-          <p className="page-subtitle">Tổng cộng: {classes.length} lớp</p>
+          <h1 className="page-title">{pageTitle}</h1>
+          <p className="page-subtitle">{pageSubtitle}</p>
         </div>
         {isAdmin && (
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-            ➕ Tạo lớp học
+             Tạo lớp học
           </button>
         )}
       </div>
@@ -371,22 +389,22 @@ export default function ClassesPage() {
       {/* Hướng dẫn workflow cho Admin */}
       {isAdmin && (
         <div className="card" style={{ marginBottom: 20, padding: "14px 20px", borderLeft: "4px solid var(--accent)" }}>
-          <strong style={{ color: "var(--accent)" }}>📋 Quy trình tạo lớp học:</strong>
+          <strong style={{ color: "var(--accent)" }}> Quy trình tạo lớp học:</strong>
           <ol style={{ margin: "8px 0 0 20px", color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.8 }}>
             <li>Tạo <strong>Môn học</strong> (trang Môn học)</li>
             <li>Tạo <strong>Lớp học</strong> tại đây (nút Tạo lớp học)</li>
-            <li><strong>Gán giáo viên</strong> vào lớp (nút 👨‍🏫 trong bảng bên dưới)</li>
+            <li><strong>Gán giáo viên</strong> vào lớp (nút  trong bảng bên dưới)</li>
             <li>Sinh viên <strong>đăng ký</strong> lớp qua trang Đăng ký học tập</li>
           </ol>
         </div>
       )}
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
+      {error && <div className="alert alert-error"> {error}</div>}
 
       <div className="search-bar">
         <div className="search-input-wrapper">
-          <span className="search-icon">🔍</span>
-          <input className="form-input" placeholder="Tìm theo mã lớp, mã môn..."
+          <span className="search-icon"></span>
+          <input className="form-input" placeholder="Tìm theo mã lớp, mã môn, tên môn..."
             value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <select className="form-select" style={{ maxWidth: 160 }}
@@ -400,9 +418,10 @@ export default function ClassesPage() {
         <div className="loading-page"><div className="spinner" /> Đang tải...</div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">🏛️</div>
-          <h3>Chưa có lớp học nào</h3>
+          <div className="empty-state-icon"></div>
+          <h3>{isStudent ? "Bạn chưa đăng ký lớp học nào" : isTeacher ? "Bạn chưa được phân công phụ trách lớp học nào" : "Chưa có lớp học nào"}</h3>
           {isAdmin && <p style={{ color: "var(--text-secondary)", marginTop: 8 }}>Nhấn "Tạo lớp học" để bắt đầu</p>}
+          {isStudent && <p style={{ color: "var(--text-secondary)", marginTop: 8 }}>Vào mục Đăng ký học tập để đăng ký lớp học</p>}
         </div>
       ) : (
         <div className="card" style={{ padding: 0 }}>
@@ -412,6 +431,7 @@ export default function ClassesPage() {
                 <tr>
                   <th>Mã lớp</th>
                   <th>Mã môn</th>
+                  <th>Tên môn</th>
                   <th>Học kỳ</th>
                   <th style={{ textAlign: "center" }}>Sĩ số tối đa</th>
                   <th style={{ textAlign: "center" }}>Lịch học</th>
@@ -424,6 +444,7 @@ export default function ClassesPage() {
                   <tr key={`${c.course_id}-${c.class_id}`}>
                     <td><span className="badge badge-primary">{c.class_id}</span></td>
                     <td style={{ color: "var(--text-secondary)" }}>{c.course_id}</td>
+                    <td style={{ fontWeight: 500 }}>{c.course_name || c.course_id}</td>
                     <td>
                       {c.semester
                         ? <span className="badge badge-info">{c.semester}</span>
@@ -466,13 +487,13 @@ export default function ClassesPage() {
                             title="Gán giáo viên vào lớp này"
                             onClick={() => setAssignTarget(c)}
                           >
-                            👨‍🏫 Gán GV
+                             Gán GV
                           </button>
                           <button
                             className="btn btn-danger btn-sm"
                             onClick={() => handleDelete(c.course_id, c.class_id)}
                           >
-                            🗑️ Xóa
+                             Xóa
                           </button>
                         </div>
                       </td>

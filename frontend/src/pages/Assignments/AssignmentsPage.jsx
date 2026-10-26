@@ -53,11 +53,11 @@ function ViewReportsModal({ assignment, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 800 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">📋 Bài nộp — {assignment.assignment_name}</h2>
+          <h2 className="modal-title"> Bài nộp — {assignment.assignment_name}</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           {loading ? (
             <div style={{ textAlign: "center", padding: 24, color: "var(--text-muted)" }}>Đang tải...</div>
           ) : reports.length === 0 ? (
@@ -98,7 +98,7 @@ function ViewReportsModal({ assignment, onClose }) {
                       {r.is_late
                         ? <span className="badge badge-warning" title="Nộp muộn">⏰ Muộn</span>
                         : r.submit_date
-                          ? <span className="badge badge-success">✅ Đúng hạn</span>
+                          ? <span className="badge badge-success"> Đúng hạn</span>
                           : <span style={{ color: "var(--text-muted)", fontSize: 12 }}>—</span>}
                     </td>
                     <td>
@@ -192,7 +192,7 @@ function SubmitModal({ assignment, studentId, onClose, onSubmitted }) {
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <p style={{ color: "var(--text-secondary)", marginBottom: 16, fontSize: 13 }}>
             Bài tập: <strong>{assignment.assignment_name}</strong>
             <span style={{ marginLeft: 12, color: "var(--text-muted)" }}>
@@ -251,11 +251,11 @@ function DeleteConfirmModal({ assignment, onClose, onDeleted }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">🗑️ Xóa bài tập</h2>
+          <h2 className="modal-title"> Xóa bài tập</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <div style={{
             background: "rgba(239,68,68,0.08)",
             border: "1.5px solid rgba(239,68,68,0.25)",
@@ -271,7 +271,7 @@ function DeleteConfirmModal({ assignment, onClose, onDeleted }) {
               {assignment.assignment_name}
             </p>
             <p style={{ margin: "10px 0 0", fontSize: 12, color: "#ef4444" }}>
-              ⚠️ Hành động này không thể hoàn tác. Tất cả bài nộp liên quan cũng sẽ bị xóa.
+               Hành động này không thể hoàn tác. Tất cả bài nộp liên quan cũng sẽ bị xóa.
             </p>
           </div>
         </div>
@@ -287,7 +287,7 @@ function DeleteConfirmModal({ assignment, onClose, onDeleted }) {
               border: "none",
             }}
           >
-            {loading ? "Đang xóa..." : "🗑️ Xác nhận xóa"}
+            {loading ? "Đang xóa..." : " Xác nhận xóa"}
           </button>
         </div>
       </div>
@@ -342,11 +342,11 @@ function CreateAssignmentModal({ onClose, onCreated, myClasses }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">📌 Tạo bài tập mới</h2>
+          <h2 className="modal-title"> Tạo bài tập mới</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <form id="assign-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Tên bài tập *</label>
@@ -451,12 +451,12 @@ export default function AssignmentsPage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">📌 Bài tập</h2>
+          <h1 className="page-title"> Bài tập</h1>
           <p className="page-subtitle">{assignments.length} bài tập</p>
         </div>
         {(isTeacher || isAdmin) && (
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-            ➕ Tạo bài tập
+             Tạo bài tập
           </button>
         )}
       </div>
@@ -469,7 +469,7 @@ export default function AssignmentsPage() {
           value={filterClass}
           onChange={(e) => setFilterClass(e.target.value)}
         >
-          <option value="">📚 Tất cả lớp học</option>
+          <option value=""> Tất cả lớp học</option>
           {myClasses.map((c) => (
             <option key={c.class_id} value={c.class_id}>
               {c.course_id} · {c.class_id}
@@ -483,13 +483,13 @@ export default function AssignmentsPage() {
         )}
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
+      {error && <div className="alert alert-error"> {error}</div>}
 
       {loading ? (
         <div className="loading-page"><div className="spinner" /> Đang tải...</div>
       ) : assignments.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📌</div>
+          <div className="empty-state-icon"></div>
           <h3>Chưa có bài tập nào</h3>
         </div>
       ) : (
@@ -507,14 +507,14 @@ export default function AssignmentsPage() {
                   <div style={{ display: "flex", gap: 6 }}>
                     {a.deadline && (
                       <span className={`badge ${isOverdue(a.deadline) ? "badge-danger" : "badge-warning"}`}>
-                        {isOverdue(a.deadline) ? "⚠️ Quá hạn" : "⏰"}{" "}
+                        {isOverdue(a.deadline) ? " Quá hạn" : "⏰"}{" "}
                         {new Date(a.deadline).toLocaleDateString("vi-VN")}
                       </span>
                     )}
                     {/* Hiển thị điểm SV */}
                     {isStudent && mySub?.grade != null && (
                       <span className="badge badge-success" title={mySub.feedback || ""}>
-                        ✅ Điểm: {mySub.grade}/10
+                         Điểm: {mySub.grade}/10
                       </span>
                     )}
                     {isStudent && mySub && mySub.grade == null && (
@@ -559,7 +559,7 @@ export default function AssignmentsPage() {
 
                   {(isTeacher || isAdmin) && (
                     <button className="btn btn-secondary btn-sm" onClick={() => setViewReportsTarget(a)}>
-                      📄 Xem bài nộp
+                       Xem bài nộp
                     </button>
                   )}
 
@@ -575,7 +575,7 @@ export default function AssignmentsPage() {
                       onClick={() => setDeleteTarget(a)}
                       title="Xóa bài tập"
                     >
-                      🗑️ Xóa
+                       Xóa
                     </button>
                   )}
                 </div>

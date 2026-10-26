@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { curriculumApi, coursesApi } from "../../api";
 import { useAuth } from "../../context/AuthContext";
+import { BookOpen, PenTool, Trash2 } from "lucide-react";
 
 export default function CurriculumPage() {
   const { isAdmin } = useAuth();
@@ -196,12 +197,12 @@ export default function CurriculumPage() {
   return (
     <div>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)" }}>
+          <h1 className="page-title">
             Chương trình đào tạo
-          </h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "13px", marginTop: "4px" }}>
+          </h1>
+          <p className="page-subtitle">
             Quản lý các chương trình đào tạo và môn học trong hệ thống
           </p>
         </div>
@@ -247,7 +248,7 @@ export default function CurriculumPage() {
               </div>
             </div>
             {formError && (
-              <div style={{ color: "var(--danger)", fontSize: "13px", marginBottom: "12px" }}>❌ {formError}</div>
+              <div style={{ color: "var(--danger)", fontSize: "13px", marginBottom: "12px" }}> {formError}</div>
             )}
             <div style={{ display: "flex", gap: "10px" }}>
               <button type="submit" className="btn btn-primary" disabled={saving}>
@@ -276,7 +277,7 @@ export default function CurriculumPage() {
                   <tr>
                     <th>Mã chương trình</th>
                     <th>Tên chương trình</th>
-                    <th>Hành động</th>
+                    <th style={{ textAlign: "right" }}>Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -293,7 +294,7 @@ export default function CurriculumPage() {
                         background: detailId === p.program_id ? "var(--accent-subtle, rgba(99,102,241,0.08))" : undefined,
                       }}
                     >
-                      <td><code style={{ fontSize: "13px" }}>{p.program_id}</code></td>
+                      <td><span className="badge" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)", fontSize: "16px", fontWeight: 700 }}>{p.program_id}</span></td>
                       <td style={{ fontWeight: 500 }}>
                         {/* Inline edit */}
                         {isAdmin && editId === p.program_id ? (
@@ -311,7 +312,7 @@ export default function CurriculumPage() {
                               }}
                             />
                             {editError && (
-                              <span style={{ color: "var(--danger)", fontSize: "12px" }}>❌ {editError}</span>
+                              <span style={{ color: "var(--danger)", fontSize: "12px" }}> {editError}</span>
                             )}
                             <div style={{ display: "flex", gap: "6px" }}>
                               <button
@@ -336,37 +337,37 @@ export default function CurriculumPage() {
                         )}
                       </td>
                       <td>
-                        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end" }}>
                           {/* Xem chi tiết / quản lý môn */}
                           <button
-                            className="btn btn-ghost"
-                            style={{ fontSize: "12px", padding: "4px 10px" }}
+                            className="btn btn-secondary"
+                            style={{ fontSize: "15px", padding: "10px 16px", height: "40px" }}
                             onClick={() =>
                               detailId === p.program_id ? closeDetail() : openDetail(p.program_id)
                             }
                           >
-                            {detailId === p.program_id ? "✕ Đóng" : "📋 Môn học"}
+                            <BookOpen size={16} /> {detailId === p.program_id ? "Đóng" : "Môn học"}
                           </button>
 
                           {/* Sửa tên */}
                           {isAdmin && editId !== p.program_id && (
                             <button
-                              className="btn btn-ghost"
-                              style={{ fontSize: "12px", padding: "4px 10px" }}
+                              className="btn btn-secondary"
+                              style={{ fontSize: "15px", padding: "10px 16px", height: "40px", color: "var(--info)" }}
                               onClick={() => startEdit(p)}
                             >
-                              ✏️ Sửa
+                              <PenTool size={16} /> Sửa
                             </button>
                           )}
 
                           {/* Xóa */}
                           {isAdmin && (
                             <button
-                              className="btn btn-ghost"
-                              style={{ fontSize: "12px", padding: "4px 10px", color: "var(--danger)" }}
+                              className="btn"
+                              style={{ fontSize: "15px", padding: "10px 16px", height: "40px", background: "#FEE2E2", color: "#B91C1C", border: "none" }}
                               onClick={() => handleDelete(p.program_id)}
                             >
-                              🗑️ Xóa
+                              <Trash2 size={16} /> Xóa
                             </button>
                           )}
                         </div>
@@ -461,7 +462,7 @@ export default function CurriculumPage() {
                     </button>
                     {courseError && (
                       <div style={{ color: "var(--danger)", fontSize: "12px", marginTop: "6px" }}>
-                        ❌ {courseError}
+                         {courseError}
                       </div>
                     )}
                     {availableCourses.length === 0 && !detailLoading && (
@@ -504,7 +505,7 @@ export default function CurriculumPage() {
                                 style={{ fontSize: "11px", padding: "3px 8px", color: "var(--danger)" }}
                                 onClick={() => handleRemoveCourse(cc.course_id)}
                               >
-                                🗑️ Gỡ
+                                 Gỡ
                               </button>
                             </td>
                           )}

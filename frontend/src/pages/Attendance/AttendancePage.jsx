@@ -158,22 +158,22 @@ export default function AttendancePage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">✅ Điểm danh</h2>
+          <h1 className="page-title"> Điểm danh</h1>
           <p className="page-subtitle">
-            {isStudent ? "Lịch sử điểm danh của bạn" : "Quản lý điểm danh lớp học"}
+            {isStudent ? "Lịch sử điểm danh của bạn" : isTeacher ? "Điểm danh và theo dõi chuyên cần lớp học" : "Lịch sử điểm danh các lớp học (Chế độ xem)"}
           </p>
         </div>
-        {(isTeacher || isAdmin) && (
+        {isTeacher && (
           <button
             className="btn btn-primary"
             onClick={() => setShowMarkForm(!showMarkForm)}
           >
-            {showMarkForm ? "✖ Hủy" : "📝 Điểm danh lớp học"}
+            {showMarkForm ? "✖ Hủy" : " Điểm danh lớp học"}
           </button>
         )}
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
+      {error && <div className="alert alert-error"> {error}</div>}
 
       {/* Thống kê + bộ lọc lớp cho SINH VIÊN */}
       {isStudent && (
@@ -200,7 +200,7 @@ export default function AttendancePage() {
 
           {/* Dropdown chọn lớp */}
           <div className="card" style={{ marginBottom: 20, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" }}>🏛️ Lọc theo lớp:</span>
+            <span style={{ fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" }}> Lọc theo lớp:</span>
             <select
               className="form-select"
               value={selectedStudentClass}
@@ -255,7 +255,7 @@ export default function AttendancePage() {
               />
             </div>
             <button className="btn btn-primary" onClick={handleFilter}>
-              🔍 Tìm kiếm
+               Tìm kiếm
             </button>
             <button
               className="btn btn-secondary"
@@ -267,8 +267,8 @@ export default function AttendancePage() {
         </div>
       )}
 
-      {/* Form điểm danh (TEACHER/ADMIN) */}
-      {showMarkForm && (
+      {/* Form điểm danh (TEACHER) */}
+      {showMarkForm && isTeacher && (
         <div className="card" style={{ marginBottom: 24, borderLeft: "4px solid var(--accent)" }}>
           <h3 className="card-title" style={{ marginBottom: 16 }}>Thực hiện điểm danh</h3>
           <div className="flex gap-16" style={{ marginBottom: 16 }}>
@@ -340,7 +340,7 @@ export default function AttendancePage() {
         <div className="loading-page"><div className="spinner" /> Đang tải...</div>
       ) : records.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">✅</div>
+          <div className="empty-state-icon"></div>
           <h3>Chưa có dữ liệu điểm danh</h3>
           {isStudent && (
             <p style={{ color: "var(--text-secondary)", marginTop: 8 }}>
@@ -387,8 +387,8 @@ export default function AttendancePage() {
                     </td>
                     <td style={{ textAlign: "center" }}>
                       {r.absent
-                        ? <span className="badge badge-danger">❌ Vắng mặt</span>
-                        : <span className="badge badge-success">✅ Có mặt</span>}
+                        ? <span className="badge badge-danger"> Vắng mặt</span>
+                        : <span className="badge badge-success"> Có mặt</span>}
                     </td>
                     <td style={{ textAlign: "center" }}>
                       {r.submit_assignment_status

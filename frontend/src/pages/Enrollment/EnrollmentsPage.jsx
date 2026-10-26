@@ -44,11 +44,11 @@ function EnrollModal({ onClose, onEnrolled, studentId }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">📝 Đăng ký lớp học</h2>
+          <h2 className="modal-title"> Đăng ký lớp học</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <form id="enroll-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Chọn lớp học *</label>
@@ -77,7 +77,7 @@ function EnrollModal({ onClose, onEnrolled, studentId }) {
             </div>
             {selectedClass && (
               <div style={{ background: "rgba(99,102,241,0.08)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "var(--text-secondary)" }}>
-                ✅ Lớp: <strong>{selectedClass.class_id}</strong> · Môn: <strong>{selectedClass.course_id}</strong>
+                 Lớp: <strong>{selectedClass.class_id}</strong> · Môn: <strong>{selectedClass.course_id}</strong>
                 {selectedClass.semester && <> · Học kỳ: <strong>{selectedClass.semester}</strong></>}
               </div>
             )}
@@ -125,11 +125,11 @@ function ScoreModal({ enrollment, onClose, onUpdated }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">✏️ Nhập điểm</h2>
+          <h2 className="modal-title"> Nhập điểm</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error"> {error}</div>}
           <p style={{ color: "var(--text-muted)", marginBottom: 16, fontSize: 13 }}>
             SV: <strong>{enrollment.student_id}</strong> | Lớp: <strong>{enrollment.class_id}</strong>
           </p>
@@ -210,25 +210,25 @@ export default function EnrollmentsPage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="page-title">📝 Đăng ký học tập</h2>
+          <h1 className="page-title"> Đăng ký học tập</h1>
           <p className="page-subtitle">
             {isStudent ? `Lớp đã đăng ký: ${enrollments.length}` : `Tổng: ${enrollments.length} enrollment`}
           </p>
         </div>
         {isStudent && (
           <button className="btn btn-primary" onClick={() => setShowEnroll(true)}>
-            ➕ Đăng ký lớp học
+             Đăng ký lớp học
           </button>
         )}
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
+      {error && <div className="alert alert-error"> {error}</div>}
 
       {loading ? (
         <div className="loading-page"><div className="spinner" /> Đang tải...</div>
       ) : enrollments.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📝</div>
+          <div className="empty-state-icon"></div>
           <h3>Chưa có đăng ký nào</h3>
           {isStudent && <p>Nhấn "Đăng ký lớp học" để bắt đầu</p>}
         </div>
@@ -245,7 +245,7 @@ export default function EnrollmentsPage() {
                   <th>Điểm CK</th>
                   <th>Xếp loại</th>
                   <th>Trạng thái</th>
-                  {(isAdmin || isTeacher) && <th>Hành động</th>}
+                  {isTeacher && <th>Hành động</th>}
                 </tr>
               </thead>
               <tbody>
@@ -258,11 +258,11 @@ export default function EnrollmentsPage() {
                     <td style={{ fontWeight: 500 }}>{e.final_term_score?.toFixed(1) ?? "—"}</td>
                     <td>{getGradeBadge(e.grade)}</td>
                     <td>{getStatusBadge(e.status)}</td>
-                    {(isAdmin || isTeacher) && (
+                    {isTeacher && (
                       <td>
                         <button className="btn btn-secondary btn-sm"
                           onClick={() => setEditEnrollment(e)}>
-                          ✏️ Nhập điểm
+                           Nhập điểm
                         </button>
                       </td>
                     )}
@@ -282,7 +282,7 @@ export default function EnrollmentsPage() {
         />
       )}
 
-      {editEnrollment && (
+      {editEnrollment && isTeacher && (
         <ScoreModal
           enrollment={editEnrollment}
           onClose={() => setEditEnrollment(null)}
